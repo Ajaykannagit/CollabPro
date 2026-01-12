@@ -3,4 +3,5 @@ node_modules/
 .env*
 dist/
 build/
-README.md
+# README.md
+# (Remove README.md from here to allow tracking)
