@@ -1,0 +1,64 @@
+id: '17679585767050.26354455437561464'
+kind: workflow
+name: loadIndustryChallenges
+nameConfigured: true
+steps:
+  - id: '17679590918420.10001818390375683'
+    type: customSQLQuery
+    name: query
+    params:
+      - type: datasourceId
+        value: collabsync_pro_db
+        valueType: custom
+        mustSelectFirst: true
+      - type: query
+        value: ./query-query.sql
+        valueType: interpolatedValue
+        interpolationType: string
+      - type: preparedQuery
+        value: ./query-preparedQuery.sql
+        valueType: interpolatedValue
+      - type: preparedQueryParams
+        value:
+          - __UI_BAKERY__FORMAT_IF_DATE__(params.searchQuery)
+          - __UI_BAKERY__FORMAT_IF_DATE__( '%' + params.searchQuery + '%' )
+        valueType: custom
+      - type: customDatabaseName
+        value: ''
+        valueType: interpolatedValue
+      - type: stepVersion
+        value: 3
+        valueType: custom
+      - type: successMapper
+        value: ''
+        valueType: interpolatedValue
+        interpolationType: code
+      - type: failureMapper
+        value: ''
+        valueType: interpolatedValue
+        interpolationType: code
+      - type: mapperEnabled
+        value: false
+        valueType: custom
+    level: 0
+    fallthroughError: false
+    isChanged: false
+mode: manual
+modeConfigured: true
+parentPageId: '1'
+config:
+  shouldConfirm: false
+  confirmMessage: >-
+    Are you sure you'd like to proceed with
+    "{{actions.loadIndustryChallenges.name}}"?
+  showSuccessToast: false
+  successToast: Action "{{actions.loadIndustryChallenges.name}}" successfully executed
+  successToastDuration: '3000'
+  successToastHideByClick: false
+  showErrorToast: false
+  errorToast: Action "{{actions.loadIndustryChallenges.name}}" has failed
+  errorToastDuration: '3000'
+  errorToastHideByClick: false
+  delay: '0'
+  runWhenFirstReferenced: true
+  preserveStateOnPageChange: false

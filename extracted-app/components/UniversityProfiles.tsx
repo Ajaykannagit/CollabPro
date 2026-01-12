@@ -1,0 +1,177 @@
+// University profile cards showing research strengths and statistics
+
+import { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { GraduationCap, Search, MapPin, TrendingUp, Briefcase, Award } from 'lucide-react';
+import { useTestData } from '@/contexts/TestDataContext';
+
+type University = {
+  id: number;
+  name: string;
+  location: string;
+  website: string;
+  research_strengths: string;
+  available_resources: string;
+  success_rate: number;
+  past_partnerships_count: number;
+  active_projects_count: number;
+};
+
+export function UniversityProfiles() {
+  const { universities: allUniversities } = useTestData();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter universities based on search query
+  const universities = allUniversities.filter(u =>
+    u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.location.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const loading = false;
+  const error: any = null;
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  return (
+    <div className="p-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-100 mb-2">University Partners</h1>
+        <p className="text-slate-400">
+          Explore research institutions and their expertise
+        </p>
+      </div>
+
+      {/* Search Bar */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search universities..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Universities Grid */}
+      {loading && (
+        <div className="text-center py-12">
+          <p className="text-gray-500">Loading universities...</p>
+        </div>
+      )}
+
+      {error && (
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-red-600">Error: {error.message}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!loading && !error && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {universities.map((university: University) => (
+            <Card key={university.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-start gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarFallback className="bg-blue-600 text-white text-lg">
+                      {getInitials(university.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <CardTitle className="text-xl text-slate-100 mb-1">{university.name}</CardTitle>
+                    <div className="flex items-center gap-1 text-sm text-slate-400">
+                      <MapPin className="h-3 w-3" />
+                      <span>{university.location}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Statistics */}
+                <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 text-green-600 mb-1">
+                      <TrendingUp className="h-4 w-4" />
+                      <p className="text-2xl font-bold">{university.success_rate}%</p>
+                    </div>
+                    <p className="text-xs text-gray-600">Success Rate</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 text-blue-600 mb-1">
+                      <Briefcase className="h-4 w-4" />
+                      <p className="text-2xl font-bold">
+                        {university.active_projects_count}
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-600">Active Projects</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 text-purple-600 mb-1">
+                      <Award className="h-4 w-4" />
+                      <p className="text-2xl font-bold">
+                        {university.past_partnerships_count}
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-600">Partnerships</p>
+                  </div>
+                </div>
+
+                {/* Research Strengths */}
+                <div className="mb-4">
+                  <p className="text-sm font-semibold text-slate-200 mb-2">
+                    Research Strengths
+                  </p>
+                  <p className="text-sm text-slate-400">{university.research_strengths}</p>
+                </div>
+
+                {/* Available Resources */}
+                <div className="mb-4">
+                  <p className="text-sm font-semibold text-slate-200 mb-2">
+                    Available Resources
+                  </p>
+                  <p className="text-sm text-slate-400">{university.available_resources}</p>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button className="flex-1" size="sm">
+                    View Projects
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Contact
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {!loading && !error && universities.length === 0 && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              No universities found
+            </h3>
+            <p className="text-gray-600">Try adjusting your search</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
