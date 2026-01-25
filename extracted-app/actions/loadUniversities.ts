@@ -1,7 +1,7 @@
 import { action } from '@uibakery/data';
 
-function loadUniversities() {
-  return action('loadUniversities', 'SQL', {
+function loadColleges() {
+  return action('loadColleges', 'SQL', {
     datasourceName: 'collabsync_pro_db',
     query: `
       SELECT 
@@ -14,8 +14,8 @@ function loadUniversities() {
         u.success_rate,
         u.past_partnerships_count,
         COUNT(DISTINCT rp.id) as active_projects_count
-      FROM universities u
-      LEFT JOIN research_projects rp ON u.id = rp.university_id AND rp.status = 'active'
+      FROM Colleges u
+      LEFT JOIN research_projects rp ON u.id = rp.College_id AND rp.status = 'active'
       WHERE COALESCE({{params.searchQuery}}, '') = '' OR u.name ILIKE {{ '%' + params.searchQuery + '%' }}
       GROUP BY u.id
       ORDER BY u.success_rate DESC;
@@ -23,4 +23,4 @@ function loadUniversities() {
   });
 }
 
-export default loadUniversities;
+export default loadColleges;

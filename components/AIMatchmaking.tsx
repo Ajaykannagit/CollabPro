@@ -33,7 +33,7 @@ export function AIMatchmaking() {
             reasoning: `${overlap} matching expertise areas out of ${total} total areas`,
             project_title: project.title,
             project_description: project.description,
-            university_name: project.university_name,
+            college_name: project.college_name,
             trl_level: project.trl_level,
             project_expertise: project.expertise_areas,
             challenge_title: challenge.title,
@@ -134,7 +134,7 @@ export function AIMatchmaking() {
                   </div>
                   <div className="pl-4 space-y-2">
                     <h4 className="font-semibold text-blue-400">{match.project_title}</h4>
-                    <p className="text-sm text-slate-300">{match.university_name}</p>
+                    <p className="text-sm text-slate-300">{match.college_name}</p>
                     <p className="text-sm text-slate-400 line-clamp-3">{match.project_description}</p>
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-3 w-3 text-slate-500" />

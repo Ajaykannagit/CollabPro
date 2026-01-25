@@ -82,7 +82,7 @@ CREATE TABLE ip_contributors (
 -- Student talent profiles
 CREATE TABLE student_profiles (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  university_id BIGINT NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
+  College_id BIGINT NOT NULL REFERENCES Colleges(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   email TEXT,
   degree_level TEXT,
@@ -147,7 +147,7 @@ CREATE TABLE ip_revenue_transactions (
 CREATE INDEX idx_active_projects_status ON active_projects(status);
 CREATE INDEX idx_project_milestones_due_date ON project_milestones(due_date);
 CREATE INDEX idx_ip_disclosures_status ON ip_disclosures(status);
-CREATE INDEX idx_student_profiles_university ON student_profiles(university_id);
+CREATE INDEX idx_student_profiles_College ON student_profiles(College_id);
 CREATE INDEX idx_recruitment_requests_status ON recruitment_requests(status);
 
 -- Insert sample data for active projects
@@ -186,7 +186,7 @@ INSERT INTO ip_contributors (ip_disclosure_id, contributor_name, organization, o
 (1, 'Rajesh Kumar', 'NHSRCL', 30.0, 'Domain Expert');
 
 -- Insert sample student profiles
-INSERT INTO student_profiles (university_id, name, email, degree_level, field_of_study, graduation_year, gpa, bio, availability_status) VALUES
+INSERT INTO student_profiles (College_id, name, email, degree_level, field_of_study, graduation_year, gpa, bio, availability_status) VALUES
 (1, 'Alex Thompson', 'alex.t@mit.edu', 'PhD', 'Computer Science - Machine Learning', 2025, 3.92, 'PhD candidate specializing in deep learning for predictive maintenance. Published 3 papers in top ML conferences. Experience with TensorFlow, PyTorch, and large-scale data processing.', 'available'),
 (1, 'Maria Garcia', 'maria.g@mit.edu', 'Masters', 'Electrical Engineering', 2024, 3.87, 'Masters student with focus on IoT sensor networks and embedded systems. Strong programming skills in Python and C++. Previous internship at Tesla.', 'available'),
 (2, 'David Lee', 'david.l@stanford.edu', 'PhD', 'Renewable Energy Engineering', 2026, 3.95, 'PhD researcher working on next-generation solar cell materials. 5 publications, 2 patent applications. Seeking R&D position in cleantech industry.', 'available'),

@@ -17,8 +17,8 @@ type ResearchProject = {
   team_lead: string;
   team_size: number;
   publications_count: number;
-  university_name: string;
-  university_location: string;
+  College_name: string;
+  College_location: string;
   expertise_areas: string[];
 };
 
@@ -32,7 +32,7 @@ export function ProjectDiscovery() {
   // Filter projects based on search query
   const projects = allProjects.filter(p =>
     p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.university_name.toLowerCase().includes(searchQuery.toLowerCase())
+    p.College_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const loading = false;
@@ -46,7 +46,7 @@ export function ProjectDiscovery() {
     <div className="p-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-slate-100 mb-2">Research Projects</h1>
-        <p className="text-slate-400">Discover cutting-edge university research available for collaboration</p>
+        <p className="text-slate-400">Discover cutting-edge College research available for collaboration</p>
       </div>
 
       {/* Search Bar */}
@@ -90,7 +90,7 @@ export function ProjectDiscovery() {
                 <CardTitle className="text-lg line-clamp-2">{project.title}</CardTitle>
                 <div className="flex items-center gap-2 text-sm text-slate-400 mt-2">
                   <Briefcase className="h-4 w-4" />
-                  <span>{project.university_name}</span>
+                  <span>{project.College_name}</span>
                 </div>
               </CardHeader>
               <CardContent>

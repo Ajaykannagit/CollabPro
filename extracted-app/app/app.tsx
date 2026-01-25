@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { ProjectDiscovery } from '@/components/ProjectDiscovery';
 import { IndustryChallengesBoard } from '@/components/IndustryChallengesBoard';
 import { AIMatchmaking } from '@/components/AIMatchmaking';
-import { UniversityProfiles } from '@/components/UniversityProfiles';
+import { CollegeProfiles } from '@/components/CollegeProfiles';
 import { NotificationsPanel } from '@/components/NotificationsPanel';
 import { DashboardOverview } from '@/components/DashboardOverview';
 import { ProjectWorkspace } from '@/components/ProjectWorkspace';
@@ -32,7 +32,7 @@ function App() {
     { id: 'dashboard' as NavSection, label: 'Dashboard', icon: Home },
     { id: 'projects' as NavSection, label: 'Research Projects', icon: Briefcase },
     { id: 'challenges' as NavSection, label: 'Industry Challenges', icon: Target },
-    { id: 'partners' as NavSection, label: 'Universities', icon: Building2 },
+    { id: 'partners' as NavSection, label: 'Colleges', icon: Building2 },
     { id: 'matchmaking' as NavSection, label: 'AI Matchmaking', icon: Sparkles },
     { id: 'agreement-review' as NavSection, label: 'Agreement Review', icon: FileText },
     { id: 'digital-signature' as NavSection, label: 'Digital Signature', icon: PenTool },
@@ -162,7 +162,7 @@ function App() {
                 {activeSection === 'dashboard' && <DashboardOverview />}
                 {activeSection === 'projects' && <ProjectDiscovery />}
                 {activeSection === 'challenges' && <IndustryChallengesBoard />}
-                {activeSection === 'partners' && <UniversityProfiles />}
+                {activeSection === 'partners' && <CollegeProfiles />}
                 {activeSection === 'matchmaking' && <AIMatchmaking />}
                 {activeSection === 'agreement-review' && <AgreementCompareReview />}
                 {activeSection === 'digital-signature' && <DigitalSignature />}

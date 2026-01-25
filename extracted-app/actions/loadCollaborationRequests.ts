@@ -15,12 +15,12 @@ function loadCollaborationRequests() {
         cp.industry,
         rp.title as project_title,
         rp.id as project_id,
-        u.name as university_name,
+        u.name as College_name,
         ic.title as challenge_title
       FROM collaboration_requests cr
       JOIN corporate_partners cp ON cr.corporate_partner_id = cp.id
       LEFT JOIN research_projects rp ON cr.research_project_id = rp.id
-      LEFT JOIN universities u ON rp.university_id = u.id
+      LEFT JOIN Colleges u ON rp.College_id = u.id
       LEFT JOIN industry_challenges ic ON cr.industry_challenge_id = ic.id
       WHERE 
         COALESCE({{params.status}}, '') = ''

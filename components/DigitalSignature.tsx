@@ -13,13 +13,47 @@ import {
     GraduationCap,
     History
 } from 'lucide-react';
-import { useTestData } from '@/contexts/TestDataContext';
+import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function DigitalSignature() {
-    const { signatureWorkflow } = useTestData();
+    const { toast } = useToast();
     const [isSigning, setIsSigning] = useState(false);
     const [signature, setSignature] = useState('');
+    const [workflow, setWorkflow] = useState({
+        status: 'approval',
+        college_approval: true,
+        corporate_approval: false,
+        audit_trail: [
+            { id: 1, event: 'Agreement Finalized', actor: 'System', timestamp: 'Jan 24, 10:00 AM' },
+            { id: 2, event: 'College Approval Granted', actor: 'Dr. Aris (Dean of Research)', timestamp: 'Jan 24, 11:30 AM' },
+        ]
+    });
+
+    const handleGrantApproval = () => {
+        setWorkflow(prev => ({
+            ...prev,
+            corporate_approval: true,
+            audit_trail: [
+                ...prev.audit_trail,
+                { id: Date.now(), event: 'Corporate Approval Granted', actor: 'NHSRCL Exec Board', timestamp: new Date().toLocaleString() }
+            ]
+        }));
+        toast({ title: 'Approval Granted', description: 'Corporate compliance has reviewed and approved the document.' });
+    };
+
+    const handleFinalSign = () => {
+        setWorkflow(prev => ({
+            ...prev,
+            status: 'signed',
+            audit_trail: [
+                ...prev.audit_trail,
+                { id: Date.now(), event: 'Document Digitally Signed', actor: signature, timestamp: new Date().toLocaleString() }
+            ]
+        }));
+        setIsSigning(false);
+        toast({ title: 'Document Signed', description: 'The agreement is now legally binding and active.' });
+    };
 
     const steps = [
         { id: 'draft', label: 'Agreement Draft', icon: Clock },
@@ -28,7 +62,7 @@ export function DigitalSignature() {
         { id: 'signed', label: 'Final Execution', icon: PenTool },
     ];
 
-    const currentStepIndex = steps.findIndex(s => s.id === signatureWorkflow.status);
+    const currentStepIndex = steps.findIndex(s => s.id === workflow.status);
 
     return (
         <div className="p-8 bg-[#0a0a0c] min-h-screen text-slate-100">
@@ -86,40 +120,40 @@ export function DigitalSignature() {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="grid md:grid-cols-2 divide-x divide-white/5">
-                                    {/* University Approval */}
+                                    {/* College Approval */}
                                     <div className="p-8 space-y-6">
                                         <div className="flex items-center gap-4">
                                             <div className="h-14 w-14 rounded-2xl bg-slate-800 flex items-center justify-center">
                                                 <GraduationCap className="h-8 w-8 text-blue-400" />
                                             </div>
                                             <div>
-                                                <h3 className="font-bold text-slate-200">University Side</h3>
+                                                <h3 className="font-bold text-slate-200">College Side</h3>
                                                 <p className="text-xs text-slate-500">Legal & Ethics Committee</p>
                                             </div>
                                         </div>
 
-                                        <div className={`p-4 rounded-lg flex items-center justify-between ${signatureWorkflow.university_approval ? 'bg-green-500/10 border border-green-500/20' : 'bg-amber-500/10 border border-amber-500/20'
+                                        <div className={`p-4 rounded-lg flex items-center justify-between ${workflow.college_approval ? 'bg-green-500/10 border border-green-500/20' : 'bg-amber-500/10 border border-amber-500/20'
                                             }`}>
                                             <div className="flex items-center gap-2">
-                                                {signatureWorkflow.university_approval ? (
+                                                {workflow.college_approval ? (
                                                     <CheckCircle2 className="h-5 w-5 text-green-500" />
                                                 ) : (
                                                     <Clock className="h-5 w-5 text-amber-500" />
                                                 )}
-                                                <span className={`text-sm font-bold ${signatureWorkflow.university_approval ? 'text-green-500' : 'text-amber-500'}`}>
-                                                    {signatureWorkflow.university_approval ? 'Approved' : 'Pending Approval'}
+                                                <span className={`text-sm font-bold ${workflow.college_approval ? 'text-green-500' : 'text-amber-500'}`}>
+                                                    {workflow.college_approval ? 'Approved' : 'Pending Approval'}
                                                 </span>
                                             </div>
-                                            {signatureWorkflow.university_approval && (
-                                                <span className="text-[10px] text-slate-500 font-medium">JAN 12, 11:30 AM</span>
+                                            {workflow.college_approval && (
+                                                <span className="text-[10px] text-slate-500 font-medium">DONE</span>
                                             )}
                                         </div>
 
                                         <Button
                                             className="w-full h-12 bg-white/5 hover:bg-white/10 text-slate-300 font-bold border border-white/10"
-                                            disabled={signatureWorkflow.university_approval}
+                                            disabled={workflow.college_approval}
                                         >
-                                            {signatureWorkflow.university_approval ? 'Approval Granted' : 'Grant Approval'}
+                                            {workflow.college_approval ? 'Approval Granted' : 'Grant Approval'}
                                         </Button>
                                     </div>
 
@@ -135,25 +169,26 @@ export function DigitalSignature() {
                                             </div>
                                         </div>
 
-                                        <div className={`p-4 rounded-lg flex items-center justify-between ${signatureWorkflow.corporate_approval ? 'bg-green-500/10 border border-green-500/20' : 'bg-amber-500/10 border border-amber-500/20'
+                                        <div className={`p-4 rounded-lg flex items-center justify-between ${workflow.corporate_approval ? 'bg-green-500/10 border border-green-500/20' : 'bg-amber-500/10 border border-amber-500/20'
                                             }`}>
                                             <div className="flex items-center gap-2">
-                                                {signatureWorkflow.corporate_approval ? (
+                                                {workflow.corporate_approval ? (
                                                     <CheckCircle2 className="h-5 w-5 text-green-500" />
                                                 ) : (
                                                     <Clock className="h-5 w-5 text-amber-500" />
                                                 )}
-                                                <span className={`text-sm font-bold ${signatureWorkflow.corporate_approval ? 'text-green-500' : 'text-amber-500'}`}>
-                                                    {signatureWorkflow.corporate_approval ? 'Approved' : 'Pending Approval'}
+                                                <span className={`text-sm font-bold ${workflow.corporate_approval ? 'text-green-500' : 'text-amber-500'}`}>
+                                                    {workflow.corporate_approval ? 'Approved' : 'Pending Approval'}
                                                 </span>
                                             </div>
                                         </div>
 
                                         <Button
                                             className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-lg shadow-purple-500/20"
-                                            disabled={signatureWorkflow.corporate_approval}
+                                            disabled={workflow.corporate_approval}
+                                            onClick={handleGrantApproval}
                                         >
-                                            Process Approval
+                                            {workflow.corporate_approval ? 'Approval Granted' : 'Grant Approval'}
                                         </Button>
                                     </div>
                                 </div>
@@ -178,7 +213,7 @@ export function DigitalSignature() {
 
                                 <div className="flex gap-4 w-full max-w-lg">
                                     <div className="flex-1 p-4 rounded-xl border border-dashed border-white/10 bg-white/5 flex flex-col items-center gap-2">
-                                        <span className="text-[10px] uppercase font-bold text-slate-500">University Signatory</span>
+                                        <span className="text-[10px] uppercase font-bold text-slate-500">College Signatory</span>
                                         <div className="h-[2px] w-full bg-white/10 my-4" />
                                         <span className="text-xs text-slate-400 italic font-medium">Awaiting Signature</span>
                                     </div>
@@ -192,9 +227,9 @@ export function DigitalSignature() {
                                 <Button
                                     className="px-12 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-lg font-bold shadow-2xl shadow-blue-500/30 group"
                                     onClick={() => setIsSigning(true)}
-                                    disabled={!signatureWorkflow.university_approval || !signatureWorkflow.corporate_approval}
+                                    disabled={!workflow.college_approval || !workflow.corporate_approval || workflow.status === 'signed'}
                                 >
-                                    Sign Document Now
+                                    {workflow.status === 'signed' ? 'Document Signed' : 'Sign Document Now'}
                                     <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                                 </Button>
                             </CardContent>
@@ -212,7 +247,7 @@ export function DigitalSignature() {
                         <CardContent className="flex-1 p-6 overflow-auto">
                             <div className="space-y-6 relative">
                                 <div className="absolute left-4 top-2 bottom-2 w-[1px] bg-white/5" />
-                                {signatureWorkflow.audit_trail.map((event) => (
+                                {workflow.audit_trail.map((event: any) => (
                                     <div key={event.id} className="relative pl-10">
                                         <div className="absolute left-[13px] top-1.5 h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                                         <p className="text-sm font-bold text-slate-200">{event.event}</p>
@@ -287,10 +322,7 @@ export function DigitalSignature() {
                                     <Button
                                         className="flex-3 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 shadow-lg shadow-blue-500/20"
                                         disabled={!signature}
-                                        onClick={() => {
-                                            setIsSigning(false);
-                                            // In a real app we'd update state here
-                                        }}
+                                        onClick={handleFinalSign}
                                     >
                                         Confirm & Sign Document
                                     </Button>

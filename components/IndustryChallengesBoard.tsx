@@ -10,7 +10,7 @@ import { formatINRCompact, usdToINR } from '@/lib/currency';
 import { useChallenges } from '@/hooks/useDatabase';
 import type { IndustryChallenge } from '@/lib/types';
 
-export function IndustryChallengesBoard() {
+export function IndustryChallengesBoard({ onNavigate }: { onNavigate?: (section: any) => void }) {
   const { data: allChallenges, loading } = useChallenges();
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -99,28 +99,28 @@ export function IndustryChallengesBoard() {
                   {challenge.description}
                 </p>
 
-                <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-white/5 rounded-lg border border-white/5">
                   <div>
-                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                    <div className="flex items-center gap-1 text-sm text-gray-500 mb-1">
                       <DollarSign className="h-3 w-3" />
                       <span>Budget Range</span>
                     </div>
-                    <p className="font-semibold text-gray-900">
+                    <p className="font-semibold text-slate-100">
                       {formatCurrency(challenge.budget_min)} - {formatCurrency(challenge.budget_max)}
                     </p>
                   </div>
                   <div>
-                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                    <div className="flex items-center gap-1 text-sm text-gray-500 mb-1">
                       <Clock className="h-3 w-3" />
                       <span>Timeline</span>
                     </div>
-                    <p className="font-semibold text-gray-900">
+                    <p className="font-semibold text-slate-100">
                       {challenge.timeline_months} months
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Posted</p>
-                    <p className="font-semibold text-gray-900">
+                    <p className="text-sm text-gray-500 mb-1">Posted</p>
+                    <p className="font-semibold text-slate-100">
                       {challenge.created_at ? new Date(challenge.created_at).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
@@ -128,10 +128,10 @@ export function IndustryChallengesBoard() {
 
                 {challenge.required_expertise && challenge.required_expertise.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Required Expertise:</p>
+                    <p className="text-sm font-medium text-slate-300 mb-2">Required Expertise:</p>
                     <div className="flex flex-wrap gap-2">
-                      {challenge.required_expertise.map((expertise, idx) => (
-                        <Badge key={idx} variant="outline">
+                      {challenge.required_expertise.map((expertise: string, idx: number) => (
+                        <Badge key={idx} variant="outline" className="border-white/10 text-slate-400">
                           {expertise}
                         </Badge>
                       ))}
@@ -139,7 +139,12 @@ export function IndustryChallengesBoard() {
                   </div>
                 )}
 
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-white/10 hover:bg-white/10 text-slate-300"
+                  onClick={() => onNavigate && onNavigate('matchmaking')}
+                >
                   View Matching Projects
                 </Button>
               </CardContent>

@@ -5,7 +5,7 @@ import { db } from '../lib/db';
 import type {
     ResearchProject,
     IndustryChallenge,
-    University,
+    College,
     CollaborationRequest,
     IPDisclosure,
     Negotiation,
@@ -83,27 +83,27 @@ export function useChallenges() {
     };
 }
 
-// Universities Hook
-export function useUniversities() {
-    const data = useLiveQuery(() => db.universities.toArray()) || [];
+// Colleges Hook
+export function useColleges() {
+    const data = useLiveQuery(() => db.colleges.toArray()) || [];
 
-    const create = async (university: Omit<University, 'id' | 'created_at'>) => {
-        return await db.universities.add({
-            ...university,
+    const create = async (college: Omit<College, 'id' | 'created_at'>) => {
+        return await db.colleges.add({
+            ...college,
             created_at: new Date().toISOString(),
         });
     };
 
-    const update = async (id: number, updates: Partial<University>) => {
-        return await db.universities.update(id, updates);
+    const update = async (id: number, updates: Partial<College>) => {
+        return await db.colleges.update(id, updates);
     };
 
     const remove = async (id: number) => {
-        return await db.universities.delete(id);
+        return await db.colleges.delete(id);
     };
 
     const getById = async (id: number) => {
-        return await db.universities.get(id);
+        return await db.colleges.get(id);
     };
 
     return {

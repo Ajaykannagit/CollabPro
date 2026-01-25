@@ -14,11 +14,11 @@ function loadStudentProfiles() {
         sp.gpa,
         sp.bio,
         sp.availability_status,
-        u.name as university_name,
+        u.name as College_name,
         ARRAY_AGG(DISTINCT ss.skill_name) FILTER (WHERE ss.skill_name IS NOT NULL) as skills,
         COUNT(DISTINCT spi.id) as project_count
       FROM student_profiles sp
-      JOIN universities u ON sp.university_id = u.id
+      JOIN Colleges u ON sp.College_id = u.id
       LEFT JOIN student_skills ss ON sp.id = ss.student_profile_id
       LEFT JOIN student_project_involvement spi ON sp.id = spi.student_profile_id
       WHERE 

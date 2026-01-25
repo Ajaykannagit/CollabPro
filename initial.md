@@ -1,17 +1,17 @@
 # Requirements
 ## Summary
-CollabSync Pro is an Industry-Academia Collaboration Portal connecting universities with corporate partners to co-develop R&D projects, manage intellectual property, and facilitate talent recruitment. The platform features AI-powered matchmaking to align academic research expertise with industry challenges, streamlines the collaboration lifecycle from proposal to commercialization, and includes milestone tracking, revenue-sharing models, and compliance frameworks. Key roles include University Researchers, Corporate Partners, and Platform Administrators who manage partnerships, projects, IP rights, and recruitment opportunities.
+CollabSync Pro is an Industry-Academia Collaboration Portal connecting Colleges with corporate partners to co-develop R&D projects, manage intellectual property, and facilitate talent recruitment. The platform features AI-powered matchmaking to align academic research expertise with industry challenges, streamlines the collaboration lifecycle from proposal to commercialization, and includes milestone tracking, revenue-sharing models, and compliance frameworks. Key roles include College Researchers, Corporate Partners, and Platform Administrators who manage partnerships, projects, IP rights, and recruitment opportunities.
 
 ## Use cases
 - **Project Discovery and Matchmaking**
-  1) Corporate partner browses available university research projects or posts industry challenges
+  1) Corporate partner browses available College research projects or posts industry challenges
   2) AI-powered system suggests relevant matches based on expertise, past collaborations, and research areas
-  3) Corporate partner reviews university profiles, research portfolios, and success metrics
+  3) Corporate partner reviews College profiles, research portfolios, and success metrics
   4) Corporate partner initiates collaboration request with project brief and budget range
-  5) University receives notification and reviews partnership opportunity
+  5) College receives notification and reviews partnership opportunity
 
 - **Collaboration Proposal and Agreement**
-  1) University and corporate partner negotiate project scope, deliverables, and timelines in shared workspace
+  1) College and corporate partner negotiate project scope, deliverables, and timelines in shared workspace
   2) System generates draft agreement template with IP rights, revenue sharing, and milestone definitions
   3) Both parties review legal and compliance requirements
   4) Parties finalize and digitally sign the collaboration agreement
@@ -25,11 +25,11 @@ CollabSync Pro is an Industry-Academia Collaboration Portal connecting universit
   5) IP disclosures are documented with automatic categorization and protection workflows
 
 - **Talent Recruitment and Showcase**
-  1) University highlights student talent and research contributions within project portfolios
+  1) College highlights student talent and research contributions within project portfolios
   2) Corporate partner browses talent profiles filtered by skills, project involvement, and academic performance
   3) Corporate partner marks candidates of interest and requests interviews
-  4) University facilitates introductions and tracks recruitment outcomes
-  5) Successful placements are recorded for university metrics and partner satisfaction
+  4) College facilitates introductions and tracks recruitment outcomes
+  5) Successful placements are recorded for College metrics and partner satisfaction
 
 - **IP Management and Commercialization**
   1) Research team files IP disclosure through platform with invention details and contributors
@@ -40,20 +40,20 @@ CollabSync Pro is an Industry-Academia Collaboration Portal connecting universit
 
 ## Plan
 ### Project Discovery and Matchmaking
-1. [x] Generate database schema with tables for universities, corporate_partners, research_projects, industry_challenges, collaboration_requests, expertise_areas, and matchmaking_scores with sample data
+1. [x] Generate database schema with tables for Colleges, corporate_partners, research_projects, industry_challenges, collaboration_requests, expertise_areas, and matchmaking_scores with sample data
 2. [x] Create main application shell with navigation sidebar including Dashboard, Projects, Partners, Matchmaking, and Profile sections
-3. [x] Build project discovery page with filterable grid of research projects showing title, university, expertise areas, funding needs, and TRL level
+3. [x] Build project discovery page with filterable grid of research projects showing title, College, expertise areas, funding needs, and TRL level
 4. [x] Implement industry challenges board where corporate partners can post problems with description, budget range, timeline, and required expertise
 5. [x] Create AI matchmaking results view displaying scored matches between projects and challenges with compatibility percentage and reasoning
 6. [x] Add research project detail modal showing full description, team members, past publications, success metrics, and collaboration history
-7. [x] Build university profile cards with research strengths, available resources, past partnerships, and success rate statistics
+7. [x] Build College profile cards with research strengths, available resources, past partnerships, and success rate statistics
 8. [x] Implement collaboration request form allowing corporate partners to initiate partnership with project brief, budget, and timeline inputs
-9. [x] Create notifications system showing pending collaboration requests for universities
+9. [x] Create notifications system showing pending collaboration requests for Colleges
 
 ### Collaboration Proposal and Agreement
 1. [x] Build shared negotiation workspace with split view showing project scope editor and terms discussion thread
 2. [x] Create agreement template generator that populates IP rights, revenue sharing percentages, milestone definitions, and compliance clauses based on partnership type
-3. [x] Implement legal requirements checklist with university policies and corporate compliance frameworks
+3. [x] Implement legal requirements checklist with College policies and corporate compliance frameworks
 4. [] Add agreement review interface with version comparison and comment annotation features
 5. [] Build digital signature workflow with approval status tracking for both parties
 6. [] Create finalized project creation flow that captures funding allocation, team member assignments, and kickoff date
@@ -70,12 +70,12 @@ CollabSync Pro is an Industry-Academia Collaboration Portal connecting universit
 8. [x] Create IP tracking table showing all disclosures with categorization, protection status, and assigned legal team member
 
 ### Talent Recruitment and Showcase
-1. [x] Build student talent showcase page within university profiles displaying student cards with photos, skills, research involvement, and academic achievements
+1. [x] Build student talent showcase page within College profiles displaying student cards with photos, skills, research involvement, and academic achievements
 2. [x] Create talent filtering system with multi-select filters for technical skills, research areas, degree level, and availability
 3. [x] Implement detailed student profile view showing project contributions, publications, presentations, and recommendation quotes
 4. [x] Add candidate interest marking feature allowing corporate partners to save and organize potential recruits
 5. [x] Build interview request workflow with scheduling integration and status tracking
-6. [] Create recruitment pipeline dashboard for universities showing number of students showcased, interview requests, and successful placements
+6. [] Create recruitment pipeline dashboard for Colleges showing number of students showcased, interview requests, and successful placements
 7. [] Implement recruitment outcome recording with hire date, position, and partner satisfaction rating
 
 ### IP Management and Commercialization

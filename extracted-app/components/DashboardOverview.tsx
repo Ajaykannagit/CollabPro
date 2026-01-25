@@ -199,7 +199,7 @@ export function DashboardOverview() {
                       <p className="font-semibold text-sm text-gray-200 truncate group-hover:text-primary transition-colors">
                         {project.title || "New Research Initiative"}
                       </p>
-                      <p className="text-xs text-gray-500 group-hover:text-gray-400">{project.university_name || "Partner University"}</p>
+                      <p className="text-xs text-gray-500 group-hover:text-gray-400">{project.College_name || "Partner College"}</p>
                     </div>
                     <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-primary group-hover:text-white transition-all">
                       <ArrowRight className="h-4 w-4" />

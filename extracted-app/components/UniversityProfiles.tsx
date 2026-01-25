@@ -1,4 +1,4 @@
-// University profile cards showing research strengths and statistics
+// College profile cards showing research strengths and statistics
 
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { GraduationCap, Search, MapPin, TrendingUp, Briefcase, Award } from 'lucide-react';
 import { useTestData } from '@/contexts/TestDataContext';
 
-type University = {
+type College = {
   id: number;
   name: string;
   location: string;
@@ -19,12 +19,12 @@ type University = {
   active_projects_count: number;
 };
 
-export function UniversityProfiles() {
-  const { universities: allUniversities } = useTestData();
+export function CollegeProfiles() {
+  const { Colleges: allColleges } = useTestData();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter universities based on search query
-  const universities = allUniversities.filter(u =>
+  // Filter Colleges based on search query
+  const Colleges = allColleges.filter(u =>
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -44,7 +44,7 @@ export function UniversityProfiles() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-100 mb-2">University Partners</h1>
+        <h1 className="text-3xl font-bold text-slate-100 mb-2">College Partners</h1>
         <p className="text-slate-400">
           Explore research institutions and their expertise
         </p>
@@ -57,7 +57,7 @@ export function UniversityProfiles() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search universities..."
+              placeholder="Search Colleges..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -66,10 +66,10 @@ export function UniversityProfiles() {
         </CardContent>
       </Card>
 
-      {/* Universities Grid */}
+      {/* Colleges Grid */}
       {loading && (
         <div className="text-center py-12">
-          <p className="text-gray-500">Loading universities...</p>
+          <p className="text-gray-500">Loading Colleges...</p>
         </div>
       )}
 
@@ -83,20 +83,20 @@ export function UniversityProfiles() {
 
       {!loading && !error && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {universities.map((university: University) => (
-            <Card key={university.id} className="hover:shadow-lg transition-shadow">
+          {Colleges.map((College: College) => (
+            <Card key={College.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-start gap-4">
                   <Avatar className="h-16 w-16">
                     <AvatarFallback className="bg-blue-600 text-white text-lg">
-                      {getInitials(university.name)}
+                      {getInitials(College.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <CardTitle className="text-xl text-slate-100 mb-1">{university.name}</CardTitle>
+                    <CardTitle className="text-xl text-slate-100 mb-1">{College.name}</CardTitle>
                     <div className="flex items-center gap-1 text-sm text-slate-400">
                       <MapPin className="h-3 w-3" />
-                      <span>{university.location}</span>
+                      <span>{College.location}</span>
                     </div>
                   </div>
                 </div>
@@ -107,7 +107,7 @@ export function UniversityProfiles() {
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-1 text-green-600 mb-1">
                       <TrendingUp className="h-4 w-4" />
-                      <p className="text-2xl font-bold">{university.success_rate}%</p>
+                      <p className="text-2xl font-bold">{College.success_rate}%</p>
                     </div>
                     <p className="text-xs text-gray-600">Success Rate</p>
                   </div>
@@ -115,7 +115,7 @@ export function UniversityProfiles() {
                     <div className="flex items-center justify-center gap-1 text-blue-600 mb-1">
                       <Briefcase className="h-4 w-4" />
                       <p className="text-2xl font-bold">
-                        {university.active_projects_count}
+                        {College.active_projects_count}
                       </p>
                     </div>
                     <p className="text-xs text-gray-600">Active Projects</p>
@@ -124,7 +124,7 @@ export function UniversityProfiles() {
                     <div className="flex items-center justify-center gap-1 text-purple-600 mb-1">
                       <Award className="h-4 w-4" />
                       <p className="text-2xl font-bold">
-                        {university.past_partnerships_count}
+                        {College.past_partnerships_count}
                       </p>
                     </div>
                     <p className="text-xs text-gray-600">Partnerships</p>
@@ -136,7 +136,7 @@ export function UniversityProfiles() {
                   <p className="text-sm font-semibold text-slate-200 mb-2">
                     Research Strengths
                   </p>
-                  <p className="text-sm text-slate-400">{university.research_strengths}</p>
+                  <p className="text-sm text-slate-400">{College.research_strengths}</p>
                 </div>
 
                 {/* Available Resources */}
@@ -144,7 +144,7 @@ export function UniversityProfiles() {
                   <p className="text-sm font-semibold text-slate-200 mb-2">
                     Available Resources
                   </p>
-                  <p className="text-sm text-slate-400">{university.available_resources}</p>
+                  <p className="text-sm text-slate-400">{College.available_resources}</p>
                 </div>
 
                 <div className="flex gap-2">
@@ -161,12 +161,12 @@ export function UniversityProfiles() {
         </div>
       )}
 
-      {!loading && !error && universities.length === 0 && (
+      {!loading && !error && Colleges.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No universities found
+              No Colleges found
             </h3>
             <p className="text-gray-600">Try adjusting your search</p>
           </CardContent>

@@ -8,8 +8,8 @@ CREATE TABLE expertise_areas (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Universities table
-CREATE TABLE universities (
+-- Colleges table
+CREATE TABLE Colleges (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL,
   location TEXT NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE corporate_partners (
 -- Research projects table
 CREATE TABLE research_projects (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  university_id BIGINT NOT NULL REFERENCES universities(id) ON DELETE CASCADE,
+  College_id BIGINT NOT NULL REFERENCES Colleges(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT NOT NULL,
   funding_needed NUMERIC(12, 2),
@@ -110,7 +110,7 @@ CREATE TABLE matchmaking_scores (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_research_projects_university_id ON research_projects(university_id);
+CREATE INDEX idx_research_projects_College_id ON research_projects(College_id);
 CREATE INDEX idx_research_projects_status ON research_projects(status);
 CREATE INDEX idx_industry_challenges_corporate_partner_id ON industry_challenges(corporate_partner_id);
 CREATE INDEX idx_industry_challenges_status ON industry_challenges(status);
@@ -128,12 +128,12 @@ INSERT INTO expertise_areas (name, description) VALUES
 ('Nanotechnology', 'Nanomaterials, nanoelectronics, nanomedicine'),
 ('Smart Manufacturing', 'Industry 4.0, IoT in manufacturing, predictive maintenance');
 
--- Insert sample universities
-INSERT INTO universities (name, location, website, research_strengths, available_resources, success_rate, past_partnerships_count) VALUES
+-- Insert sample Colleges
+INSERT INTO Colleges (name, location, website, research_strengths, available_resources, success_rate, past_partnerships_count) VALUES
 ('MIT', 'Cambridge, MA', 'https://mit.edu', 'AI, Robotics, Quantum Computing', 'Advanced labs, supercomputing clusters, $2B research budget', 92.5, 145),
-('Stanford University', 'Stanford, CA', 'https://stanford.edu', 'Biotechnology, AI, Renewable Energy', 'Innovation hub, venture partnerships, cutting-edge facilities', 89.3, 128),
+('Stanford College', 'Stanford, CA', 'https://stanford.edu', 'Biotechnology, AI, Renewable Energy', 'Innovation hub, venture partnerships, cutting-edge facilities', 89.3, 128),
 ('IIT Bombay', 'Mumbai, India', 'https://iitb.ac.in', 'Smart Manufacturing, Cybersecurity, Renewable Energy', 'Industry collaboration center, 500+ PhD researchers', 85.7, 92),
-('Cambridge University', 'Cambridge, UK', 'https://cam.ac.uk', 'Quantum Computing, Nanotechnology, Biotechnology', 'Nobel laureate faculty, world-class equipment', 91.2, 156);
+('Cambridge College', 'Cambridge, UK', 'https://cam.ac.uk', 'Quantum Computing, Nanotechnology, Biotechnology', 'Nobel laureate faculty, world-class equipment', 91.2, 156);
 
 -- Insert sample corporate partners
 INSERT INTO corporate_partners (name, industry, location, website, company_size) VALUES
@@ -143,7 +143,7 @@ INSERT INTO corporate_partners (name, industry, location, website, company_size)
 ('BioMed Innovations', 'Healthcare & Pharmaceuticals', 'Boston, MA', 'https://biomed.example', '1000-2000');
 
 -- Insert sample research projects
-INSERT INTO research_projects (university_id, title, description, funding_needed, trl_level, team_lead, team_size, publications_count) VALUES
+INSERT INTO research_projects (College_id, title, description, funding_needed, trl_level, team_lead, team_size, publications_count) VALUES
 (1, 'AI-Powered Predictive Maintenance for Rail Systems', 'Developing machine learning models to predict equipment failures in high-speed rail infrastructure, reducing downtime by 40%.', 750000, 6, 'Dr. Sarah Chen', 8, 12),
 (2, 'Next-Gen Solar Panel Efficiency', 'Research on perovskite-silicon tandem solar cells achieving 32% efficiency with lower manufacturing costs.', 1200000, 5, 'Prof. Michael Rodriguez', 12, 18),
 (3, 'Quantum Encryption for Financial Networks', 'Implementing quantum key distribution protocols for unhackable banking transactions.', 950000, 4, 'Dr. Priya Sharma', 6, 9),

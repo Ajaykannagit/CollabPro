@@ -12,7 +12,7 @@ function loadMatchmakingScores() {
         rp.title as project_title,
         rp.description as project_description,
         rp.trl_level,
-        u.name as university_name,
+        u.name as College_name,
         ic.id as challenge_id,
         ic.title as challenge_title,
         ic.description as challenge_description,
@@ -21,7 +21,7 @@ function loadMatchmakingScores() {
         ARRAY_AGG(DISTINCT ea2.name) as challenge_expertise
       FROM matchmaking_scores ms
       JOIN research_projects rp ON ms.research_project_id = rp.id
-      JOIN universities u ON rp.university_id = u.id
+      JOIN Colleges u ON rp.College_id = u.id
       JOIN industry_challenges ic ON ms.industry_challenge_id = ic.id
       JOIN corporate_partners cp ON ic.corporate_partner_id = cp.id
       LEFT JOIN research_project_expertise rpe ON rp.id = rpe.research_project_id

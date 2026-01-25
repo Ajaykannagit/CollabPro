@@ -15,10 +15,21 @@ import { useTestData } from '@/contexts/TestDataContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function AgreementCompareReview() {
-    const { agreementVersions, agreementComments } = useTestData();
-    const [v1Version, setV1Version] = useState(agreementVersions[0].version_number);
-    const [v2Version, setV2Version] = useState(agreementVersions[agreementVersions.length > 1 ? 1 : 0].version_number);
+    const { agreementVersions = [], agreementComments = [] } = useTestData();
+    const [v1Version, setV1Version] = useState(agreementVersions[0]?.version_number || '');
+    const [v2Version, setV2Version] = useState(agreementVersions[agreementVersions.length > 1 ? 1 : 0]?.version_number || '');
     const [selectedSection, setSelectedSection] = useState<string | null>(null);
+
+    if (agreementVersions.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-[#0a0a0c] text-slate-400">
+                <div className="text-center">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                    <p>No agreement versions found in database.</p>
+                </div>
+            </div>
+        );
+    }
 
     const v1 = agreementVersions.find(v => v.version_number === v1Version) || agreementVersions[0];
     const v2 = agreementVersions.find(v => v.version_number === v2Version) || agreementVersions[0];

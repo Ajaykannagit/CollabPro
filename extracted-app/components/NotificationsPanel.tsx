@@ -17,7 +17,7 @@ type CollaborationRequest = {
   company_name: string;
   industry: string;
   project_title: string;
-  university_name: string;
+  College_name: string;
   challenge_title: string;
 };
 
@@ -116,9 +116,9 @@ export function NotificationsPanel() {
                       </p>
                     </div>
                     <p className="text-sm text-gray-700">{request.project_title}</p>
-                    {request.university_name && (
+                    {request.College_name && (
                       <p className="text-xs text-gray-600 mt-1">
-                        {request.university_name}
+                        {request.College_name}
                       </p>
                     )}
                   </div>

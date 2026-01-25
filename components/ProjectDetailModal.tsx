@@ -37,11 +37,11 @@ export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps
         <CardHeader className="flex flex-row items-start justify-between border-b">
           <div className="flex-1">
             <CardTitle className="text-2xl mb-3">{project.title}</CardTitle>
-            <div className="flex items-center gap-2 text-gray-600">
+            <div className="flex items-center gap-2 text-slate-400">
               <MapPin className="h-4 w-4" />
-              <span className="font-semibold">{project.university_name}</span>
+              <span className="font-semibold">{project.college_name}</span>
               <span>•</span>
-              <span>{project.university_location}</span>
+              <span>{project.college_location}</span>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>

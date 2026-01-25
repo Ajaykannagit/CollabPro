@@ -10,8 +10,8 @@ export interface ResearchProject {
   team_lead: string;
   team_size: number;
   publications_count: number;
-  university_name: string;
-  university_location: string;
+  college_name: string;
+  college_location: string;
   expertise_areas: string[];
   created_at?: string;
 }
@@ -31,7 +31,7 @@ export interface IndustryChallenge {
   created_at?: string;
 }
 
-export interface University {
+export interface College {
   id?: number;
   name: string;
   location: string;
@@ -120,12 +120,13 @@ export interface Notification {
 export interface StudentProfile {
   id?: number;
   name: string;
-  university: string;
+  college: string;
   degree: string;
   skills: string[];
   availability: string;
   gpa: number;
   projects: string[];
+  bio: string;
   created_at?: string;
 }
 

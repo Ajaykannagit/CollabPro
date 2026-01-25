@@ -24,8 +24,8 @@ export interface ResearchProject {
     team_lead: string;
     team_size: number;
     publications_count: number;
-    university_name: string;
-    university_location: string;
+    College_name: string;
+    College_location: string;
     expertise_areas: string[];
 }
 
@@ -44,7 +44,7 @@ export interface IndustryChallenge {
     created_at: string;
 }
 
-export interface University {
+export interface College {
     id: number;
     name: string;
     location: string;
@@ -61,15 +61,15 @@ export interface TestData {
     chartData: ChartDataPoint[];
     projects: ResearchProject[];
     challenges: IndustryChallenge[];
-    universities: University[];
-    recentActivity: { id: number; title: string; university_name: string; timestamp: string }[];
+    Colleges: College[];
+    recentActivity: { id: number; title: string; College_name: string; timestamp: string }[];
     agreementVersions: { version_number: string; created_at: string; created_by: string; content: string; sections: { id: string; title: string; text: string }[] }[];
     agreementComments: { id: number; section_id: string; author: string; text: string; timestamp: string }[];
     signatureWorkflow: {
         status: 'draft' | 'review' | 'approval' | 'signed';
-        university_approval: boolean;
+        College_approval: boolean;
         corporate_approval: boolean;
-        university_signed: boolean;
+        College_signed: boolean;
         corporate_signed: boolean;
         audit_trail: { id: number; event: string; actor: string; timestamp: string }[];
     };
@@ -92,21 +92,21 @@ const defaultTestData: TestData = {
         { name: 'Jul', value: 72 }, { name: 'Aug', value: 85 }, { name: 'Sep', value: 92 }
     ],
     recentActivity: [
-        { id: 1, title: "Quantum Computing Optimization", university_name: "MIT", timestamp: "2h ago" },
-        { id: 2, title: "Next-gen Battery Tech", university_name: "Stanford University", timestamp: "4h ago" },
-        { id: 3, title: "AI-driven Drug Discovery", university_name: "Oxford Research", timestamp: "1d ago" },
-        { id: 4, title: "Clean Energy Infrastructure", university_name: "Technical University Munich", timestamp: "2d ago" },
-        { id: 5, title: "Secure Blockchain Logistics", university_name: "ETH Zurich", timestamp: "3d ago" }
+        { id: 1, title: "Quantum Computing Optimization", College_name: "MIT", timestamp: "2h ago" },
+        { id: 2, title: "Next-gen Battery Tech", College_name: "Stanford College", timestamp: "4h ago" },
+        { id: 3, title: "AI-driven Drug Discovery", College_name: "Oxford Research", timestamp: "1d ago" },
+        { id: 4, title: "Clean Energy Infrastructure", College_name: "Technical College Munich", timestamp: "2d ago" },
+        { id: 5, title: "Secure Blockchain Logistics", College_name: "ETH Zurich", timestamp: "3d ago" }
     ],
     agreementVersions: [
         {
             version_number: "v1.0",
             created_at: "2024-01-01",
-            created_by: "Dr. Sarah Miller (University)",
+            created_by: "Dr. Sarah Miller (College)",
             content: "Initial draft for the research collaboration...",
             sections: [
                 { id: "s1", title: "Definitions", text: "1.1 'Research Materials' means all tangible and intangible research materials..." },
-                { id: "s2", title: "IP Rights", text: "2.1 The University shall retain ownership of all Background IP..." },
+                { id: "s2", title: "IP Rights", text: "2.1 The College shall retain ownership of all Background IP..." },
                 { id: "s3", title: "Royalties", text: "3.1 Corporate shall pay 5% of net sales in royalties..." }
             ]
         },
@@ -117,7 +117,7 @@ const defaultTestData: TestData = {
             content: "Updated draft with revised royalty terms...",
             sections: [
                 { id: "s1", title: "Definitions", text: "1.1 'Research Materials' means all tangible and intangible research materials..." },
-                { id: "s2", title: "IP Rights", text: "2.1 The University shall retain ownership of all Background IP. Joint IP shall be shared 50/50." },
+                { id: "s2", title: "IP Rights", text: "2.1 The College shall retain ownership of all Background IP. Joint IP shall be shared 50/50." },
                 { id: "s3", title: "Royalties", text: "3.1 Corporate shall pay 3.5% of net sales in royalties, capped at $10M total." }
             ]
         }
@@ -128,14 +128,14 @@ const defaultTestData: TestData = {
     ],
     signatureWorkflow: {
         status: 'approval',
-        university_approval: true,
+        College_approval: true,
         corporate_approval: false,
-        university_signed: false,
+        College_signed: false,
         corporate_signed: false,
         audit_trail: [
             { id: 1, event: "Agreement Draft v1.0 created", actor: "Dr. Sarah Miller", timestamp: "Jan 01, 09:00 AM" },
             { id: 2, event: "Revision v1.1 proposed", actor: "James Chen", timestamp: "Jan 10, 02:00 PM" },
-            { id: 3, event: "Agreement approved by University", actor: "Dr. Sarah Miller", timestamp: "Jan 12, 11:30 AM" },
+            { id: 3, event: "Agreement approved by College", actor: "Dr. Sarah Miller", timestamp: "Jan 12, 11:30 AM" },
             { id: 4, event: "Awaiting Corporate approval", actor: "System", timestamp: "Jan 12, 11:30 AM" }
         ]
     },
@@ -144,31 +144,31 @@ const defaultTestData: TestData = {
             id: 1, title: "Quantum Computing Optimization for Logistics",
             description: "Developing novel quantum algorithms to solve complex vehicle routing problems with time windows and heterogeneous fleets. This project aims to reduce carbon footprint by 15% in urban delivery networks.",
             funding_needed: 750000, trl_level: 4, status: "Active", team_lead: "Dr. Sarah Chen", team_size: 8, publications_count: 12,
-            university_name: "MIT", university_location: "Cambridge, USA", expertise_areas: ["Quantum Computing", "Logistics", "Optimization"]
+            College_name: "MIT", College_location: "Cambridge, USA", expertise_areas: ["Quantum Computing", "Logistics", "Optimization"]
         },
         {
             id: 2, title: "Next-gen Solid State Battery Technology",
             description: "Researching solid-state electrolytes with high ionic conductivity and wide electrochemical stability windows. Focused on improving safety and energy density of EV batteries.",
             funding_needed: 1200000, trl_level: 6, status: "Active", team_lead: "Prof. James Wilson", team_size: 15, publications_count: 24,
-            university_name: "Stanford University", university_location: "Stanford, USA", expertise_areas: ["Materials Science", "Energy Storage", "Chemistry"]
+            College_name: "Stanford College", College_location: "Stanford, USA", expertise_areas: ["Materials Science", "Energy Storage", "Chemistry"]
         },
         {
             id: 3, title: "AI-driven Drug Discovery for Rare Diseases",
             description: "Utilizing deep learning models to predict protein-ligand binding affinities for orphan receptors. This initiative seeks to accelerate the drug discovery process for neuromuscular disorders.",
             funding_needed: 500000, trl_level: 3, status: "Proposed", team_lead: "Dr. Elena Rodriguez", team_size: 6, publications_count: 8,
-            university_name: "Oxford Research Institute", university_location: "Oxford, UK", expertise_areas: ["Artificial Intelligence", "Bioinformatics", "Pharmacology"]
+            College_name: "Oxford Research Institute", College_location: "Oxford, UK", expertise_areas: ["Artificial Intelligence", "Bioinformatics", "Pharmacology"]
         },
         {
             id: 4, title: "Sustainable Concrete using Recycled Plastics",
             description: "Developing high-performance concrete composites by incorporating processed waste plastics as partial replacements for aggregates. Testing structural integrity and long-term durability.",
             funding_needed: 250000, trl_level: 5, status: "Active", team_lead: "Dr. Mark Thorne", team_size: 4, publications_count: 5,
-            university_name: "Technical University Munich", university_location: "Munich, Germany", expertise_areas: ["Civil Engineering", "Sustainability", "Polymer Science"]
+            College_name: "Technical College Munich", College_location: "Munich, Germany", expertise_areas: ["Civil Engineering", "Sustainability", "Polymer Science"]
         },
         {
             id: 5, title: "Blockchain for Secure Agricultural Supply Chains",
             description: "A decentralized platform for real-time tracking of organic produce from farm to fork. Ensuring transparency in certification and fair pricing for small-scale farmers.",
             funding_needed: 300000, trl_level: 7, status: "Active", team_lead: "Prof. Li Wei", team_size: 9, publications_count: 18,
-            university_name: "ETH Zurich", university_location: "Zurich, Switzerland", expertise_areas: ["Blockchain", "Agriculture", "Cybersecurity"]
+            College_name: "ETH Zurich", College_location: "Zurich, Switzerland", expertise_areas: ["Blockchain", "Agriculture", "Cybersecurity"]
         }
         // ... adding more for showcase ...
     ].concat(Array.from({ length: 15 }, (_, i) => ({
@@ -181,8 +181,8 @@ const defaultTestData: TestData = {
         team_lead: "Academic Expert",
         team_size: Math.floor(Math.random() * 10) + 3,
         publications_count: Math.floor(Math.random() * 30),
-        university_name: "Global University Network",
-        university_location: "Global",
+        College_name: "Global College Network",
+        College_location: "Global",
         expertise_areas: ["Innovation", "Research", "Technology"]
     }))),
     challenges: [
@@ -215,14 +215,14 @@ const defaultTestData: TestData = {
         company_name: "Tech Corp International", industry: "Software", company_location: "San Jose, USA",
         required_expertise: ["Data Science", "System Architecture", "AI"], created_at: "2024-01-14T09:00:00Z"
     }))),
-    universities: [
+    Colleges: [
         {
             id: 1, name: "MIT", location: "Cambridge, MA", website: "https://www.mit.edu",
             research_strengths: "AI, Robotics, Physics, Quantum Computing", available_resources: "Nuclear Reactor Lab, Nano-fabrication Facility",
             success_rate: 98, past_partnerships_count: 450, active_projects_count: 120
         },
         {
-            id: 2, name: "Stanford University", location: "Stanford, CA", website: "https://www.stanford.edu",
+            id: 2, name: "Stanford College", location: "Stanford, CA", website: "https://www.stanford.edu",
             research_strengths: "Entrepreneurship, Bio-engineering, Computer Science", available_resources: "SLAC National Accelerator Laboratory",
             success_rate: 96, past_partnerships_count: 380, active_projects_count: 95
         },
@@ -232,7 +232,7 @@ const defaultTestData: TestData = {
             success_rate: 94, past_partnerships_count: 290, active_projects_count: 82
         },
         {
-            id: 4, name: "University of Oxford", location: "Oxford, UK", website: "https://www.ox.ac.uk",
+            id: 4, name: "College of Oxford", location: "Oxford, UK", website: "https://www.ox.ac.uk",
             research_strengths: "Medicine, Humanities, Social Sciences", available_resources: "Begbroke Science Park",
             success_rate: 95, past_partnerships_count: 510, active_projects_count: 110
         }

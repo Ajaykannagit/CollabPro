@@ -17,7 +17,7 @@ type MatchmakingScore = {
   project_title: string;
   project_description: string;
   trl_level: number;
-  university_name: string;
+  College_name: string;
   challenge_id: number;
   challenge_title: string;
   challenge_description: string;
@@ -147,7 +147,7 @@ export function AIMatchmaking() {
                     </div>
                     <div className="pl-4 space-y-2">
                       <h4 className="font-semibold text-blue-900">{match.project_title}</h4>
-                      <p className="text-sm text-gray-700">{match.university_name}</p>
+                      <p className="text-sm text-gray-700">{match.College_name}</p>
                       <p className="text-sm text-gray-600 line-clamp-3">
                         {match.project_description}
                       </p>

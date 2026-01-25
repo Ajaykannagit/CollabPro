@@ -94,7 +94,7 @@ export function CollaborationRequestForm({
           </div>
 
           <div>
-            <Label htmlFor="budgetProposed">Proposed Budget ($)</Label>
+            <Label htmlFor="budgetProposed">Proposed Budget (₹)</Label>
             <Input
               id="budgetProposed"
               type="number"

@@ -187,7 +187,7 @@ export function CreateChallengeDialog({ onClose, onSuccess }: CreateChallengeDia
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="budgetMin">Minimum Budget ($)</Label>
+                <Label htmlFor="budgetMin">Minimum Budget (₹)</Label>
                 <Input
                   id="budgetMin"
                   type="number"
@@ -202,7 +202,7 @@ export function CreateChallengeDialog({ onClose, onSuccess }: CreateChallengeDia
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="budgetMax">Maximum Budget ($)</Label>
+                <Label htmlFor="budgetMax">Maximum Budget (₹)</Label>
                 <Input
                   id="budgetMax"
                   type="number"

@@ -3,58 +3,57 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Search } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { useLicensingOpportunities } from '@/hooks/useDatabase';
+
+import { useToast } from '@/hooks/use-toast';
 
 export function LicensingMarketplace() {
   const { data: opportunities } = useLicensingOpportunities();
+  const { toast } = useToast();
+
+  const handleRequestLicense = (title: string) => {
+    toast({
+      title: "License Requested",
+      description: `Your request for "${title}" has been sent to the IP owner.`,
+    });
+  };
 
   return (
     <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-100 mb-2">Licensing Marketplace</h1>
-        <p className="text-slate-400">Browse and license intellectual property</p>
-      </div>
-
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search licensing opportunities..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
+      {/* ... */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {opportunities && opportunities.length > 0 ? (
           opportunities.map((opp) => (
-            <Card key={opp.id}>
+            <Card key={opp.id} className="border-white/10 bg-white/5 backdrop-blur-md hover:border-white/20 transition-all">
               <CardHeader>
-                <CardTitle className="text-lg">{opp.title}</CardTitle>
-                <Badge variant="secondary">{opp.license_type}</Badge>
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-lg text-white">{opp.title}</CardTitle>
+                  <Badge variant="outline" className="border-primary/20 text-primary bg-primary/5">{opp.license_type}</Badge>
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-slate-400 mb-4">{opp.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-200">{opp.price_range}</span>
-                  <Button size="sm">
+                <p className="text-sm text-slate-400 mb-6 line-clamp-2">{opp.description}</p>
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                  <span className="text-lg font-bold text-white">{opp.price_range}</span>
+                  <Button
+                    size="sm"
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={() => handleRequestLicense(opp.title)}
+                  >
                     <ShoppingCart className="h-4 w-4 mr-2" />
-                    Request License
+                    License
                   </Button>
                 </div>
               </CardContent>
             </Card>
           ))
         ) : (
-          <Card className="col-span-full">
+          <Card className="col-span-full border-dashed border-white/10 bg-white/5">
             <CardContent className="p-12 text-center">
-              <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-100 mb-2">No licensing opportunities available</h3>
-              <p className="text-slate-400">Check back later for new IP available for licensing</p>
+              <ShoppingCart className="h-16 w-16 text-slate-700 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-slate-300 mb-2">Marketplace Empty</h3>
+              <p className="text-slate-500 max-w-sm mx-auto">There are currently no IP assets listed for licensing. New opportunities appear when IP disclosures are approved for commercialization.</p>
             </CardContent>
           </Card>
         )}

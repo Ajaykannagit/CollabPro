@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,8 +7,8 @@ import { TrendingUp, Briefcase, Target, Users, ArrowRight, Sparkles, Activity, C
 import { motion } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Counter, HoverCard, ShinyButton } from '@/components/ui/animated-primitives';
-import { useTestData } from '@/contexts/TestDataContext';
 import { useProjects, useChallenges, useCollaborationRequests } from '@/hooks/useDatabase';
+import { resetDatabase } from '@/lib/seedDatabase';
 
 
 const container = {
@@ -25,35 +26,71 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
+import { CreateProjectDialog } from '@/components/CreateProjectDialog';
+
 export function DashboardOverview() {
-  const { metrics, chartData, recentActivity } = useTestData();
-  const { data: projects } = useProjects();
-  const { data: challenges } = useChallenges();
-  const { data: requests } = useCollaborationRequests();
+  const { data: projects, loading: projectsLoading } = useProjects();
+  const { data: challenges, loading: challengesLoading } = useChallenges();
+  const { data: requests, loading: requestsLoading } = useCollaborationRequests();
+  const [showCreateProject, setShowCreateProject] = useState(false);
 
   const safeRequests = requests || [];
   const safeProjects = projects || [];
   const safeChallenges = challenges || [];
 
-  const pendingRequests = safeRequests.filter((r: any) => r.status === 'pending').length;
+  const pendingRequestsCount = safeRequests.filter((r: any) => r.status === 'pending').length;
 
-  // Map icons to the metrics from context
-  const iconMap: Record<string, any> = {
-    'Active Projects': Briefcase,
-    'Open Challenges': Target,
-    'Pending Requests': Users,
-    'Success Rate': TrendingUp,
-  };
+  // Calculate success rate based on real projects
+  const successRate = '0%';
 
-  const displayMetrics = metrics.map(m => ({
-    ...m,
-    icon: iconMap[m.title] || Briefcase,
-    // Prefer real counts if available, else use test data value
-    value: m.title === 'Active Projects' ? (safeProjects.length || m.value) :
-      m.title === 'Open Challenges' ? (safeChallenges.length || m.value) :
-        m.title === 'Pending Requests' ? (pendingRequests || m.value) :
-          m.value
-  }));
+  const metrics = [
+    {
+      title: 'Active Projects',
+      value: safeProjects.length,
+      trend: '',
+      color: 'from-blue-500 to-cyan-500',
+      bg: 'bg-blue-500/10 text-blue-500',
+      icon: Briefcase
+    },
+    {
+      title: 'Open Challenges',
+      value: safeChallenges.length,
+      trend: '',
+      color: 'from-purple-500 to-pink-500',
+      bg: 'bg-purple-500/10 text-purple-500',
+      icon: Target
+    },
+    {
+      title: 'Pending Requests',
+      value: pendingRequestsCount,
+      trend: '',
+      color: 'from-amber-500 to-orange-500',
+      bg: 'bg-amber-500/10 text-amber-500',
+      icon: Users
+    },
+    {
+      title: 'Success Rate',
+      value: successRate,
+      trend: '',
+      color: 'from-emerald-500 to-teal-500',
+      bg: 'bg-emerald-500/10 text-emerald-500',
+      icon: TrendingUp
+    }
+  ];
+
+  // Test data for chart remains empty if no data, or we could add real analytics later
+  const chartData: any[] = [];
+  const recentActivity: any[] = safeProjects.slice(0, 5); // Real projects or empty
+
+  const loading = projectsLoading || challengesLoading || requestsLoading;
+
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center h-full">
+        <div className="text-gray-400">Loading dashboard...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 space-y-8">
@@ -63,14 +100,34 @@ export function DashboardOverview() {
           <p className="text-gray-400">Welcome back! Here's your collaboration overview</p>
         </div>
         <div className="flex gap-3">
+          <Button
+            variant="outline"
+            className="border-red-500/10 bg-red-500/5 text-red-400 hover:text-white hover:bg-red-500/20"
+            onClick={() => {
+              if (confirm("Are you sure you want to clear all data? This cannot be undone.")) {
+                resetDatabase();
+              }
+            }}
+          >
+            Clear All Data
+          </Button>
           <Button variant="outline" className="border-white/10 bg-white/5 text-gray-300 hover:text-white hover:bg-white/10">
             <Clock className="mr-2 h-4 w-4" /> Last 30 Days
           </Button>
-          <ShinyButton onClick={() => console.log("New Project")}>
+          <ShinyButton onClick={() => setShowCreateProject(true)}>
             <span className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> New Project</span>
           </ShinyButton>
         </div>
       </div>
+
+      {showCreateProject && (
+        <CreateProjectDialog
+          onClose={() => setShowCreateProject(false)}
+          onSuccess={() => {
+            setShowCreateProject(false);
+          }}
+        />
+      )}
 
       {/* Metrics Grid */}
       <motion.div
@@ -79,7 +136,7 @@ export function DashboardOverview() {
         animate="show"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
       >
-        {displayMetrics.map((metric, idx) => {
+        {metrics.map((metric: any, idx: number) => {
           const Icon = metric.icon;
           return (
             <motion.div key={idx} variants={item}>
@@ -91,9 +148,11 @@ export function DashboardOverview() {
                       <div className={`h-12 w-12 rounded-xl ${metric.bg} flex items-center justify-center ring-1 ring-white/10`}>
                         <Icon className="h-6 w-6" />
                       </div>
-                      <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
-                        {metric.trend}
-                      </Badge>
+                      {metric.trend && (
+                        <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
+                          {metric.trend}
+                        </Badge>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <h3 className="text-3xl font-bold text-white tracking-tight">
@@ -195,15 +254,18 @@ export function DashboardOverview() {
                   >
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-gray-200 truncate group-hover:text-primary transition-colors">
-                        {project.title || "New Research Initiative"}
+                        {project.title || "New Project"}
                       </p>
-                      <p className="text-xs text-gray-500 group-hover:text-gray-400">{project.university_name || "Partner University"}</p>
+                      <p className="text-xs text-gray-500 group-hover:text-gray-400">{project.college_name || "Partner College"}</p>
                     </div>
                     <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-primary group-hover:text-white transition-all">
                       <ArrowRight className="h-4 w-4" />
                     </div>
                   </motion.div>
                 ))}
+                {recentActivity.length === 0 && (
+                  <p className="text-center text-sm text-gray-500 py-8">No recent activity found</p>
+                )}
                 <Button variant="ghost" className="w-full text-gray-400 hover:text-white hover:bg-white/5 mt-2">
                   View All Activity
                 </Button>

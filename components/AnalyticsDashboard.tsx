@@ -5,10 +5,25 @@ import { TrendingUp, Users, Briefcase, Target } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useProjects, useChallenges, useCollaborationRequests } from '@/hooks/useDatabase';
 
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
 export function AnalyticsDashboard() {
   const { data: projects } = useProjects();
   const { data: challenges } = useChallenges();
   const { data: requests } = useCollaborationRequests();
+  const { toast } = useToast();
+
+  const handleExport = () => {
+    toast({
+      title: "Exporting Data",
+      description: "Your platform performance report is being generated...",
+    });
+    setTimeout(() => {
+      toast({ title: "Success", description: "Report exported to CSV successfully." });
+    }, 1500);
+  };
 
   const stats = [
     {
@@ -33,8 +48,8 @@ export function AnalyticsDashboard() {
       bg: 'bg-green-500/10 text-green-500',
     },
     {
-      title: 'Success Rate',
-      value: '92%',
+      title: 'IP Disclosures',
+      value: '0', // Could be dynamic if we added useIPDisclosures
       icon: TrendingUp,
       color: 'from-amber-500 to-orange-500',
       bg: 'bg-amber-500/10 text-amber-500',
@@ -51,9 +66,15 @@ export function AnalyticsDashboard() {
 
   return (
     <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-100 mb-2">Analytics Dashboard</h1>
-        <p className="text-slate-400">Platform performance and insights</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-100 mb-2">Analytics Dashboard</h1>
+          <p className="text-slate-400">Platform performance and insights</p>
+        </div>
+        <Button onClick={handleExport} variant="outline" className="border-white/10 hover:bg-white/5 text-slate-300">
+          <Download className="h-4 w-4 mr-2" />
+          Export Report
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

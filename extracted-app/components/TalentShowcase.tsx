@@ -20,7 +20,7 @@ type StudentProfile = {
   gpa: number;
   bio: string;
   availability_status: string;
-  university_name: string;
+  College_name: string;
   skills: string[];
   project_count: number;
 };
@@ -115,7 +115,7 @@ export function TalentShowcase() {
                       <GraduationCap className="h-4 w-4" />
                       <span>{student.degree_level}</span>
                       <span>•</span>
-                      <span>{student.university_name}</span>
+                      <span>{student.College_name}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Badge variant="secondary">

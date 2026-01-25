@@ -17,8 +17,8 @@ type ResearchProject = {
   team_lead: string;
   team_size: number;
   publications_count: number;
-  university_name: string;
-  university_location: string;
+  College_name: string;
+  College_location: string;
   expertise_areas: string[];
 };
 
@@ -53,9 +53,9 @@ export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps
             <CardTitle className="text-2xl mb-3">{project.title}</CardTitle>
             <div className="flex items-center gap-2 text-gray-600">
               <MapPin className="h-4 w-4" />
-              <span className="font-semibold">{project.university_name}</span>
+              <span className="font-semibold">{project.College_name}</span>
               <span>•</span>
-              <span>{project.university_location}</span>
+              <span>{project.College_location}</span>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>

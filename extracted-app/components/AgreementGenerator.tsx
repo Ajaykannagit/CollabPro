@@ -52,7 +52,7 @@ export function AgreementGenerator({ collaborationRequestId }: AgreementGenerato
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Collaboration Agreement</h1>
           <p className="text-gray-600">{agreementData.project_title}</p>
           <p className="text-sm text-gray-500 mt-1">
-            {agreementData.university_name} × {agreementData.company_name}
+            {agreementData.College_name} × {agreementData.company_name}
           </p>
         </div>
         <Badge className={getStatusColor(agreementData.status)}>
@@ -138,20 +138,20 @@ export function AgreementGenerator({ collaborationRequestId }: AgreementGenerato
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start gap-3">
-                {agreementData.university_signed_at ? (
+                {agreementData.College_signed_at ? (
                   <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
                 ) : (
                   <AlertCircle className="h-5 w-5 text-gray-400 mt-0.5" />
                 )}
                 <div>
-                  <p className="font-semibold text-sm">{agreementData.university_name}</p>
-                  {agreementData.university_signed_at ? (
+                  <p className="font-semibold text-sm">{agreementData.College_name}</p>
+                  {agreementData.College_signed_at ? (
                     <>
                       <p className="text-xs text-gray-600">
-                        Signed by {agreementData.university_signatory}
+                        Signed by {agreementData.College_signatory}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {new Date(agreementData.university_signed_at).toLocaleDateString()}
+                        {new Date(agreementData.College_signed_at).toLocaleDateString()}
                       </p>
                     </>
                   ) : (
@@ -195,7 +195,7 @@ export function AgreementGenerator({ collaborationRequestId }: AgreementGenerato
               <div className="flex items-start gap-2">
                 <Checkbox id="legal1" defaultChecked />
                 <label htmlFor="legal1" className="text-sm text-gray-700">
-                  University IP policy reviewed
+                  College IP policy reviewed
                 </label>
               </div>
               <div className="flex items-start gap-2">
