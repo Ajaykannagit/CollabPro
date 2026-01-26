@@ -7,7 +7,6 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./"),
-            "@uibakery/data": path.resolve(__dirname, "./src/mocks/uibakery-data.ts"),
         },
     },
 })

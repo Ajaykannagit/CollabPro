@@ -1,4 +1,4 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function loadColleges() {
   return action('loadColleges', 'SQL', {
@@ -14,8 +14,8 @@ function loadColleges() {
         u.success_rate,
         u.past_partnerships_count,
         COUNT(DISTINCT rp.id) as active_projects_count
-      FROM Colleges u
-      LEFT JOIN research_projects rp ON u.id = rp.College_id AND rp.status = 'active'
+      FROM Pretablename_Colleges u
+      LEFT JOIN Pretablename_research_projects rp ON u.id = rp.College_id AND rp.status = 'active'
       WHERE COALESCE({{params.searchQuery}}, '') = '' OR u.name ILIKE {{ '%' + params.searchQuery + '%' }}
       GROUP BY u.id
       ORDER BY u.success_rate DESC;

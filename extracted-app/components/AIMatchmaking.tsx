@@ -1,7 +1,7 @@
 // AI-powered matchmaking view showing scored matches
 
 import { useState } from 'react';
-import { useLoadAction } from '@uibakery/data';
+import { useLoadAction } from '@/lib/data-actions';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

@@ -1,4 +1,4 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function loadActiveProjects() {
   return action('loadActiveProjects', 'SQL', {

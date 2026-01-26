@@ -1,4 +1,4 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function loadLicensingOpportunities() {
   return action('loadLicensingOpportunities', 'SQL', {
@@ -15,8 +15,8 @@ function loadLicensingOpportunities() {
         lo.created_at,
         ip.invention_category,
         ip.status as ip_status
-      FROM licensing_opportunities lo
-      JOIN ip_disclosures ip ON lo.ip_disclosure_id = ip.id
+      FROM Pretablename_licensing_opportunities lo
+      JOIN Pretablename_ip_disclosures ip ON lo.ip_disclosure_id = ip.id
       WHERE 
         lo.visibility = 'public'
         AND (COALESCE({{params.industrySector}}, '') = '' OR lo.industry_sectors ILIKE {{ '%' + params.industrySector + '%' }})

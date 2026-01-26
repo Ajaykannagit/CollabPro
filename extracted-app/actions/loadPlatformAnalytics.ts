@@ -1,4 +1,4 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function loadPlatformAnalytics() {
   return action('loadPlatformAnalytics', 'SQL', {

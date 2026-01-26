@@ -1,10 +1,10 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function createIndustryChallenge() {
   return action('createIndustryChallenge', 'SQL', {
     datasourceName: 'collabsync_pro_db',
     query: `
-      INSERT INTO industry_challenges (
+      INSERT INTO Pretablename_industry_challenges (
         corporate_partner_id,
         title,
         description,

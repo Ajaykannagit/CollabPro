@@ -1,10 +1,10 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function createCollaborationRequest() {
   return action('createCollaborationRequest', 'SQL', {
     datasourceName: 'collabsync_pro_db',
     query: `
-      INSERT INTO collaboration_requests (
+      INSERT INTO Pretablename_collaboration_requests (
         corporate_partner_id,
         research_project_id,
         industry_challenge_id,

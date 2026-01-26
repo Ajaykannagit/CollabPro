@@ -19,7 +19,7 @@ type College = {
   active_projects_count: number;
 };
 
-export function CollegeProfiles() {
+export function UniversityProfiles() {
   const { Colleges: allColleges } = useTestData();
   const [searchQuery, setSearchQuery] = useState('');
 

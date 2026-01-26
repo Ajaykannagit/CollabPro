@@ -1,4 +1,4 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function loadNegotiationThread() {
   return action('loadNegotiationThread', 'SQL', {
@@ -34,8 +34,8 @@ function loadNegotiationThread() {
           LIMIT 1
         ) as current_scope
       FROM negotiation_threads nt
-      JOIN collaboration_requests cr ON nt.collaboration_request_id = cr.id
-      LEFT JOIN negotiation_messages nm ON nt.id = nm.negotiation_thread_id
+      JOIN Pretablename_collaboration_requests cr ON nt.collaboration_request_id = cr.id
+      LEFT JOIN Pretablename_negotiation_messages nm ON nt.id = nm.negotiation_thread_id
       WHERE nt.collaboration_request_id = {{params.collaborationRequestId}}::int
       GROUP BY nt.id, cr.project_brief;
     `,

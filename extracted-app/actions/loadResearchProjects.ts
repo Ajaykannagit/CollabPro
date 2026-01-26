@@ -1,4 +1,4 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function loadResearchProjects() {
   return action('loadResearchProjects', 'SQL', {
@@ -17,10 +17,10 @@ function loadResearchProjects() {
         u.name as College_name,
         u.location as College_location,
         ARRAY_AGG(ea.name) as expertise_areas
-      FROM research_projects rp
-      JOIN Colleges u ON rp.College_id = u.id
-      LEFT JOIN research_project_expertise rpe ON rp.id = rpe.research_project_id
-      LEFT JOIN expertise_areas ea ON rpe.expertise_area_id = ea.id
+      FROM Pretablename_research_projects rp
+      JOIN Pretablename_Colleges u ON rp.College_id = u.id
+      LEFT JOIN Pretablename_research_project_expertise rpe ON rp.id = rpe.research_project_id
+      LEFT JOIN Pretablename_expertise_areas ea ON rpe.expertise_area_id = ea.id
       WHERE 
         rp.status = 'active'
         AND (COALESCE({{params.searchQuery}}, '') = '' OR rp.title ILIKE {{ '%' + params.searchQuery + '%' }})

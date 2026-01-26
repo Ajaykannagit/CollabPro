@@ -1,4 +1,4 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function loadStudentProfiles() {
   return action('loadStudentProfiles', 'SQL', {
@@ -17,8 +17,8 @@ function loadStudentProfiles() {
         u.name as College_name,
         ARRAY_AGG(DISTINCT ss.skill_name) FILTER (WHERE ss.skill_name IS NOT NULL) as skills,
         COUNT(DISTINCT spi.id) as project_count
-      FROM student_profiles sp
-      JOIN Colleges u ON sp.College_id = u.id
+      FROM Pretablename_student_profiles sp
+      JOIN Pretablename_Colleges u ON sp.College_id = u.id
       LEFT JOIN student_skills ss ON sp.id = ss.student_profile_id
       LEFT JOIN student_project_involvement spi ON sp.id = spi.student_profile_id
       WHERE 

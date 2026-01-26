@@ -1,10 +1,10 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function createIPDisclosure() {
   return action('createIPDisclosure', 'SQL', {
     datasourceName: 'collabsync_pro_db',
     query: `
-      INSERT INTO ip_disclosures (
+      INSERT INTO Pretablename_ip_disclosures (
         active_project_id,
         title,
         description,

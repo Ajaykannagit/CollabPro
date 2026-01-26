@@ -1,7 +1,7 @@
 // IP portfolio management dashboard
 
 import { useState } from 'react';
-import { useLoadAction } from '@uibakery/data';
+import { useLoadAction } from '@/lib/data-actions';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

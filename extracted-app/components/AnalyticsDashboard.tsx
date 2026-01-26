@@ -1,6 +1,6 @@
 // Platform analytics and reporting dashboard
 
-import { useLoadAction } from '@uibakery/data';
+import { useLoadAction } from '@/lib/data-actions';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import loadPlatformAnalyticsAction from '@/actions/loadPlatformAnalytics';
 import { formatINRCompact, usdToINR } from '@/lib/currency';

@@ -1,4 +1,4 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function loadCorporatePartners() {
   return action('loadCorporatePartners', 'SQL', {
@@ -11,7 +11,7 @@ function loadCorporatePartners() {
         location,
         website,
         company_size
-      FROM corporate_partners
+      FROM Pretablename_corporate_partners
       ORDER BY name ASC;
     `,
   });

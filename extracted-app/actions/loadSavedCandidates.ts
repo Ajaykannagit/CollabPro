@@ -1,4 +1,4 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function loadSavedCandidates() {
   return action('loadSavedCandidates', 'SQL', {
@@ -20,8 +20,8 @@ function loadSavedCandidates() {
         u.name as College_name,
         ARRAY_AGG(DISTINCT ss.skill_name) FILTER (WHERE ss.skill_name IS NOT NULL) as skills
       FROM saved_candidates sc
-      JOIN student_profiles sp ON sc.student_profile_id = sp.id
-      JOIN Colleges u ON sp.College_id = u.id
+      JOIN Pretablename_student_profiles sp ON sc.student_profile_id = sp.id
+      JOIN Pretablename_Colleges u ON sp.College_id = u.id
       LEFT JOIN student_skills ss ON sp.id = ss.student_profile_id
       WHERE sc.corporate_partner_id = {{params.corporatePartnerId}}::int
       GROUP BY sc.id, sp.id, u.name

@@ -1,7 +1,7 @@
 // Dialog for creating new industry challenges
 
 
-import { useMutateAction, useLoadAction } from '@uibakery/data';
+import { useMutateAction, useLoadAction } from '@/lib/data-actions';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';

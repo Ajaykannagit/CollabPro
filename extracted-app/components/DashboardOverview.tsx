@@ -1,5 +1,5 @@
 
-import { useLoadAction } from '@uibakery/data';
+import { useLoadAction } from '@/lib/data-actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

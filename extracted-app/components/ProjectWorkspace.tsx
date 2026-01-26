@@ -1,7 +1,7 @@
 // Secure project workspace with tabs for different aspects
 
 import { useState } from 'react';
-import { useLoadAction } from '@uibakery/data';
+import { useLoadAction } from '@/lib/data-actions';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

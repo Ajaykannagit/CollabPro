@@ -1,4 +1,4 @@
-import { action } from '@uibakery/data';
+import { action } from '@/lib/data-actions';
 
 function loadIPDisclosures() {
   return action('loadIPDisclosures', 'SQL', {
@@ -22,7 +22,7 @@ function loadIPDisclosures() {
           'ownership_percentage', ipc.ownership_percentage,
           'role', ipc.role
         )) as contributors
-      FROM ip_disclosures ip
+      FROM Pretablename_ip_disclosures ip
       JOIN active_projects ap ON ip.active_project_id = ap.id
       LEFT JOIN ip_contributors ipc ON ip.id = ipc.ip_disclosure_id
       WHERE 
