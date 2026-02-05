@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Home, Briefcase, Building2, Sparkles, User, Bell, Target, FileText, PenTool } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,11 +23,19 @@ import { DigitalSignature } from '@/components/DigitalSignature';
 import { ParticleBackground } from '@/components/ui/animated-primitives';
 import { TestDataProvider } from '@/contexts/TestDataContext';
 import DecryptedText from '@/components/ui/DecryptedText';
+import { useNotifications } from '@/hooks/useDatabase';
 
 type NavSection = 'dashboard' | 'projects' | 'challenges' | 'partners' | 'matchmaking' | 'agreement-review' | 'digital-signature' | 'notifications' | 'profile' | 'workspace' | 'talent' | 'ip' | 'negotiate' | 'agreement' | 'ipdisclosure' | 'licensing' | 'analytics';
 
+import { seedDatabase } from '@/lib/seedDatabase';
+
 function App() {
   const [activeSection, setActiveSection] = useState<NavSection>('dashboard');
+  const { unreadCount } = useNotifications();
+
+  useEffect(() => {
+    seedDatabase();
+  }, []);
 
   const navItems = [
     { id: 'dashboard' as NavSection, label: 'Dashboard', icon: Home },
@@ -37,7 +45,7 @@ function App() {
     { id: 'matchmaking' as NavSection, label: 'AI Matchmaking', icon: Sparkles },
     { id: 'agreement-review' as NavSection, label: 'Agreement Review', icon: FileText },
     { id: 'digital-signature' as NavSection, label: 'Digital Signature', icon: PenTool },
-    { id: 'notifications' as NavSection, label: 'Notifications', icon: Bell, badge: 2 },
+    { id: 'notifications' as NavSection, label: 'Notifications', icon: Bell, badge: unreadCount },
     { id: 'profile' as NavSection, label: 'Profile', icon: User },
   ];
 
@@ -110,7 +118,7 @@ function App() {
                     )}
                     <Icon className={cn("h-4 w-4 relative z-10 transition-transform group-hover:scale-110", isActive ? "text-primary" : "text-gray-500 group-hover:text-white")} />
                     <span className="relative z-10">{item.label}</span>
-                    {item.badge && (
+                    {item.badge !== undefined && item.badge > 0 && (
                       <Badge className="ml-auto bg-primary text-white border-0 shadow-sm relative z-10">
                         {item.badge}
                       </Badge>
@@ -207,6 +215,6 @@ function App() {
   );
 }
 
-
 export default App;
+
 

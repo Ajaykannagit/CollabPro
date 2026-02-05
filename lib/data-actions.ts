@@ -8,12 +8,44 @@
  * @param {any} _params - Optional parameters for the action.
  * @returns {readonly [T, boolean, { message: string } | null, () => void]} Tuple containing [data, loading, error, reload].
  */
-export function useLoadAction<T>(_action: any, initialData: T, _params?: any): readonly [T, boolean, { message: string } | null, () => void] {
-    // Return mock data structure: [data, loading, error, reload]
-    // We return the initialData (or empty array) so the app doesn't crash on .map/.filter
-    const reload = () => { console.log('Mock reload called'); };
-    const error: { message: string } | null = null;
-    return [initialData, false, error, reload] as const;
+import { useState, useEffect, useCallback } from 'react';
+import { useErrorHandler } from './errors/useErrorHandler';
+import { AppError, ErrorCodes } from './errors/AppError';
+
+export function useLoadAction<T>(
+    actionFn: (params?: any) => Promise<T>,
+    initialData: T,
+    params?: any
+): readonly [T, boolean, { message: string } | null, () => void] {
+    const [data, setData] = useState<T>(initialData);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<{ message: string } | null>(null);
+    const { handleError } = useErrorHandler();
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            // If actionFn is not a function (mock legacy), handle gracefully or assume it returns promise
+            const result = await actionFn(params);
+            setData(result);
+        } catch (err: any) {
+            const appError = err instanceof AppError
+                ? err
+                : new AppError(err.message || 'Data fetch failed', ErrorCodes.DATABASE_ERROR);
+
+            setError({ message: appError.message });
+            handleError(appError);
+        } finally {
+            setLoading(false);
+        }
+    }, [actionFn, JSON.stringify(params), handleError]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    return [data, loading, error, fetchData] as const;
 }
 
 /**

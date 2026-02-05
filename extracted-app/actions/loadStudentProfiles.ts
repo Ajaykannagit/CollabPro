@@ -1,0 +1,33 @@
+import { action } from '@/lib/data-actions';
+
+function loadStudentProfiles() {
+  return action('loadStudentProfiles', 'SQL', {
+    datasourceName: 'collabsync_pro_db',
+    query: `
+      SELECT 
+        sp.id,
+        sp.name,
+        sp.email,
+        sp.degree_level,
+        sp.field_of_study,
+        sp.graduation_year,
+        sp.gpa,
+        sp.bio,
+        sp.availability_status,
+        u.name as College_name,
+        ARRAY_AGG(DISTINCT ss.skill_name) FILTER (WHERE ss.skill_name IS NOT NULL) as skills,
+        COUNT(DISTINCT spi.id) as project_count
+      FROM Pretablename_student_profiles sp
+      JOIN Pretablename_Colleges u ON sp.College_id = u.id
+      LEFT JOIN student_skills ss ON sp.id = ss.student_profile_id
+      LEFT JOIN student_project_involvement spi ON sp.id = spi.student_profile_id
+      WHERE 
+        (COALESCE({{params.searchQuery}}, '') = '' OR sp.name ILIKE {{ '%' + params.searchQuery + '%' }})
+        AND (COALESCE({{params.degreeLevel}}, '') = '' OR sp.degree_level = {{params.degreeLevel}})
+      GROUP BY sp.id, u.name
+      ORDER BY sp.gpa DESC;
+    `,
+  });
+}
+
+export default loadStudentProfiles;

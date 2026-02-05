@@ -36,11 +36,24 @@ type TeamMember = {
   organization: string;
 };
 
+type ProjectDetails = {
+  id: number;
+  project_name: string;
+  description: string;
+  funding_allocated: number;
+  budget_utilized: number;
+  start_date: string;
+  end_date: string | null;
+  status: string;
+  milestones: Milestone[];
+  team_members: TeamMember[];
+};
+
 export function ProjectWorkspace() {
   const [selectedProjectId] = useState(1);
   const [project, loading] = useLoadAction(
     loadProjectDetailsAction,
-    [],
+    [] as ProjectDetails[],
     { projectId: selectedProjectId }
   );
 

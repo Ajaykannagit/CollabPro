@@ -9,6 +9,26 @@ import { Checkbox } from '@/components/ui/checkbox';
 import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
 import { FileText, CheckCircle2, AlertCircle, User } from 'lucide-react';
 
+type AgreementDetails = {
+  id: number;
+  collaboration_request_id: number;
+  agreement_type: string;
+  ip_ownership_split: string;
+  revenue_sharing_model: string;
+  confidentiality_terms: string;
+  termination_clauses: string;
+  compliance_requirements: string;
+  College_signed_at: string | null;
+  College_signatory: string | null;
+  corporate_signed_at: string | null;
+  corporate_signatory: string | null;
+  status: string;
+  project_brief: string;
+  project_title: string;
+  College_name: string;
+  company_name: string;
+};
+
 type AgreementGeneratorProps = {
   collaborationRequestId: number;
 };
@@ -16,7 +36,7 @@ type AgreementGeneratorProps = {
 export function AgreementGenerator({ collaborationRequestId }: AgreementGeneratorProps) {
   const [agreement, loading] = useLoadAction(
     loadAgreementDetailsAction,
-    [],
+    [] as AgreementDetails[],
     { collaborationRequestId }
   );
 

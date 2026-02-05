@@ -80,7 +80,13 @@ export interface TestData {
 const defaultTestData: TestData = {
     projectName: "CollabSync Pro",
     userRole: "Lead Researcher",
-    metrics: [],
+    metrics: [
+        { title: 'Active Projects', value: 0, trend: '0%', color: 'from-blue-500 to-cyan-500', bg: 'bg-blue-500/10 text-blue-500' },
+        { title: 'Open Challenges', value: 0, trend: '0%', color: 'from-purple-500 to-pink-500', bg: 'bg-purple-500/10 text-purple-500' },
+        { title: 'Pending Requests', value: 0, trend: '0%', color: 'from-amber-500 to-orange-500', bg: 'bg-amber-500/10 text-amber-500' },
+        { title: 'Success Rate', value: '0%', trend: '0%', color: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-500/10 text-emerald-500' }
+    ],
+
     chartData: [],
     recentActivity: [],
     agreementVersions: [],

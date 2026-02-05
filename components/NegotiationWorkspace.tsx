@@ -14,6 +14,33 @@ import { formatINR } from '@/lib/currency';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 
+type NegotiationMessage = {
+  id: string;
+  sender_name: string;
+  sender_organization: string;
+  message_type: 'text' | 'proposal' | 'counter-proposal' | string;
+  content: string;
+  created_at: string;
+};
+
+type ProjectScopeVersion = {
+  id: string;
+  version_number: number;
+  scope_description: string;
+  deliverables: string;
+  timeline: string;
+  budget: number;
+  created_by: string;
+};
+
+type NegotiationThreadData = {
+  thread_id: number;
+  collaboration_request_id: number;
+  project_brief: string;
+  messages: NegotiationMessage[];
+  current_scope: ProjectScopeVersion | null;
+};
+
 type NegotiationWorkspaceProps = {
   collaborationRequestId: number;
 };
@@ -22,7 +49,7 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
   const [newMessage, setNewMessage] = useState('');
   const [thread, loading, _error, refresh] = useLoadAction(
     loadNegotiationThreadAction,
-    [],
+    [] as NegotiationThreadData[],
     { collaborationRequestId }
   );
   const [sendMessage, sending] = useMutateAction(createNegotiationMessageAction);
@@ -82,11 +109,10 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
                   <div key={message.id} className="space-y-2">
                     <div className="flex items-start gap-3">
                       <div
-                        className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold ${
-                          message.sender_organization === 'NHSRCL'
+                        className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold ${message.sender_organization === 'NHSRCL'
                             ? 'bg-blue-600'
                             : 'bg-purple-600'
-                        }`}
+                          }`}
                       >
                         {message.sender_organization === 'NHSRCL' ? (
                           <Building2 className="h-5 w-5" />

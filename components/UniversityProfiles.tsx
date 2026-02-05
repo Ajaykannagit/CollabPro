@@ -5,32 +5,21 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { GraduationCap, Search, MapPin, TrendingUp, Briefcase, Award } from 'lucide-react';
-import { useTestData } from '@/contexts/TestDataContext';
+import { useLoadAction } from '@/lib/data-actions';
+import loadCollegesAction from '@/actions/loadColleges';
 
-type College = {
-  id: number;
-  name: string;
-  location: string;
-  website: string;
-  research_strengths: string;
-  available_resources: string;
-  success_rate: number;
-  past_partnerships_count: number;
-  active_projects_count: number;
-};
+import { College } from '@/lib/types';
 
 export function UniversityProfiles() {
-  const { Colleges: allColleges } = useTestData();
+  const [collegesData, loading, error] = useLoadAction(loadCollegesAction, [] as College[]);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter Colleges based on search query
-  const Colleges = allColleges.filter(u =>
+  const Colleges = collegesData.filter(u =>
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const loading = false;
-  const error: any = null;
 
   const getInitials = (name: string) => {
     return name
