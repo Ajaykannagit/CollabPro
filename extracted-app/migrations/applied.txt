@@ -1,4 +1,0 @@
-Applied migrations:
-1736422000_initial_schema at 2026-01-09T11:27:43.964Z
-1736422500_project_execution_schema at 2026-01-09T11:36:15.937Z
-1736423000_advanced_features at 2026-01-09T11:41:53.696Z

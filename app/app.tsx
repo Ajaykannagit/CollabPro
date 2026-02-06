@@ -28,6 +28,7 @@ import { useNotifications } from '@/hooks/useDatabase';
 type NavSection = 'dashboard' | 'projects' | 'challenges' | 'partners' | 'matchmaking' | 'agreement-review' | 'digital-signature' | 'notifications' | 'profile' | 'workspace' | 'talent' | 'ip' | 'negotiate' | 'agreement' | 'ipdisclosure' | 'licensing' | 'analytics';
 
 import { seedDatabase } from '@/lib/seedDatabase';
+import { DatabaseStatus } from '@/components/DatabaseStatus';
 
 function App() {
   const [activeSection, setActiveSection] = useState<NavSection>('dashboard');
@@ -79,18 +80,14 @@ function App() {
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                  <DecryptedText
-                    text="CollabSync"
-                    animateOn="view"
-                    revealDirection="center"
-                    className="revealed"
-                    encryptedClassName="encrypted"
-                    speed={150}
-                  />
+                <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  <DecryptedText text="CollabSync Pro" />
                 </h1>
                 <span className="text-xs font-medium text-primary tracking-widest uppercase">Pro</span>
               </div>
+            </div>
+            <div className="px-6 py-3">
+              <DatabaseStatus />
             </div>
           </div>
 

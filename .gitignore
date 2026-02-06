@@ -1,19 +1,11 @@
-<<<<<<< HEAD
 node_modules/
-.DS_Store
-.env*
 dist/
 build/
-# README.md
-# (Remove README.md from here to allow tracking)
-=======
-node_modules
-dist
-.env
-.env.local
 .DS_Store
-coverage
+.env
+.env*
+.env.local
+coverage/
 *.log
 *.txt
 .antigravityignore
->>>>>>> f767885b550269c3f4042307fd73c03e1640d7e9
