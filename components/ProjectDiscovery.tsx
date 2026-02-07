@@ -27,7 +27,7 @@ import loadResearchProjectsAction from '@/actions/loadResearchProjects';
 
 export function ProjectDiscovery() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProject, setSelectedProject] = useState<any | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ResearchProject | null>(null);
 
   const [data, loading, error] = useLoadAction(loadResearchProjectsAction, [], { searchQuery });
   const projects = data || [];

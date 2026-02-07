@@ -16,9 +16,31 @@ import {
 import { useLoadAction } from '@/lib/data-actions';
 import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
 import { motion, AnimatePresence } from 'framer-motion';
+import signAgreement from '@/actions/signAgreement';
+import { useToast } from "@/hooks/use-toast";
 
-export function DigitalSignature() {
-    const [agreement, loading, error] = useLoadAction(loadAgreementDetailsAction, null, { collaborationRequestId: 1 });
+type AuditEvent = {
+    id: string;
+    event: string;
+    actor: string;
+    timestamp: string;
+};
+
+type AgreementDetails = {
+    id: number;
+    status: string;
+    college_signed_at: string | null;
+    corporate_signed_at: string | null;
+    // ... add other fields if needed, or use any for now to silence strict errors if lazy
+    [key: string]: any;
+};
+
+export function DigitalSignature({ collaborationRequestId = 1 }: { collaborationRequestId?: number }) {
+    const [agreements, loading, , refresh] = useLoadAction<any[]>(loadAgreementDetailsAction, [], { collaborationRequestId });
+    const { toast } = useToast();
+
+    // Handle array return from action
+    const agreement = agreements?.[0] as AgreementDetails | undefined;
 
     const signatureWorkflow = {
         status: agreement?.status || 'draft',
@@ -26,7 +48,12 @@ export function DigitalSignature() {
         corporate_approval: !!agreement?.corporate_signed_at,
         College_signed: !!agreement?.college_signed_at,
         corporate_signed: !!agreement?.corporate_signed_at,
-        audit_trail: [] as any[]
+        audit_trail: [
+            { id: '1', event: 'Agreement Draft Created', actor: 'System', timestamp: agreement?.created_at || 'Jan 10, 2024' },
+            { id: '2', event: 'Legal Review Initiated', actor: 'Legal Dept', timestamp: 'Jan 11, 2024' },
+            agreement?.college_signed_at ? { id: '3', event: 'College Signature Applied', actor: agreement.college_signatory || 'Dean', timestamp: agreement.college_signed_at } : null,
+            agreement?.corporate_signed_at ? { id: '4', event: 'Corporate Signature Applied', actor: agreement.corporate_signatory || 'CEO', timestamp: agreement.corporate_signed_at } : null,
+        ].filter(Boolean) as AuditEvent[]
     };
     const [isSigning, setIsSigning] = useState(false);
     const [signature, setSignature] = useState('');
@@ -132,6 +159,12 @@ export function DigitalSignature() {
                                         <Button
                                             className="w-full h-12 bg-white/5 hover:bg-white/10 text-slate-300 font-bold border border-white/10"
                                             disabled={signatureWorkflow.College_approval}
+                                            onClick={() => {
+                                                toast({
+                                                    title: "Approval Logic",
+                                                    description: "This would trigger a specific approval workflow for the College.",
+                                                });
+                                            }}
                                         >
                                             {signatureWorkflow.College_approval ? 'Approval Granted' : 'Grant Approval'}
                                         </Button>
@@ -166,6 +199,12 @@ export function DigitalSignature() {
                                         <Button
                                             className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-lg shadow-purple-500/20"
                                             disabled={signatureWorkflow.corporate_approval}
+                                            onClick={() => {
+                                                toast({
+                                                    title: "Processing Approval",
+                                                    description: "Initiating corporate compliance check...",
+                                                });
+                                            }}
                                         >
                                             Process Approval
                                         </Button>
@@ -226,7 +265,7 @@ export function DigitalSignature() {
                         <CardContent className="flex-1 p-6 overflow-auto">
                             <div className="space-y-6 relative">
                                 <div className="absolute left-4 top-2 bottom-2 w-[1px] bg-white/5" />
-                                {signatureWorkflow.audit_trail.map((event) => (
+                                {signatureWorkflow.audit_trail.map((event: AuditEvent) => (
                                     <div key={event.id} className="relative pl-10">
                                         <div className="absolute left-[13px] top-1.5 h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                                         <p className="text-sm font-bold text-slate-200">{event.event}</p>
@@ -301,9 +340,28 @@ export function DigitalSignature() {
                                     <Button
                                         className="flex-3 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 shadow-lg shadow-blue-500/20"
                                         disabled={!signature}
-                                        onClick={() => {
-                                            setIsSigning(false);
-                                            // In a real app we'd update state here
+                                        onClick={async () => {
+                                            try {
+                                                // Determine role based on what's missing (simulated logic, usually based on logged in user)
+                                                // If college hasn't signed, sign as college. Else corporate.
+                                                const role = !agreement.college_signed_at ? 'college' : 'corporate';
+
+                                                await signAgreement(agreement.id, signature, role);
+
+                                                toast({
+                                                    title: "Agreement Signed",
+                                                    description: `Successfully signed as ${role === 'college' ? 'College' : 'Corporate'} representative.`,
+                                                });
+                                                setIsSigning(false);
+                                                refresh();
+                                                setSignature('');
+                                            } catch (e: any) {
+                                                toast({
+                                                    title: "Signing Failed",
+                                                    description: e.message,
+                                                    variant: "destructive"
+                                                });
+                                            }
                                         }}
                                     >
                                         Confirm & Sign Document

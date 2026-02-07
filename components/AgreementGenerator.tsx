@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
 import { FileText, CheckCircle2, AlertCircle, User } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 type AgreementDetails = {
   id: number;
@@ -34,6 +35,7 @@ type AgreementGeneratorProps = {
 };
 
 export function AgreementGenerator({ collaborationRequestId }: AgreementGeneratorProps) {
+  const { toast } = useToast();
   const [agreement, loading] = useLoadAction(
     loadAgreementDetailsAction,
     [] as AgreementDetails[],
@@ -213,7 +215,12 @@ export function AgreementGenerator({ collaborationRequestId }: AgreementGenerato
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-start gap-2">
-                <Checkbox id="legal1" defaultChecked />
+                <Checkbox id="legal1" defaultChecked onCheckedChange={(checked) => {
+                  toast({
+                    title: "Checklist Updated",
+                    description: `College IP policy mark as ${checked ? 'reviewed' : 'unreviewed'}.`,
+                  });
+                }} />
                 <label htmlFor="legal1" className="text-sm text-gray-700">
                   College IP policy reviewed
                 </label>
@@ -231,7 +238,12 @@ export function AgreementGenerator({ collaborationRequestId }: AgreementGenerato
                 </label>
               </div>
               <div className="flex items-start gap-2">
-                <Checkbox id="legal4" />
+                <Checkbox id="legal4" onCheckedChange={(checked) => {
+                  toast({
+                    title: "Checklist Updated",
+                    description: `Data protection mark as ${checked ? 'compliant' : 'non-compliant'}.`,
+                  });
+                }} />
                 <label htmlFor="legal4" className="text-sm text-gray-700">
                   Data protection compliance
                 </label>
@@ -241,11 +253,28 @@ export function AgreementGenerator({ collaborationRequestId }: AgreementGenerato
 
           <Card>
             <CardContent className="p-4 space-y-2">
-              <Button className="w-full">
+              <Button
+                className="w-full"
+                onClick={() => {
+                  toast({
+                    title: "Initiating Signature",
+                    description: "Redirecting to secure signature workflow...",
+                  });
+                }}
+              >
                 <User className="h-4 w-4 mr-2" />
                 Sign Agreement
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  toast({
+                    title: "Exporting PDF",
+                    description: "Generating PDF agreement...",
+                  });
+                }}
+              >
                 <FileText className="h-4 w-4 mr-2" />
                 Export PDF
               </Button>

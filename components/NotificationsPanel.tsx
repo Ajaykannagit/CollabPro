@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import loadCollaborationRequestsAction from '@/actions/loadCollaborationRequests';
 import { Bell, Clock, Building2, Briefcase } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 type CollaborationRequest = {
   id: number;
@@ -22,6 +23,7 @@ type CollaborationRequest = {
 };
 
 export function NotificationsPanel() {
+  const { toast } = useToast();
   const [requests, loading, error] = useLoadAction(
     loadCollaborationRequestsAction,
     [],
@@ -147,13 +149,43 @@ export function NotificationsPanel() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button size="sm" className="flex-1">
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      toast({
+                        title: "Request Accepted",
+                        description: `You have accepted the collaboration request for ${request.project_title || 'this project'}.`,
+                        variant: "default",
+                      });
+                      // API call to accept request would go here
+                    }}
+                  >
                     Accept Request
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      toast({
+                        title: "Reviewing Details",
+                        description: "Opening detailed view...",
+                      });
+                    }}
+                  >
                     Review Details
                   </Button>
-                  <Button size="sm" variant="destructive">
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      toast({
+                        title: "Request Declined",
+                        description: "The collaboration request has been declined.",
+                        variant: "destructive",
+                      });
+                    }}
+                  >
                     Decline
                   </Button>
                 </div>

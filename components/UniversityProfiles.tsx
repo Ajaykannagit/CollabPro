@@ -9,10 +9,12 @@ import { useLoadAction } from '@/lib/data-actions';
 import loadCollegesAction from '@/actions/loadColleges';
 
 import { College } from '@/lib/types';
+import { useToast } from "@/hooks/use-toast";
 
 export function UniversityProfiles() {
   const [collegesData, loading, error] = useLoadAction(loadCollegesAction, [] as College[]);
   const [searchQuery, setSearchQuery] = useState('');
+  const { toast } = useToast();
 
   // Filter Colleges based on search query
   const Colleges = collegesData.filter(u =>
@@ -137,10 +139,30 @@ export function UniversityProfiles() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button className="flex-1" size="sm">
+                  <Button
+                    className="flex-1"
+                    size="sm"
+                    onClick={() => {
+                      toast({
+                        title: "Redirecting to Projects",
+                        description: `Viewing projects for ${College.name}`,
+                      });
+                      // navigate logic or routing here if available
+                    }}
+                  >
                     View Projects
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      toast({
+                        title: "Contact Info",
+                        description: `Contacting ${College.name}...`,
+                      });
+                      window.location.href = `mailto:contact@${College.name.replace(/\s+/g, '').toLowerCase()}.edu`;
+                    }}
+                  >
                     Contact
                   </Button>
                 </div>

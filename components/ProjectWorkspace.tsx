@@ -18,6 +18,11 @@ import {
   FileText,
   Lightbulb,
 } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 type Milestone = {
   id: number;
@@ -49,8 +54,10 @@ type ProjectDetails = {
   team_members: TeamMember[];
 };
 
-export function ProjectWorkspace() {
-  const [selectedProjectId] = useState(1);
+export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
+  const { toast } = useToast();
+  const [selectedProjectId] = useState(projectId);
+  const [isIPDialogOpen, setIsIPDialogOpen] = useState(false);
   const [project, loading] = useLoadAction(
     loadProjectDetailsAction,
     [] as ProjectDetails[],
@@ -345,29 +352,127 @@ export function ProjectWorkspace() {
 
         <TabsContent value="documents">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Project Documents</CardTitle>
+              <Button size="sm" onClick={() => toast({ title: "Upload", description: "Upload dialog coming soon..." })}>
+                <PlusIcon className="h-4 w-4 mr-2" /> Upload
+              </Button>
             </CardHeader>
-            <CardContent className="p-12 text-center">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Document management coming soon...</p>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  { name: 'Research_Proposal.pdf', size: '2.4 MB', type: 'PDF', date: '2024-01-15' },
+                  { name: 'Budget_Overview.xlsx', size: '1.1 MB', type: 'Excel', date: '2024-01-18' },
+                  { name: 'Lab_Safety_Protocol.docx', size: '850 KB', type: 'Word', date: '2024-01-20' },
+                ].map((doc, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{doc.name}</p>
+                        <p className="text-xs text-gray-500">{doc.size} • Uploaded on {doc.date}</p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => toast({ title: "Download", description: `Downloading ${doc.name}...` })}>
+                      Download
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="ip">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>IP Disclosures</CardTitle>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setIsIPDialogOpen(true);
+                }}
+              >
+                <Lightbulb className="h-4 w-4 mr-2" /> Submit Disclosure
+              </Button>
             </CardHeader>
-            <CardContent className="p-12 text-center">
-              <Lightbulb className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">IP disclosure tracking for this project...</p>
-              <Button className="mt-4">Submit IP Disclosure</Button>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  { title: 'Novel Catalyst for Hydrogen Production', date: '2024-02-01', status: 'Under Review' },
+                  { title: 'High-Efficiency Photovoltaic Cell Design', date: '2024-01-10', status: 'Patent Pending' }
+                ].map((ip, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50/50">
+                    <div>
+                      <h4 className="font-semibold text-gray-900">{ip.title}</h4>
+                      <p className="text-xs text-gray-500 mt-1">Submitted on {ip.date}</p>
+                    </div>
+                    <Badge variant={ip.status === 'Under Review' ? 'secondary' : 'outline'} className={ip.status === 'Patent Pending' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''}>
+                      {ip.status}
+                    </Badge>
+                  </div>
+                ))}
+                <div className="p-8 border-2 border-dashed rounded-lg text-center bg-gray-50/20">
+                  <Lightbulb className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">Document new inventions or software created during this project</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={isIPDialogOpen} onOpenChange={setIsIPDialogOpen}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Submit IP Disclosure</DialogTitle>
+            <DialogDescription>
+              Document a new invention or software for project "{project?.[0]?.project_name}".
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Invention Title</Label>
+              <Input id="title" placeholder="e.g., Novel Battery Chemistry" />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Brief Description</Label>
+              <Textarea id="description" placeholder="Describe the core innovation..." />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsIPDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => {
+              setIsIPDialogOpen(false);
+              toast({ title: "Success", description: "IP Disclosure submitted for legal review." });
+            }}>Submit Disclosure</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+// Re-using local Plus icon
+function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12h14" />
+      <path d="M12 5v14" />
+    </svg>
+  );
+}
+

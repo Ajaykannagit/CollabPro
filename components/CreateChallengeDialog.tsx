@@ -38,8 +38,13 @@ type CreateChallengeDialogProps = {
   onSuccess: () => void;
 };
 
+type Partner = {
+  id: number;
+  name: string;
+};
+
 export function CreateChallengeDialog({ onClose, onSuccess }: CreateChallengeDialogProps) {
-  const [partners] = useLoadAction(loadCorporatePartnersAction, []);
+  const [partners] = useLoadAction<Partner[]>(loadCorporatePartnersAction, []);
   const [createChallenge, isSubmitting] = useMutateAction(createIndustryChallengeAction);
   const { toast } = useToast();
 
@@ -101,7 +106,7 @@ export function CreateChallengeDialog({ onClose, onSuccess }: CreateChallengeDia
                   <SelectValue placeholder="Select partner" />
                 </SelectTrigger>
                 <SelectContent>
-                  {partners.map((partner: any) => (
+                  {partners.map((partner: Partner) => (
                     <SelectItem key={partner.id} value={String(partner.id)}>
                       {partner.name}
                     </SelectItem>

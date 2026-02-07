@@ -15,21 +15,36 @@ import { useLoadAction } from '@/lib/data-actions';
 import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export function AgreementCompareReview() {
-    const [agreement, loading, error] = useLoadAction(loadAgreementDetailsAction, null, { collaborationRequestId: 1 });
+type AgreementComment = {
+    id: string;
+    section_id: string;
+    author: string;
+    timestamp: string;
+    text: string;
+};
+
+export function AgreementCompareReview({ collaborationRequestId = 1 }: { collaborationRequestId?: number }) {
+    const [agreement, loading] = useLoadAction<any[]>(loadAgreementDetailsAction, [], { collaborationRequestId });
 
     // Transform single agreement into versions array for compatibility
-    const agreementVersions = agreement ? [{
+    // Handle array return (usually it's an array for actions)
+    const agreementData = (Array.isArray(agreement) ? agreement[0] : agreement);
+
+    const agreementVersions = agreementData ? [{
         version_number: '1.0',
-        created_at: agreement.created_at,
+        created_at: agreementData.created_at,
         created_by: 'System',
         sections: [
-            { id: '1', title: 'Scope', text: agreement.project_brief || 'No content' },
-            { id: '2', title: 'Terms', text: agreement.confidentiality_terms || 'No terms' }
+            { id: '1', title: 'Scope', text: agreementData.project_brief || 'No content' },
+            { id: '2', title: 'Terms', text: agreementData.confidentiality_terms || 'No terms' }
         ]
     }] : [];
 
-    const agreementComments: any[] = [];
+    const agreementComments: AgreementComment[] = [
+        { id: 'c1', section_id: '1', author: 'College Legal', timestamp: 'Jan 12, 10:45 AM', text: 'Please clarify the scope regarding sub-licensing rights.' },
+        { id: 'c2', section_id: '2', author: 'Corporate Admin', timestamp: 'Jan 12, 02:15 PM', text: 'This confidentiality clause matches our standard terms.' }
+    ];
+
 
     const [v1Version, setV1Version] = useState('1.0');
     const [v2Version, setV2Version] = useState('1.0');
@@ -188,7 +203,7 @@ export function AgreementCompareReview() {
                                     </div>
 
                                     <div className="space-y-3">
-                                        {getCommentsForSection(selectedSection).map((comment) => (
+                                        {getCommentsForSection(selectedSection).map((comment: AgreementComment) => (
                                             <div key={comment.id} className="p-3 bg-white/5 border border-white/10 rounded-lg active:scale-95 transition-transform">
                                                 <div className="flex items-center justify-between mb-2">
                                                     <span className="text-xs font-bold text-slate-300">{comment.author}</span>

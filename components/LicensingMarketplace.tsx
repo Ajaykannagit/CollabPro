@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import loadLicensingOpportunitiesAction from '@/actions/loadLicensingOpportunities';
 import { formatINRCompact, usdToINR } from '@/lib/currency';
 import { Store, Search, Eye, MessageCircle } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 type LicensingOpportunity = {
   id: number;
@@ -24,6 +25,7 @@ type LicensingOpportunity = {
 };
 
 export function LicensingMarketplace() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [opportunities, loading, error] = useLoadAction(
     loadLicensingOpportunitiesAction,
@@ -121,11 +123,29 @@ export function LicensingMarketplace() {
                 </div>
 
                 <div className="flex gap-2 pt-4 border-t">
-                  <Button size="sm" className="flex-1">
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      toast({
+                        title: "Interest Expressed",
+                        description: `Your interest in ${opp.anonymized_title} has been recorded.`,
+                      });
+                    }}
+                  >
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Express Interest
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      toast({
+                        title: "Requesting Details",
+                        description: "Requesting full details for this opportunity...",
+                      });
+                    }}
+                  >
                     Details
                   </Button>
                 </div>

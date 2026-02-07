@@ -9,6 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import loadIPDisclosuresAction from '@/actions/loadIPDisclosures';
 import { Lightbulb, FileText, Users, DollarSign } from 'lucide-react';
 
+type Contributor = {
+  name: string;
+  organization: string;
+  ownership_percentage: number;
+  role: string;
+};
+
 type IPDisclosure = {
   id: number;
   title: string;
@@ -20,12 +27,7 @@ type IPDisclosure = {
   filing_date: string;
   patent_number: string;
   project_name: string;
-  contributors: Array<{
-    name: string;
-    organization: string;
-    ownership_percentage: number;
-    role: string;
-  }>;
+  contributors: Contributor[];
   created_at: string;
 };
 
@@ -189,7 +191,7 @@ export function IPPortfolio() {
                           Contributors & Ownership
                         </h4>
                         <div className="grid md:grid-cols-2 gap-3">
-                          {disclosure.contributors.map((contributor: any, idx: number) => (
+                          {disclosure.contributors.map((contributor: Contributor, idx: number) => (
                             <div key={idx} className="p-3 bg-gray-50 rounded-lg">
                               <div className="flex items-center justify-between mb-1">
                                 <p className="font-medium text-sm">{contributor.name}</p>

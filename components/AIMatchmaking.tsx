@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import loadMatchmakingScoresAction from '@/actions/loadMatchmakingScores';
 import { Sparkles, TrendingUp, Lightbulb, ArrowRight } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
 
 type MatchmakingScore = {
   id: number;
@@ -27,6 +29,7 @@ type MatchmakingScore = {
 };
 
 export function AIMatchmaking() {
+  const { toast } = useToast();
   const [minScore, setMinScore] = useState(70);
   const [matches, loading, error] = useLoadAction(
     loadMatchmakingScoresAction,
@@ -197,11 +200,29 @@ export function AIMatchmaking() {
                 </div>
 
                 <div className="mt-6 pt-6 border-t flex gap-3">
-                  <Button className="flex-1">
+                  <Button
+                    className="flex-1"
+                    onClick={() => {
+                      toast({
+                        title: "Collaboration Initiated",
+                        description: `Initiating match between ${match.project_title} and ${match.challenge_title}.`,
+                      });
+                    }}
+                  >
                     <ArrowRight className="h-4 w-4 mr-2" />
                     Initiate Collaboration
                   </Button>
-                  <Button variant="outline">View Details</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      toast({
+                        title: "Viewing Match Details",
+                        description: "Opening detailed match analysis...",
+                      });
+                    }}
+                  >
+                    View Details
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -226,6 +247,4 @@ export function AIMatchmaking() {
   );
 }
 
-function Label({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <label className={className}>{children}</label>;
-}
+

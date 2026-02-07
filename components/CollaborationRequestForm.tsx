@@ -30,6 +30,7 @@ type RequestFormData = z.infer<typeof requestSchema>;
 type CollaborationRequestFormProps = {
   projectId: number;
   projectTitle: string;
+  corporatePartnerId?: number;
   onClose: () => void;
   onSuccess: () => void;
 };
@@ -37,6 +38,7 @@ type CollaborationRequestFormProps = {
 export function CollaborationRequestForm({
   projectId,
   projectTitle,
+  corporatePartnerId = 1,
   onClose,
   onSuccess,
 }: CollaborationRequestFormProps) {
@@ -55,7 +57,7 @@ export function CollaborationRequestForm({
   const onSubmit = async (data: RequestFormData) => {
     try {
       await createRequest({
-        corporatePartnerId: 1,
+        corporatePartnerId,
         researchProjectId: projectId,
         industryChallengeId: null,
         projectBrief: data.projectBrief,

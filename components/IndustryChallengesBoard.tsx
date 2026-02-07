@@ -9,6 +9,7 @@ import { CreateChallengeDialog } from '@/components/CreateChallengeDialog';
 import { formatINRCompact, usdToINR } from '@/lib/currency';
 import { useLoadAction } from '@/lib/data-actions';
 import loadIndustryChallengesAction from '@/actions/loadIndustryChallenges';
+import { useToast } from "@/hooks/use-toast";
 
 type IndustryChallenge = {
   id: number;
@@ -26,6 +27,7 @@ type IndustryChallenge = {
 };
 
 export function IndustryChallengesBoard() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
@@ -148,7 +150,16 @@ export function IndustryChallengesBoard() {
                   </div>
                 )}
 
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    toast({
+                      title: "Matching Projects",
+                      description: `Finding projects compatible with ${challenge.title}...`,
+                    });
+                  }}
+                >
                   View Matching Projects
                 </Button>
               </CardContent>

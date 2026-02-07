@@ -63,7 +63,8 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
     try {
       await sendMessage({
         threadId: threadData.thread_id,
-        senderName: 'Rajesh Kumar',
+        // TODO: Replace with actual sender info from user session
+        senderName: 'Rajesh Kumar', 
         senderOrganization: 'NHSRCL',
         messageType: 'text',
         content: newMessage,

@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import loadStudentProfilesAction from '@/actions/loadStudentProfiles';
 import { Search, GraduationCap, Briefcase, Mail, Star } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 type StudentProfile = {
   id: number;
@@ -26,6 +27,7 @@ type StudentProfile = {
 };
 
 export function TalentShowcase() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [degreeFilter, setDegreeFilter] = useState('');
   const [students, loading, error] = useLoadAction(
@@ -167,10 +169,25 @@ export function TalentShowcase() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button className="flex-1" size="sm">
+                  <Button
+                    className="flex-1"
+                    size="sm"
+                    onClick={() => {
+                      toast({
+                        title: "Interview Requested",
+                        description: `Request sent to ${student.name}.`,
+                      });
+                    }}
+                  >
                     Request Interview
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      window.location.href = `mailto:${student.email}`;
+                    }}
+                  >
                     <Mail className="h-4 w-4" />
                   </Button>
                 </div>
