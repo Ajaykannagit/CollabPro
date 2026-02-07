@@ -7,27 +7,15 @@ import loadCollaborationRequestsAction from '@/actions/loadCollaborationRequests
 import loadResearchProjectsAction from '@/actions/loadResearchProjects';
 import loadIndustryChallengesAction from '@/actions/loadIndustryChallenges';
 import { TrendingUp, Briefcase, Target, Users, ArrowRight, Sparkles, Activity, Clock } from 'lucide-react';
-import { motion } from 'framer-motion';
+// motion import removed as it is handled by AnimationWrapper components
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { Counter, HoverCard, ShinyButton } from '@/components/ui/animated-primitives';
+import { Counter, ShinyButton } from '@/components/ui/animated-primitives';
 import { useTestData } from '@/contexts/TestDataContext';
 import { CollaborationRequest, ResearchProject, IndustryChallenge } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
+import { StaggerContainer, FadeInUp, SpringPress } from '@/components/ui/animation-wrapper';
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 }
-};
+// Replaced by AnimationWrapper presets for consistency
 
 export function DashboardOverview() {
   const { toast } = useToast();
@@ -91,17 +79,12 @@ export function DashboardOverview() {
       </div>
 
       {/* Metrics Grid */}
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-      >
+      <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {displayMetrics.map((metric, idx) => {
           const Icon = metric.icon;
           return (
-            <motion.div key={idx} variants={item}>
-              <HoverCard className="h-full">
+            <FadeInUp key={idx}>
+              <SpringPress className="h-full">
                 <Card className="h-full border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all duration-300 group overflow-hidden relative">
                   <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${metric.color} opacity-[0.03] group-hover:opacity-[0.1] rounded-bl-full transition-opacity`} />
                   <CardContent className="p-6">
@@ -121,18 +104,16 @@ export function DashboardOverview() {
                     </div>
                   </CardContent>
                 </Card>
-              </HoverCard>
-            </motion.div>
+              </SpringPress>
+            </FadeInUp>
           );
         })}
-      </motion.div>
+      </StaggerContainer>
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Main Chart Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+        <FadeInUp
+          delay={0.3}
           className="lg:col-span-2"
         >
           <Card className="h-full border-white/10 bg-white/5 backdrop-blur-md">
@@ -185,13 +166,11 @@ export function DashboardOverview() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </FadeInUp>
 
         {/* Recent Activity Feed */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
+        <FadeInUp
+          delay={0.4}
           className="lg:col-span-1"
         >
           <Card className="h-full border-white/10 bg-white/5 backdrop-blur-md">
@@ -202,31 +181,31 @@ export function DashboardOverview() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <StaggerContainer className="space-y-4">
                 {recentActivity.map((project: ResearchProject, i: number) => (
-                  <motion.div
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + (i * 0.1) }}
+                  <FadeInUp
                     key={project.id || i}
-                    className="group flex items-center justify-between p-3 rotate-0 hover:scale-[1.02] bg-white/5 hover:bg-white/10 rounded-xl transition-all duration-300 border border-transparent hover:border-white/10 cursor-pointer"
-                    onClick={() => {
-                      toast({
-                        title: "Activity Details",
-                        description: `Viewing details for: ${project.title || "Research Initiative"}`,
-                      });
-                    }}
                   >
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-gray-200 truncate group-hover:text-primary transition-colors">
-                        {project.title || "New Research Initiative"}
-                      </p>
-                      <p className="text-xs text-gray-500 group-hover:text-gray-400">{project.college_name || "Partner College"}</p>
-                    </div>
-                    <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-primary group-hover:text-white transition-all">
-                      <ArrowRight className="h-4 w-4" />
-                    </div>
-                  </motion.div>
+                    <SpringPress
+                      className="group flex items-center justify-between p-3 rotate-0 bg-white/5 hover:bg-white/10 rounded-xl transition-all duration-300 border border-transparent hover:border-white/10 cursor-pointer"
+                      onClick={() => {
+                        toast({
+                          title: "Activity Details",
+                          description: `Viewing details for: ${project.title || "Research Initiative"}`,
+                        });
+                      }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-gray-200 truncate group-hover:text-primary transition-colors">
+                          {project.title || "New Research Initiative"}
+                        </p>
+                        <p className="text-xs text-gray-500 group-hover:text-gray-400">{project.college_name || "Partner College"}</p>
+                      </div>
+                      <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-primary group-hover:text-white transition-all">
+                        <ArrowRight className="h-4 w-4" />
+                      </div>
+                    </SpringPress>
+                  </FadeInUp>
                 ))}
                 <Button
                   variant="ghost"
@@ -240,10 +219,10 @@ export function DashboardOverview() {
                 >
                   View All Activity
                 </Button>
-              </div>
+              </StaggerContainer>
             </CardContent>
           </Card>
-        </motion.div>
+        </FadeInUp>
       </div>
     </div>
   );

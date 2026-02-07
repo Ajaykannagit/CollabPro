@@ -23,6 +23,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { StaggerContainer, FadeInUp, SpringPress, LayoutTransition } from '@/components/ui/animation-wrapper';
+import { AnimatePresence } from 'framer-motion';
 
 type Milestone = {
   id: number;
@@ -120,66 +122,82 @@ export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <DollarSign className="h-5 w-5 text-blue-600" />
-                <span className="text-sm font-semibold text-gray-600">
-                  {budgetPercent.toFixed(1)}%
-                </span>
-              </div>
-              <p className="text-2xl font-bold text-gray-900">
-                {formatCurrency(projectData.budget_utilized)}
-              </p>
-              <p className="text-xs text-gray-600">
-                of {formatCurrency(projectData.funding_allocated)}
-              </p>
-              <Progress value={budgetPercent} className="mt-2" />
-            </CardContent>
-          </Card>
+        <StaggerContainer className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <FadeInUp>
+            <SpringPress>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <DollarSign className="h-5 w-5 text-blue-600" />
+                    <span className="text-sm font-semibold text-gray-600">
+                      {budgetPercent.toFixed(1)}%
+                    </span>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {formatCurrency(projectData.budget_utilized)}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    of {formatCurrency(projectData.funding_allocated)}
+                  </p>
+                  <Progress value={budgetPercent} className="mt-2" />
+                </CardContent>
+              </Card>
+            </SpringPress>
+          </FadeInUp>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-semibold text-gray-600">
-                  {milestonePercent.toFixed(0)}%
-                </span>
-              </div>
-              <p className="text-2xl font-bold text-gray-900">
-                {completedMilestones}/{milestones.length}
-              </p>
-              <p className="text-xs text-gray-600">Milestones Completed</p>
-              <Progress value={milestonePercent} className="mt-2" />
-            </CardContent>
-          </Card>
+          <FadeInUp>
+            <SpringPress>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    <span className="text-sm font-semibold text-gray-600">
+                      {milestonePercent.toFixed(0)}%
+                    </span>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {completedMilestones}/{milestones.length}
+                  </p>
+                  <p className="text-xs text-gray-600">Milestones Completed</p>
+                  <Progress value={milestonePercent} className="mt-2" />
+                </CardContent>
+              </Card>
+            </SpringPress>
+          </FadeInUp>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Users className="h-5 w-5 text-purple-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">{teamMembers.length}</p>
-              <p className="text-xs text-gray-600">Team Members</p>
-            </CardContent>
-          </Card>
+          <FadeInUp>
+            <SpringPress>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Users className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">{teamMembers.length}</p>
+                  <p className="text-xs text-gray-600">Team Members</p>
+                </CardContent>
+              </Card>
+            </SpringPress>
+          </FadeInUp>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Calendar className="h-5 w-5 text-orange-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">
-                {new Date(projectData.start_date).toLocaleDateString('en-US', {
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </p>
-              <p className="text-xs text-gray-600">Started</p>
-            </CardContent>
-          </Card>
-        </div>
+          <FadeInUp>
+            <SpringPress>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Calendar className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {new Date(projectData.start_date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </p>
+                  <p className="text-xs text-gray-600">Started</p>
+                </CardContent>
+              </Card>
+            </SpringPress>
+          </FadeInUp>
+        </StaggerContainer>
       </div>
 
       {/* Tabs */}
@@ -192,236 +210,254 @@ export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
           <TabsTrigger value="ip">IP Disclosures</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {projectData.description}
-                </p>
-              </div>
-
-              <Separator />
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Timeline</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Start Date</span>
-                      <span className="font-medium">
-                        {new Date(projectData.start_date).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {projectData.end_date && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">End Date</span>
-                        <span className="font-medium">
-                          {new Date(projectData.end_date).toLocaleDateString()}
-                        </span>
-                      </div>
-                    )}
+        <AnimatePresence mode="wait">
+          <TabsContent value="overview" key="overview">
+            <LayoutTransition>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Project Overview</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
+                    <p className="text-gray-700 leading-relaxed">
+                      {projectData.description}
+                    </p>
                   </div>
-                </div>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Budget</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Allocated</span>
-                      <span className="font-medium">
-                        {formatCurrency(projectData.funding_allocated)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Utilized</span>
-                      <span className="font-medium">
-                        {formatCurrency(projectData.budget_utilized)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Remaining</span>
-                      <span className="font-medium text-green-600">
-                        {formatCurrency(
-                          projectData.funding_allocated - projectData.budget_utilized
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  <Separator />
 
-        <TabsContent value="milestones">
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Milestones</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {milestones.map((milestone) => (
-                  <div
-                    key={milestone.id}
-                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="mt-1">
-                          {milestone.status === 'completed' ? (
-                            <CheckCircle2 className="h-6 w-6 text-green-600" />
-                          ) : (
-                            <Clock className="h-6 w-6 text-gray-400" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 mb-1">
-                            {milestone.title}
-                          </h4>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {milestone.description}
-                          </p>
-                          {milestone.deliverables && (
-                            <div className="mt-2">
-                              <p className="text-xs font-semibold text-gray-700 mb-1">
-                                Deliverables:
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                {milestone.deliverables}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <Badge className={getStatusColor(milestone.status)}>
-                        {milestone.status}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 ml-9">
-                      <Calendar className="h-4 w-4" />
-                      <span>
-                        Due: {new Date(milestone.due_date).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="team">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Members</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                {teamMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                        {member.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">{member.name}</h4>
-                        <p className="text-sm text-gray-600">{member.role}</p>
-                        <p className="text-xs text-gray-500 mt-1">{member.organization}</p>
-                        {member.email && (
-                          <p className="text-xs text-blue-600 mt-1">{member.email}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="documents">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Project Documents</CardTitle>
-              <Button size="sm" onClick={() => toast({ title: "Upload", description: "Upload dialog coming soon..." })}>
-                <PlusIcon className="h-4 w-4 mr-2" /> Upload
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  { name: 'Research_Proposal.pdf', size: '2.4 MB', type: 'PDF', date: '2024-01-15' },
-                  { name: 'Budget_Overview.xlsx', size: '1.1 MB', type: 'Excel', date: '2024-01-18' },
-                  { name: 'Lab_Safety_Protocol.docx', size: '850 KB', type: 'Word', date: '2024-01-20' },
-                ].map((doc, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{doc.name}</p>
-                        <p className="text-xs text-gray-500">{doc.size} • Uploaded on {doc.date}</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => toast({ title: "Download", description: `Downloading ${doc.name}...` })}>
-                      Download
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="ip">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>IP Disclosures</CardTitle>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setIsIPDialogOpen(true);
-                }}
-              >
-                <Lightbulb className="h-4 w-4 mr-2" /> Submit Disclosure
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { title: 'Novel Catalyst for Hydrogen Production', date: '2024-02-01', status: 'Under Review' },
-                  { title: 'High-Efficiency Photovoltaic Cell Design', date: '2024-01-10', status: 'Patent Pending' }
-                ].map((ip, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50/50">
+                  <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <h4 className="font-semibold text-gray-900">{ip.title}</h4>
-                      <p className="text-xs text-gray-500 mt-1">Submitted on {ip.date}</p>
+                      <h3 className="font-semibold text-gray-900 mb-3">Timeline</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Start Date</span>
+                          <span className="font-medium">
+                            {new Date(projectData.start_date).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {projectData.end_date && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">End Date</span>
+                            <span className="font-medium">
+                              {new Date(projectData.end_date).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <Badge variant={ip.status === 'Under Review' ? 'secondary' : 'outline'} className={ip.status === 'Patent Pending' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''}>
-                      {ip.status}
-                    </Badge>
+
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-3">Budget</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Allocated</span>
+                          <span className="font-medium">
+                            {formatCurrency(projectData.funding_allocated)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Utilized</span>
+                          <span className="font-medium">
+                            {formatCurrency(projectData.budget_utilized)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Remaining</span>
+                          <span className="font-medium text-green-600">
+                            {formatCurrency(
+                              projectData.funding_allocated - projectData.budget_utilized
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                ))}
-                <div className="p-8 border-2 border-dashed rounded-lg text-center bg-gray-50/20">
-                  <Lightbulb className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Document new inventions or software created during this project</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                </CardContent>
+              </Card>
+            </LayoutTransition>
+          </TabsContent>
+
+          <TabsContent value="milestones" key="milestones">
+            <LayoutTransition>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Project Milestones</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <StaggerContainer className="space-y-4">
+                    {milestones.map((milestone) => (
+                      <FadeInUp
+                        key={milestone.id}
+                      >
+                        <SpringPress className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-start gap-3 flex-1">
+                              <div className="mt-1">
+                                {milestone.status === 'completed' ? (
+                                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                                ) : (
+                                  <Clock className="h-6 w-6 text-gray-400" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900 mb-1">
+                                  {milestone.title}
+                                </h4>
+                                <p className="text-sm text-gray-600 mb-2">
+                                  {milestone.description}
+                                </p>
+                                {milestone.deliverables && (
+                                  <div className="mt-2">
+                                    <p className="text-xs font-semibold text-gray-700 mb-1">
+                                      Deliverables:
+                                    </p>
+                                    <p className="text-xs text-gray-600">
+                                      {milestone.deliverables}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <Badge className={getStatusColor(milestone.status)}>
+                              {milestone.status}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600 ml-9">
+                            <Calendar className="h-4 w-4" />
+                            <span>
+                              Due: {new Date(milestone.due_date).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </SpringPress>
+                      </FadeInUp>
+                    ))}
+                  </StaggerContainer>
+                </CardContent>
+              </Card>
+            </LayoutTransition>
+          </TabsContent>
+
+          <TabsContent value="team" key="team">
+            <LayoutTransition>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Team Members</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <StaggerContainer className="grid md:grid-cols-2 gap-4">
+                    {teamMembers.map((member) => (
+                      <FadeInUp
+                        key={member.id}
+                      >
+                        <SpringPress className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                          <div className="flex items-start gap-3">
+                            <div className="h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                              {member.name
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900">{member.name}</h4>
+                              <p className="text-sm text-gray-600">{member.role}</p>
+                              <p className="text-xs text-gray-500 mt-1">{member.organization}</p>
+                              {member.email && (
+                                <p className="text-xs text-blue-600 mt-1">{member.email}</p>
+                              )}
+                            </div>
+                          </div>
+                        </SpringPress>
+                      </FadeInUp>
+                    ))}
+                  </StaggerContainer>
+                </CardContent>
+              </Card>
+            </LayoutTransition>
+          </TabsContent>
+
+          <TabsContent value="documents" key="documents">
+            <LayoutTransition>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Project Documents</CardTitle>
+                  <Button size="sm" onClick={() => toast({ title: "Upload", description: "Upload dialog coming soon..." })}>
+                    <PlusIcon className="h-4 w-4 mr-2" /> Upload
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <StaggerContainer className="space-y-3">
+                    {[
+                      { name: 'Research_Proposal.pdf', size: '2.4 MB', type: 'PDF', date: '2024-01-15' },
+                      { name: 'Budget_Overview.xlsx', size: '1.1 MB', type: 'Excel', date: '2024-01-18' },
+                      { name: 'Lab_Safety_Protocol.docx', size: '850 KB', type: 'Word', date: '2024-01-20' },
+                    ].map((doc, i) => (
+                      <FadeInUp key={i}>
+                        <SpringPress className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+                              <FileText className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{doc.name}</p>
+                              <p className="text-xs text-gray-500">{doc.size} • Uploaded on {doc.date}</p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => toast({ title: "Download", description: `Downloading ${doc.name}...` })}>
+                            Download
+                          </Button>
+                        </SpringPress>
+                      </FadeInUp>
+                    ))}
+                  </StaggerContainer>
+                </CardContent>
+              </Card>
+            </LayoutTransition>
+          </TabsContent>
+
+          <TabsContent value="ip" key="ip">
+            <LayoutTransition>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>IP Disclosures</CardTitle>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setIsIPDialogOpen(true);
+                    }}
+                  >
+                    <Lightbulb className="h-4 w-4 mr-2" /> Submit Disclosure
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <StaggerContainer className="space-y-4">
+                    {[
+                      { title: 'Novel Catalyst for Hydrogen Production', date: '2024-02-01', status: 'Under Review' },
+                      { title: 'High-Efficiency Photovoltaic Cell Design', date: '2024-01-10', status: 'Patent Pending' }
+                    ].map((ip, i) => (
+                      <FadeInUp key={i}>
+                        <SpringPress className="flex items-center justify-between p-4 border rounded-lg bg-gray-50/50">
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{ip.title}</h4>
+                            <p className="text-xs text-gray-500 mt-1">Submitted on {ip.date}</p>
+                          </div>
+                          <Badge variant={ip.status === 'Under Review' ? 'secondary' : 'outline'} className={ip.status === 'Patent Pending' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''}>
+                            {ip.status}
+                          </Badge>
+                        </SpringPress>
+                      </FadeInUp>
+                    ))}
+                    <div className="p-8 border-2 border-dashed rounded-lg text-center bg-gray-50/20">
+                      <Lightbulb className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">Document new inventions or software created during this project</p>
+                    </div>
+                  </StaggerContainer>
+                </CardContent>
+              </Card>
+            </LayoutTransition>
+          </TabsContent>
+        </AnimatePresence>
       </Tabs>
 
       <Dialog open={isIPDialogOpen} onOpenChange={setIsIPDialogOpen}>
