@@ -1,7 +1,9 @@
 // Secure project workspace with tabs for different aspects
 
+
 import { useState } from 'react';
 import { useLoadAction } from '@/lib/data-actions';
+import { supabase } from '@/lib/supabase';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,6 +11,10 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import loadProjectDetailsAction from '@/actions/loadProjectDetails';
+import loadProjectDocumentsAction from '@/actions/loadProjectDocuments';
+import loadProjectIPDisclosuresAction from '@/actions/loadProjectIPDisclosures';
+import uploadProjectDocumentAction from '@/actions/uploadProjectDocument';
+import submitProjectIPDisclosureAction from '@/actions/submitProjectIPDisclosure';
 import {
   Calendar,
   DollarSign,
@@ -56,13 +62,50 @@ type ProjectDetails = {
   team_members: TeamMember[];
 };
 
+type ProjectDocument = {
+  id: number;
+  project_id: number;
+  file_name: string;
+  file_size: number;
+  file_type: string;
+  storage_path: string;
+  uploaded_by: string;
+  uploaded_at: string;
+  version: number;
+  description: string;
+};
+
+type IPDisclosure = {
+  id: number;
+  title: string;
+  submission_date: string;
+  status: string;
+  category: string;
+  description: string;
+};
+
 export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
   const { toast } = useToast();
   const [selectedProjectId] = useState(projectId);
   const [isIPDialogOpen, setIsIPDialogOpen] = useState(false);
+  const [ipTitle, setIpTitle] = useState('');
+  const [ipDescription, setIpDescription] = useState('');
+
   const [project, loading] = useLoadAction(
     loadProjectDetailsAction,
     [] as ProjectDetails[],
+    { projectId: selectedProjectId }
+  );
+
+  const [documents, loadingDocs] = useLoadAction(
+    loadProjectDocumentsAction,
+    [] as ProjectDocument[],
+    { projectId: selectedProjectId }
+  );
+
+  const [ipDisclosures, loadingIP] = useLoadAction(
+    loadProjectIPDisclosuresAction,
+    [] as IPDisclosure[],
     { projectId: selectedProjectId }
   );
 
@@ -74,6 +117,14 @@ export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
       currency: 'USD',
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   const getStatusColor = (status: string) => {
@@ -88,6 +139,127 @@ export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const [uploading, setUploading] = useState(false);
+  const [submittingIP, setSubmittingIP] = useState(false);
+
+
+  // File Upload Handler
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Maximum file size is 10MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('projectId', selectedProjectId.toString());
+      formData.append('file', file);
+      formData.append('uploadedBy', 'Current User'); // Replace with actual user context if available
+      formData.append('description', 'Uploaded via Project Workspace');
+
+      await uploadProjectDocumentAction(formData);
+
+      toast({
+        title: "Success",
+        description: "File uploaded successfully"
+      });
+
+      // Refresh documents list (simple reload for now, ideally strictly refetch)
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Upload Failed",
+        description: "Ensure 'project-documents' bucket exists in Supabase Storage",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDownload = async (path: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('project-documents')
+        .download(path);
+
+      if (error) throw error;
+
+      // Create download link
+      const url = window.URL.createObjectURL(data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+
+      toast({
+        title: "Download Started",
+        description: `Downloading ${fileName}...`
+      });
+    } catch (error: any) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Failed",
+        description: error.message || "Failed to download file. Check if bucket exists.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // IP Disclosure Submission Handler
+  const handleIPSubmit = async () => {
+    if (!ipTitle || !ipDescription) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSubmittingIP(true);
+    try {
+      await submitProjectIPDisclosureAction({
+        projectId: selectedProjectId,
+        title: ipTitle,
+        description: ipDescription
+      });
+
+      toast({
+        title: "Success",
+        description: "IP Disclosure submitted successfully"
+      });
+
+      setIsIPDialogOpen(false);
+      setIpTitle('');
+      setIpDescription('');
+
+      // Refresh list
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Submission Failed",
+        description: "Failed to submit IP disclosure",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmittingIP(false);
     }
   };
 
@@ -382,35 +554,63 @@ export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Project Documents</CardTitle>
-                  <Button size="sm" onClick={() => toast({ title: "Upload", description: "Upload dialog coming soon..." })}>
-                    <PlusIcon className="h-4 w-4 mr-2" /> Upload
-                  </Button>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      id="file-upload"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      disabled={uploading}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => document.getElementById('file-upload')?.click()}
+                      disabled={uploading}
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      {uploading ? 'Uploading...' : 'Upload'}
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <StaggerContainer className="space-y-3">
-                    {[
-                      { name: 'Research_Proposal.pdf', size: '2.4 MB', type: 'PDF', date: '2024-01-15' },
-                      { name: 'Budget_Overview.xlsx', size: '1.1 MB', type: 'Excel', date: '2024-01-18' },
-                      { name: 'Lab_Safety_Protocol.docx', size: '850 KB', type: 'Word', date: '2024-01-20' },
-                    ].map((doc, i) => (
-                      <FadeInUp key={i}>
-                        <SpringPress className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
-                              <FileText className="h-5 w-5" />
+                  {loadingDocs ? (
+                    <div className="p-8 text-center">
+                      <p className="text-gray-500">Loading documents...</p>
+                    </div>
+                  ) : documents && documents.length > 0 ? (
+                    <StaggerContainer className="space-y-3">
+                      {documents.map((doc) => (
+                        <FadeInUp key={doc.id}>
+                          <SpringPress className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+                                <FileText className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{doc.file_name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {formatFileSize(doc.file_size)} • Uploaded by {doc.uploaded_by} on {new Date(doc.uploaded_at).toLocaleDateString()}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{doc.name}</p>
-                              <p className="text-xs text-gray-500">{doc.size} • Uploaded on {doc.date}</p>
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm" onClick={() => toast({ title: "Download", description: `Downloading ${doc.name}...` })}>
-                            Download
-                          </Button>
-                        </SpringPress>
-                      </FadeInUp>
-                    ))}
-                  </StaggerContainer>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDownload(doc.storage_path, doc.file_name)}
+                            >
+                              Download
+                            </Button>
+                          </SpringPress>
+                        </FadeInUp>
+                      ))}
+                    </StaggerContainer>
+                  ) : (
+                    <div className="p-8 border-2 border-dashed rounded-lg text-center bg-gray-50/20">
+                      <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">No documents uploaded yet</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </LayoutTransition>
@@ -431,28 +631,46 @@ export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <StaggerContainer className="space-y-4">
-                    {[
-                      { title: 'Novel Catalyst for Hydrogen Production', date: '2024-02-01', status: 'Under Review' },
-                      { title: 'High-Efficiency Photovoltaic Cell Design', date: '2024-01-10', status: 'Patent Pending' }
-                    ].map((ip, i) => (
-                      <FadeInUp key={i}>
-                        <SpringPress className="flex items-center justify-between p-4 border rounded-lg bg-gray-50/50">
-                          <div>
-                            <h4 className="font-semibold text-gray-900">{ip.title}</h4>
-                            <p className="text-xs text-gray-500 mt-1">Submitted on {ip.date}</p>
-                          </div>
-                          <Badge variant={ip.status === 'Under Review' ? 'secondary' : 'outline'} className={ip.status === 'Patent Pending' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''}>
-                            {ip.status}
-                          </Badge>
-                        </SpringPress>
-                      </FadeInUp>
-                    ))}
+                  {loadingIP ? (
+                    <div className="p-8 text-center">
+                      <p className="text-gray-500">Loading IP disclosures...</p>
+                    </div>
+                  ) : ipDisclosures && ipDisclosures.length > 0 ? (
+                    <StaggerContainer className="space-y-4">
+                      {ipDisclosures.map((ip) => (
+                        <FadeInUp key={ip.id}>
+                          <SpringPress className="flex items-center justify-between p-4 border rounded-lg bg-gray-50/50">
+                            <div>
+                              <h4 className="font-semibold text-gray-900">{ip.title}</h4>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Submitted on {new Date(ip.submission_date).toLocaleDateString()}
+                              </p>
+                              {ip.category && (
+                                <p className="text-xs text-blue-600 mt-1">{ip.category}</p>
+                              )}
+                            </div>
+                            <Badge
+                              variant={ip.status === 'Under Review' ? 'secondary' : 'outline'}
+                              className={ip.status === 'Patent Pending' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''}
+                            >
+                              {ip.status}
+                            </Badge>
+                          </SpringPress>
+                        </FadeInUp>
+                      ))}
+                    </StaggerContainer>
+                  ) : (
                     <div className="p-8 border-2 border-dashed rounded-lg text-center bg-gray-50/20">
+                      <Lightbulb className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">No IP disclosures for this project yet</p>
+                    </div>
+                  )}
+                  {!loadingIP && (
+                    <div className="p-8 border-2 border-dashed rounded-lg text-center bg-gray-50/20 mt-4">
                       <Lightbulb className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-500">Document new inventions or software created during this project</p>
                     </div>
-                  </StaggerContainer>
+                  )}
                 </CardContent>
               </Card>
             </LayoutTransition>
@@ -471,19 +689,32 @@ export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="title">Invention Title</Label>
-              <Input id="title" placeholder="e.g., Novel Battery Chemistry" />
+              <Input
+                id="title"
+                placeholder="e.g., Novel Battery Chemistry"
+                value={ipTitle}
+                onChange={(e) => setIpTitle(e.target.value)}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Brief Description</Label>
-              <Textarea id="description" placeholder="Describe the core innovation..." />
+              <Textarea
+                id="description"
+                placeholder="Describe the core innovation..."
+                value={ipDescription}
+                onChange={(e) => setIpDescription(e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsIPDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => {
+            <Button variant="outline" onClick={() => {
               setIsIPDialogOpen(false);
-              toast({ title: "Success", description: "IP Disclosure submitted for legal review." });
-            }}>Submit Disclosure</Button>
+              setIpTitle('');
+              setIpDescription('');
+            }}>Cancel</Button>
+            <Button onClick={handleIPSubmit} disabled={submittingIP}>
+              {submittingIP ? 'Submitting...' : 'Submit Disclosure'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

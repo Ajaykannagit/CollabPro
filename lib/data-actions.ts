@@ -53,15 +53,22 @@ export function useLoadAction<T>(
  * @param {any} _action - The mutation action to execute.
  * @returns {readonly [(params?: any) => Promise<void>, boolean]} Tuple containing [mutate function, loading state].
  */
-export function useMutateAction(_action: any): readonly [(params?: any) => Promise<void>, boolean] {
+export function useMutateAction<T>(actionFn: (params?: any) => Promise<T>): readonly [(params?: any) => Promise<T>, boolean] {
+    const [loading, setLoading] = useState(false);
+
     const mutate = async (params?: any) => {
-        console.log('Mock mutate called with params:', params);
-        return Promise.resolve();
+        setLoading(true);
+        try {
+            const result = await actionFn(params);
+            return result;
+        } finally {
+            setLoading(false);
+        }
     };
-    return [mutate, false] as const;
+    return [mutate, loading] as const;
 }
 
 export function action(name: string, _type: string, params: any) {
     console.log(`Action called: ${name}`, params);
-    return Promise.resolve([]);
+    return Promise.resolve([] as any[]);
 }

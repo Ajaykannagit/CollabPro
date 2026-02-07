@@ -8,8 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import loadLicensingOpportunitiesAction from '@/actions/loadLicensingOpportunities';
 import { formatINRCompact, usdToINR } from '@/lib/currency';
-import { Store, Search, Eye, MessageCircle } from 'lucide-react';
+import { Store, Search, Eye, MessageCircle, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import createLicensingInquiryAction from '@/actions/createLicensingInquiry';
+
 
 type LicensingOpportunity = {
   id: number;
@@ -27,11 +29,38 @@ type LicensingOpportunity = {
 export function LicensingMarketplace() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
+  const [processingId, setProcessingId] = useState<number | null>(null);
   const [opportunities, loading, error] = useLoadAction(
     loadLicensingOpportunitiesAction,
     [],
     { industrySector: searchQuery || null }
   );
+
+  const handleExpressInterest = async (opp: LicensingOpportunity) => {
+    setProcessingId(opp.id);
+    try {
+      await createLicensingInquiryAction({
+        licensing_opportunity_id: opp.id,
+        inquirer_name: 'Current User', // Replace with actual user context
+        inquirer_email: 'user@example.com',
+        inquirer_organization: 'My Organization',
+        message: `I am interested in licensing ${opp.anonymized_title}.`
+      });
+
+      toast({
+        title: "Interest Recorded",
+        description: `We have notified the IP holder of ${opp.anonymized_title}.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Failed to record interest",
+        description: err.message,
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   return (
     <div className="p-8">
@@ -126,15 +155,15 @@ export function LicensingMarketplace() {
                   <Button
                     size="sm"
                     className="flex-1"
-                    onClick={() => {
-                      toast({
-                        title: "Interest Expressed",
-                        description: `Your interest in ${opp.anonymized_title} has been recorded.`,
-                      });
-                    }}
+                    onClick={() => handleExpressInterest(opp)}
+                    disabled={processingId === opp.id}
                   >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Express Interest
+                    {processingId === opp.id ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                    )}
+                    {processingId === opp.id ? 'Sending...' : 'Express Interest'}
                   </Button>
                   <Button
                     size="sm"

@@ -13,6 +13,12 @@ import { MessageSquare, FileText, Send, Building2, GraduationCap } from 'lucide-
 import { formatINR } from '@/lib/currency';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
+import { useUser } from '@/contexts/UserContext';
+import createProjectScopeAction from '@/actions/createProjectScope';
+import approveProjectScopeAction from '@/actions/approveProjectScope';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type NegotiationMessage = {
   id: string;
@@ -54,18 +60,65 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
   );
   const [sendMessage, sending] = useMutateAction(createNegotiationMessageAction);
   const { toast } = useToast();
+  const { user, loading: userLoading } = useUser();
+
+  // Scope Management State
+  const [isScopeDialogOpen, setIsScopeDialogOpen] = useState(false);
+  const [scopeDescription, setScopeDescription] = useState('');
+  const [deliverables, setDeliverables] = useState('');
+  const [timeline, setTimeline] = useState('');
+  const [budget, setBudget] = useState('');
+  const [submittingScope, setSubmittingScope] = useState(false);
+  const [approvingScope, setApprovingScope] = useState(false);
+  const currentScope = thread[0]?.current_scope;
+
+  const handleCreateScope = async () => {
+    if (!threadData || !user) return;
+    setSubmittingScope(true);
+    try {
+      await createProjectScopeAction({
+        collaborationRequestId: collaborationRequestId,
+        versionNumber: (currentScope?.version_number || 0) + 1,
+        scopeDescription,
+        deliverables,
+        timeline,
+        budget: parseFloat(budget) || 0,
+        createdBy: user.name
+      });
+      toast({ title: "Scope Proposed", description: "New version of scope has been submitted." });
+      setIsScopeDialogOpen(false);
+      refresh();
+    } catch (e: any) {
+      toast({ title: "Failed to propose scope", description: e.message, variant: "destructive" });
+    } finally {
+      setSubmittingScope(false);
+    }
+  };
+
+  const handleApproveScope = async () => {
+    if (!currentScope || !user) return;
+    setApprovingScope(true);
+    try {
+      await approveProjectScopeAction({ scopeId: parseInt(currentScope.id), approvedBy: user.name });
+      toast({ title: "Scope Approved", description: "Project scope has been finalized." });
+      refresh();
+    } catch (e: any) {
+      toast({ title: "Approval Failed", description: e.message, variant: "destructive" });
+    } finally {
+      setApprovingScope(false);
+    }
+  };
 
   const threadData = thread[0];
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !threadData) return;
+    if (!newMessage.trim() || !threadData || !user) return;
 
     try {
       await sendMessage({
         threadId: threadData.thread_id,
-        // TODO: Replace with actual sender info from user session
-        senderName: 'Rajesh Kumar', 
-        senderOrganization: 'NHSRCL',
+        senderName: user.name,
+        senderOrganization: user.organization,
         messageType: 'text',
         content: newMessage,
       });
@@ -77,15 +130,13 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
     }
   };
 
-  if (loading || !threadData) {
+  if (loading || userLoading || !threadData || !user) {
     return (
       <div className="p-8">
         <p className="text-gray-500">Loading negotiation workspace...</p>
       </div>
     );
   }
-
-  const currentScope = threadData.current_scope;
 
   return (
     <>
@@ -111,8 +162,8 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
                     <div className="flex items-start gap-3">
                       <div
                         className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold ${message.sender_organization === 'NHSRCL'
-                            ? 'bg-blue-600'
-                            : 'bg-purple-600'
+                          ? 'bg-blue-600'
+                          : 'bg-purple-600'
                           }`}
                       >
                         {message.sender_organization === 'NHSRCL' ? (
@@ -212,11 +263,16 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
                   </div>
 
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setIsScopeDialogOpen(true)}>
                       Propose Changes
                     </Button>
-                    <Button size="sm" className="flex-1">
-                      Approve Scope
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={handleApproveScope}
+                      disabled={approvingScope}
+                    >
+                      {approvingScope ? 'Approving...' : 'Approve Scope'}
                     </Button>
                   </div>
                 </>
@@ -224,7 +280,7 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
                 <div className="text-center py-12">
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600">No project scope defined yet</p>
-                  <Button className="mt-4" size="sm">
+                  <Button className="mt-4" size="sm" onClick={() => setIsScopeDialogOpen(true)}>
                     Create Initial Scope
                   </Button>
                 </div>
@@ -234,6 +290,58 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
         </div>
       </div>
       <Toaster />
+
+      <Dialog open={isScopeDialogOpen} onOpenChange={setIsScopeDialogOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Propose Project Scope v{(currentScope?.version_number || 0) + 1}</DialogTitle>
+            <DialogDescription>Define the deliverables, timeline, and budget.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Scope Description</Label>
+              <Textarea
+                placeholder="Detailed description of work..."
+                value={scopeDescription}
+                onChange={(e) => setScopeDescription(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Deliverables</Label>
+              <Textarea
+                placeholder="List of key deliverables..."
+                value={deliverables}
+                onChange={(e) => setDeliverables(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Timeline</Label>
+                <Input
+                  placeholder="e.g. 6 months"
+                  value={timeline}
+                  onChange={(e) => setTimeline(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Budget (INR)</Label>
+                <Input
+                  type="number"
+                  placeholder="e.g. 500000"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setIsScopeDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateScope} disabled={submittingScope}>
+              {submittingScope ? 'Submitting...' : 'Propose Scope'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

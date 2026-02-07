@@ -8,6 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import loadIPDisclosuresAction from '@/actions/loadIPDisclosures';
 import { Lightbulb, FileText, Users, DollarSign } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+
+type IPPortfolioProps = {
+  onNavigate?: (section: any) => void;
+};
 
 type Contributor = {
   name: string;
@@ -31,7 +36,8 @@ type IPDisclosure = {
   created_at: string;
 };
 
-export function IPPortfolio() {
+export function IPPortfolio({ onNavigate }: IPPortfolioProps) {
+  const [selectedDisclosure, setSelectedDisclosure] = useState<IPDisclosure | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [disclosures, loading, error] = useLoadAction(
     loadIPDisclosuresAction,
@@ -214,12 +220,20 @@ export function IPPortfolio() {
                     )}
 
                     <div className="flex gap-2 pt-4 border-t">
-                      <Button size="sm" variant="outline">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedDisclosure(disclosure)}
+                      >
                         <FileText className="h-4 w-4 mr-2" />
                         View Details
                       </Button>
                       {disclosure.status === 'patented' && (
-                        <Button size="sm" variant="outline">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onNavigate && onNavigate('licensing')}
+                        >
                           <DollarSign className="h-4 w-4 mr-2" />
                           Licensing Options
                         </Button>
@@ -247,6 +261,44 @@ export function IPPortfolio() {
           )}
         </TabsContent>
       </Tabs>
-    </div>
+
+      <Dialog open={!!selectedDisclosure} onOpenChange={(open) => !open && setSelectedDisclosure(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedDisclosure?.title}</DialogTitle>
+            <DialogDescription>
+              {selectedDisclosure?.invention_category} - {selectedDisclosure?.status.replace('_', ' ')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold mb-1">Description</h4>
+              <p className="text-sm text-gray-700">{selectedDisclosure?.description}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h4 className="font-semibold mb-1">Filing Date</h4>
+                <p className="text-sm">{selectedDisclosure?.filing_date ? new Date(selectedDisclosure.filing_date).toLocaleDateString() : 'N/A'}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-1">Patent Number</h4>
+                <p className="text-sm">{selectedDisclosure?.patent_number || 'Pending'}</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-1">Contributors</h4>
+              <ul className="list-disc pl-5 text-sm">
+                {selectedDisclosure?.contributors?.map((c, i) => (
+                  <li key={i}>{c.name} ({c.organization}) - {c.role}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-gray-50 p-3 rounded text-xs font-mono">
+              ID: {selectedDisclosure?.id} | Project: {selectedDisclosure?.project_name}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div >
   );
 }

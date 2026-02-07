@@ -1,13 +1,19 @@
 
-import { useLoadAction } from '@/lib/data-actions';
+
+import { useState } from 'react';
+import { useLoadAction, useMutateAction } from '@/lib/data-actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import loadCollaborationRequestsAction from '@/actions/loadCollaborationRequests';
 import loadResearchProjectsAction from '@/actions/loadResearchProjects';
 import loadIndustryChallengesAction from '@/actions/loadIndustryChallenges';
+import createResearchProjectAction from '@/actions/createResearchProject';
 import { TrendingUp, Briefcase, Target, Users, ArrowRight, Sparkles, Activity, Clock } from 'lucide-react';
-// motion import removed as it is handled by AnimationWrapper components
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Counter, ShinyButton } from '@/components/ui/animated-primitives';
 import { useTestData } from '@/contexts/TestDataContext';
@@ -15,14 +21,25 @@ import { CollaborationRequest, ResearchProject, IndustryChallenge } from '@/lib/
 import { useToast } from "@/hooks/use-toast";
 import { StaggerContainer, FadeInUp, SpringPress } from '@/components/ui/animation-wrapper';
 
-// Replaced by AnimationWrapper presets for consistency
+type DashboardOverviewProps = {
+  onNavigate?: (section: any) => void;
+  onProjectSelect?: (projectId: number) => void;
+};
 
-export function DashboardOverview() {
+export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOverviewProps) {
   const { toast } = useToast();
   const { metrics, chartData } = useTestData();
   const [requests] = useLoadAction<CollaborationRequest[]>(loadCollaborationRequestsAction, [], { status: null });
   const [projects] = useLoadAction<ResearchProject[]>(loadResearchProjectsAction, [], { searchQuery: null });
   const [challenges] = useLoadAction<IndustryChallenge[]>(loadIndustryChallengesAction, [], { searchQuery: null });
+
+  const [createProject, creatingProject] = useMutateAction(createResearchProjectAction);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newProject, setNewProject] = useState({
+    title: '',
+    description: '',
+    fundingAllocated: 500000
+  });
 
   const safeRequests = requests || [];
   const safeProjects = projects || [];
@@ -30,6 +47,51 @@ export function DashboardOverview() {
   const recentActivity = safeProjects.slice(0, 5);
 
   const pendingRequests = safeRequests.filter((r: CollaborationRequest) => r.status === 'pending').length;
+
+  const handleCreateProject = async () => {
+    try {
+      if (!newProject.title || !newProject.description) {
+        toast({
+          title: "Validation Error",
+          description: "Please fill in all required fields",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const result = await createProject({
+        title: newProject.title,
+        description: newProject.description,
+        collegeId: 1, // Hardcoded for demo/MVP - assuming current user's college
+        fundingAllocated: newProject.fundingAllocated
+      });
+
+      toast({
+        title: "Project Created",
+        description: "Research initiative initiated successfully.",
+      });
+
+      setIsDialogOpen(false);
+      setNewProject({ title: '', description: '', fundingAllocated: 500000 });
+
+      // Navigate to the new project if we have an ID and handler
+      // result is likely an array from the SQL action
+      const createdId = Array.isArray(result) && result.length > 0 ? result[0].id : (result as any)?.id;
+
+      if (createdId && onProjectSelect) {
+        onProjectSelect(createdId);
+      } else if (onNavigate) {
+        onNavigate('projects');
+      }
+
+    } catch (error: any) {
+      toast({
+        title: "Creation Failed",
+        description: error.message || "Failed to create project",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Map icons to the metrics from context
   const iconMap: Record<string, React.ElementType> = {
@@ -42,14 +104,12 @@ export function DashboardOverview() {
   const displayMetrics = metrics.map(m => ({
     ...m,
     icon: iconMap[m.title] || Briefcase,
-    // Prefer real counts if available, else use test data value
     value: m.title === 'Active Projects' ? (safeProjects.length || m.value) :
       m.title === 'Open Challenges' ? (safeChallenges.length || m.value) :
         m.title === 'Pending Requests' ? (pendingRequests || m.value) :
           m.value
   }));
 
-  // Enhance chart data to reflect real project counts per month (mocked trend based on real count)
   const currentCount = safeProjects.length || 10;
   const historicChartData = chartData.map((d, i) => ({
     ...d,
@@ -67,18 +127,12 @@ export function DashboardOverview() {
           <Button variant="outline" className="border-white/10 bg-white/5 text-gray-300 hover:text-white hover:bg-white/10">
             <Clock className="mr-2 h-4 w-4" /> Last 30 Days
           </Button>
-          <ShinyButton onClick={() => {
-            toast({
-              title: "New Project",
-              description: "Redirecting to project creation wizard...",
-            });
-          }}>
+          <ShinyButton onClick={() => setIsDialogOpen(true)}>
             <span className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> New Project</span>
           </ShinyButton>
         </div>
       </div>
 
-      {/* Metrics Grid */}
       <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {displayMetrics.map((metric, idx) => {
           const Icon = metric.icon;
@@ -111,11 +165,7 @@ export function DashboardOverview() {
       </StaggerContainer>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* Main Chart Section */}
-        <FadeInUp
-          delay={0.3}
-          className="lg:col-span-2"
-        >
+        <FadeInUp delay={0.3} className="lg:col-span-2">
           <Card className="h-full border-white/10 bg-white/5 backdrop-blur-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
@@ -134,33 +184,10 @@ export function DashboardOverview() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      stroke="#52525b"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#52525b"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `${value}`}
-                    />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#f4f4f5' }}
-                      itemStyle={{ color: '#e4e4e7' }}
-                      cursor={{ stroke: 'rgba(255,255,255,0.1)' }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={3}
-                      fillOpacity={1}
-                      fill="url(#colorValue)"
-                    />
+                    <XAxis dataKey="name" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                    <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#f4f4f5' }} itemStyle={{ color: '#e4e4e7' }} cursor={{ stroke: 'rgba(255,255,255,0.1)' }} />
+                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -168,11 +195,7 @@ export function DashboardOverview() {
           </Card>
         </FadeInUp>
 
-        {/* Recent Activity Feed */}
-        <FadeInUp
-          delay={0.4}
-          className="lg:col-span-1"
-        >
+        <FadeInUp delay={0.4} className="lg:col-span-1">
           <Card className="h-full border-white/10 bg-white/5 backdrop-blur-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
@@ -183,16 +206,15 @@ export function DashboardOverview() {
             <CardContent>
               <StaggerContainer className="space-y-4">
                 {recentActivity.map((project: ResearchProject, i: number) => (
-                  <FadeInUp
-                    key={project.id || i}
-                  >
+                  <FadeInUp key={project.id || i}>
                     <SpringPress
                       className="group flex items-center justify-between p-3 rotate-0 bg-white/5 hover:bg-white/10 rounded-xl transition-all duration-300 border border-transparent hover:border-white/10 cursor-pointer"
                       onClick={() => {
-                        toast({
-                          title: "Activity Details",
-                          description: `Viewing details for: ${project.title || "Research Initiative"}`,
-                        });
+                        if (project.id && onProjectSelect) {
+                          onProjectSelect(project.id);
+                        } else if (onNavigate) {
+                          onNavigate('projects');
+                        }
                       }}
                     >
                       <div className="flex-1 min-w-0">
@@ -210,12 +232,7 @@ export function DashboardOverview() {
                 <Button
                   variant="ghost"
                   className="w-full text-gray-400 hover:text-white hover:bg-white/5 mt-2"
-                  onClick={() => {
-                    toast({
-                      title: "View All Activity",
-                      description: "Loading full activity log...",
-                    });
-                  }}
+                  onClick={() => onNavigate && onNavigate('projects')}
                 >
                   View All Activity
                 </Button>
@@ -224,6 +241,52 @@ export function DashboardOverview() {
           </Card>
         </FadeInUp>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-[#18181b] text-white border-white/10">
+          <DialogHeader>
+            <DialogTitle>Start New Research Project</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Project Title</Label>
+              <Input
+                id="title"
+                value={newProject.title}
+                onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+                className="bg-white/5 border-white/10"
+                placeholder="e.g., Nanotech Water Filtration"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Brief Description</Label>
+              <Textarea
+                id="description"
+                value={newProject.description}
+                onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                className="bg-white/5 border-white/10"
+                placeholder="Describe the research goals..."
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="funding">Initial Funding Request (INR)</Label>
+              <Input
+                id="funding"
+                type="number"
+                value={newProject.fundingAllocated}
+                onChange={(e) => setNewProject({ ...newProject, fundingAllocated: parseInt(e.target.value) })}
+                className="bg-white/5 border-white/10"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="border-white/10 bg-transparent text-white hover:bg-white/10">Cancel</Button>
+            <Button onClick={handleCreateProject} disabled={creatingProject} className="bg-primary hover:bg-primary/90">
+              {creatingProject ? 'Creating...' : 'Create Project'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

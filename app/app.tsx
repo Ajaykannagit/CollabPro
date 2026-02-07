@@ -32,6 +32,7 @@ import { DatabaseStatus } from '@/components/DatabaseStatus';
 
 function App() {
   const [activeSection, setActiveSection] = useState<NavSection>('dashboard');
+  const [activeProjectId, setActiveProjectId] = useState<number>(1);
   const { unreadCount } = useNotifications();
 
   useEffect(() => {
@@ -60,6 +61,12 @@ function App() {
     { id: 'licensing' as NavSection, label: 'Licensing Market', icon: Target },
     { id: 'analytics' as NavSection, label: 'Analytics', icon: Target },
   ];
+
+  // Helper to handle navigation to a specific project
+  const navigateToProject = (projectId: number) => {
+    setActiveProjectId(projectId);
+    setActiveSection('workspace');
+  };
 
   return (
     <TestDataProvider>
@@ -174,21 +181,26 @@ function App() {
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 className="h-full max-w-7xl mx-auto"
               >
-                {activeSection === 'dashboard' && <DashboardOverview />}
+                {activeSection === 'dashboard' && (
+                  <DashboardOverview
+                    onNavigate={setActiveSection}
+                    onProjectSelect={navigateToProject}
+                  />
+                )}
                 {activeSection === 'projects' && <ProjectDiscovery />}
-                {activeSection === 'challenges' && <IndustryChallengesBoard />}
-                {activeSection === 'partners' && <UniversityProfiles />}
+                {activeSection === 'challenges' && <IndustryChallengesBoard onNavigate={setActiveSection} />}
+                {activeSection === 'partners' && <UniversityProfiles onNavigate={setActiveSection} />}
                 {activeSection === 'matchmaking' && <AIMatchmaking />}
                 {activeSection === 'agreement-review' && <AgreementCompareReview />}
                 {activeSection === 'digital-signature' && <DigitalSignature />}
                 {activeSection === 'notifications' && <NotificationsPanel />}
-                {activeSection === 'workspace' && <ProjectWorkspace />}
+                {activeSection === 'workspace' && <ProjectWorkspace projectId={activeProjectId} />}
                 {activeSection === 'talent' && <TalentShowcase />}
-                {activeSection === 'ip' && <IPPortfolio />}
+                {activeSection === 'ip' && <IPPortfolio onNavigate={setActiveSection} />}
                 {activeSection === 'negotiate' && <NegotiationWorkspace collaborationRequestId={1} />}
                 {activeSection === 'agreement' && <AgreementGenerator collaborationRequestId={1} />}
                 {activeSection === 'ipdisclosure' && (
-                  <IPDisclosureForm activeProjectId={1} onSuccess={() => setActiveSection('ip')} />
+                  <IPDisclosureForm activeProjectId={activeProjectId} onSuccess={() => setActiveSection('ip')} />
                 )}
                 {activeSection === 'licensing' && <LicensingMarketplace />}
                 {activeSection === 'analytics' && <AnalyticsDashboard />}
@@ -213,5 +225,3 @@ function App() {
 }
 
 export default App;
-
-

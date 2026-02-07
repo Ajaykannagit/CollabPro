@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     CheckCircle2,
     Clock,
@@ -11,12 +13,15 @@ import {
     UserCheck,
     Building,
     GraduationCap,
-    History
+    History,
+    Eraser,
+    MousePointer2
 } from 'lucide-react';
 import { useLoadAction } from '@/lib/data-actions';
 import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
 import { motion, AnimatePresence } from 'framer-motion';
 import signAgreement from '@/actions/signAgreement';
+import approveAgreement from '@/actions/approveAgreement';
 import { useToast } from "@/hooks/use-toast";
 
 type AuditEvent = {
@@ -31,6 +36,8 @@ type AgreementDetails = {
     status: string;
     college_signed_at: string | null;
     corporate_signed_at: string | null;
+    college_approval_status: boolean;
+    corporate_approval_status: boolean;
     // ... add other fields if needed, or use any for now to silence strict errors if lazy
     [key: string]: any;
 };
@@ -42,21 +49,103 @@ export function DigitalSignature({ collaborationRequestId = 1 }: { collaboration
     // Handle array return from action
     const agreement = agreements?.[0] as AgreementDetails | undefined;
 
+
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return '';
+        return new Date(dateString).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
     const signatureWorkflow = {
         status: agreement?.status || 'draft',
-        College_approval: !!agreement?.college_signed_at,
-        corporate_approval: !!agreement?.corporate_signed_at,
+        College_approval: !!agreement?.college_approval_status,
+        corporate_approval: !!agreement?.corporate_approval_status,
         College_signed: !!agreement?.college_signed_at,
         corporate_signed: !!agreement?.corporate_signed_at,
         audit_trail: [
-            { id: '1', event: 'Agreement Draft Created', actor: 'System', timestamp: agreement?.created_at || 'Jan 10, 2024' },
-            { id: '2', event: 'Legal Review Initiated', actor: 'Legal Dept', timestamp: 'Jan 11, 2024' },
-            agreement?.college_signed_at ? { id: '3', event: 'College Signature Applied', actor: agreement.college_signatory || 'Dean', timestamp: agreement.college_signed_at } : null,
-            agreement?.corporate_signed_at ? { id: '4', event: 'Corporate Signature Applied', actor: agreement.corporate_signatory || 'CEO', timestamp: agreement.corporate_signed_at } : null,
+            { id: '1', event: 'Agreement Draft Created', actor: 'System', timestamp: formatDate(agreement?.created_at) || 'Jan 10, 2024' },
+            { id: '2', event: 'Legal Review Initiated', actor: 'Legal Dept', timestamp: agreement?.created_at ? formatDate(new Date(new Date(agreement.created_at).getTime() + 86400000).toISOString()) : 'Jan 11, 2024' },
+            agreement?.college_approval_status ? { id: '3', event: 'College Approval Granted', actor: 'Legal Committee', timestamp: formatDate(agreement.created_at) } : null,
+            agreement?.corporate_approval_status ? { id: '4', event: 'Corporate Approval Granted', actor: 'Compliance Board', timestamp: formatDate(agreement.created_at) } : null,
+            agreement?.college_signed_at ? { id: '5', event: 'College Signature Applied', actor: agreement.college_signatory || 'Dean', timestamp: formatDate(agreement.college_signed_at) } : null,
+            agreement?.corporate_signed_at ? { id: '6', event: 'Corporate Signature Applied', actor: agreement.corporate_signatory || 'CEO', timestamp: formatDate(agreement.corporate_signed_at) } : null,
         ].filter(Boolean) as AuditEvent[]
     };
     const [isSigning, setIsSigning] = useState(false);
     const [signature, setSignature] = useState('');
+    const [activeRole, setActiveRole] = useState<'college' | 'corporate'>('college');
+    const [signatureMode, setSignatureMode] = useState<'type' | 'draw'>('type');
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isDrawing, setIsDrawing] = useState(false);
+
+    // Canvas Drawing Logic
+    const startDrawing = (e: any) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        setIsDrawing(true);
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    };
+
+    const draw = (e: any) => {
+        if (!isDrawing) return;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    };
+
+    const stopDrawing = () => {
+        setIsDrawing(false);
+        if (canvasRef.current) {
+            setSignature(canvasRef.current.toDataURL());
+        }
+    };
+
+    const clearCanvas = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        setSignature('');
+    };
+
+    const handleApproval = async (role: 'college' | 'corporate') => {
+        try {
+            await approveAgreement({ agreementId: agreement!.id, role });
+            toast({
+                title: "Approval Granted",
+                description: `${role === 'college' ? 'College' : 'Corporate'} approval recorded successfully.`,
+            });
+            refresh();
+        } catch (error: any) {
+            toast({
+                title: "Approval Failed",
+                description: error.message,
+                variant: 'destructive'
+            });
+        }
+    };
 
     if (loading || !agreement) {
         return <div className="p-8 text-slate-400">Loading signature workflow...</div>;
@@ -83,9 +172,24 @@ export function DigitalSignature({ collaborationRequestId = 1 }: { collaboration
                         </h1>
                         <p className="text-slate-400 mt-2">Track approvals and execute legal agreements securely</p>
                     </div>
-                    <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 px-4 py-1 text-sm font-bold">
-                        SECURE AUDIT ENABLED
-                    </Badge>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5">
+                            <MousePointer2 className="h-4 w-4 text-slate-400" />
+                            <span className="text-xs text-slate-400 font-medium mr-2">Simulate Role:</span>
+                            <Select value={activeRole} onValueChange={(val: any) => setActiveRole(val)}>
+                                <SelectTrigger className="w-[140px] h-8 bg-black/20 border-white/10 text-xs">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="college">College Admin</SelectItem>
+                                    <SelectItem value="corporate">Corporate Exec</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 px-4 py-1 text-sm font-bold">
+                            SECURE AUDIT ENABLED
+                        </Badge>
+                    </div>
                 </div>
 
                 {/* Stepper */}
@@ -158,13 +262,8 @@ export function DigitalSignature({ collaborationRequestId = 1 }: { collaboration
 
                                         <Button
                                             className="w-full h-12 bg-white/5 hover:bg-white/10 text-slate-300 font-bold border border-white/10"
-                                            disabled={signatureWorkflow.College_approval}
-                                            onClick={() => {
-                                                toast({
-                                                    title: "Approval Logic",
-                                                    description: "This would trigger a specific approval workflow for the College.",
-                                                });
-                                            }}
+                                            disabled={signatureWorkflow.College_approval || activeRole !== 'college'}
+                                            onClick={() => handleApproval('college')}
                                         >
                                             {signatureWorkflow.College_approval ? 'Approval Granted' : 'Grant Approval'}
                                         </Button>
@@ -198,15 +297,10 @@ export function DigitalSignature({ collaborationRequestId = 1 }: { collaboration
 
                                         <Button
                                             className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-lg shadow-purple-500/20"
-                                            disabled={signatureWorkflow.corporate_approval}
-                                            onClick={() => {
-                                                toast({
-                                                    title: "Processing Approval",
-                                                    description: "Initiating corporate compliance check...",
-                                                });
-                                            }}
+                                            disabled={signatureWorkflow.corporate_approval || activeRole !== 'corporate'}
+                                            onClick={() => handleApproval('corporate')}
                                         >
-                                            Process Approval
+                                            {signatureWorkflow.corporate_approval ? 'Approved' : 'Process Approval'}
                                         </Button>
                                     </div>
                                 </div>
@@ -304,30 +398,58 @@ export function DigitalSignature({ collaborationRequestId = 1 }: { collaboration
                                 </h3>
                             </div>
                             <div className="p-8 space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Type your full name</label>
-                                    <input
-                                        type="text"
-                                        value={signature}
-                                        onChange={(e) => setSignature(e.target.value)}
-                                        placeholder="Enter full legal name"
-                                        className="w-full h-12 bg-white/5 border border-white/10 rounded-lg px-4 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                    />
-                                </div>
+                                <Tabs defaultValue="type" value={signatureMode} onValueChange={(v: any) => setSignatureMode(v)} className="w-full">
+                                    <TabsList className="grid w-full grid-cols-2 mb-4 bg-black/20">
+                                        <TabsTrigger value="type">Type Signature</TabsTrigger>
+                                        <TabsTrigger value="draw">Draw Signature</TabsTrigger>
+                                    </TabsList>
 
-                                <div className="p-24 border-2 border-dashed border-white/5 rounded-xl bg-black/20 flex items-center justify-center relative group cursor-crosshair">
-                                    {signature ? (
-                                        <span className="text-4xl font-signature text-blue-400 select-none" style={{ fontFamily: '"Great Vibes", cursive' }}>
-                                            {signature}
-                                        </span>
-                                    ) : (
-                                        <span className="text-slate-700 text-sm font-medium">Draw signature area</span>
-                                    )}
-                                    <div className="absolute bottom-4 right-4 text-[10px] text-slate-600 flex items-center gap-1">
-                                        <ShieldCheck className="h-3 w-3" />
-                                        Biometric cryptographically secured
-                                    </div>
-                                </div>
+                                    <TabsContent value="type" className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Type your full name</label>
+                                            <input
+                                                type="text"
+                                                value={signature}
+                                                onChange={(e) => setSignature(e.target.value)}
+                                                placeholder="Enter full legal name"
+                                                className="w-full h-12 bg-white/5 border border-white/10 rounded-lg px-4 text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                            />
+                                        </div>
+                                        {signature && (
+                                            <div className="p-8 border border-dashed border-white/10 rounded-xl bg-black/20 flex items-center justify-center">
+                                                <span className="text-4xl font-signature text-blue-400 select-none" style={{ fontFamily: '"Great Vibes", cursive' }}>
+                                                    {signature}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </TabsContent>
+
+                                    <TabsContent value="draw" className="space-y-4">
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between items-center">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Draw your signature</label>
+                                                <Button size="sm" variant="ghost" onClick={clearCanvas} className="h-6 text-xs text-red-400 hover:text-red-300">
+                                                    <Eraser className="h-3 w-3 mr-1" /> Clear
+                                                </Button>
+                                            </div>
+                                            <div className="border-2 border-dashed border-white/10 rounded-xl bg-white bg-opacity-[0.02] overflow-hidden flex items-center justify-center relative h-48">
+                                                <canvas
+                                                    ref={canvasRef}
+                                                    width={400}
+                                                    height={192}
+                                                    className="w-full h-full cursor-crosshair touch-none"
+                                                    onMouseDown={startDrawing}
+                                                    onMouseMove={draw}
+                                                    onMouseUp={stopDrawing}
+                                                    onMouseLeave={stopDrawing}
+                                                    onTouchStart={startDrawing}
+                                                    onTouchMove={draw}
+                                                    onTouchEnd={stopDrawing}
+                                                />
+                                            </div>
+                                        </div>
+                                    </TabsContent>
+                                </Tabs>
 
                                 <div className="flex gap-3">
                                     <Button
@@ -342,10 +464,7 @@ export function DigitalSignature({ collaborationRequestId = 1 }: { collaboration
                                         disabled={!signature}
                                         onClick={async () => {
                                             try {
-                                                // Determine role based on what's missing (simulated logic, usually based on logged in user)
-                                                // If college hasn't signed, sign as college. Else corporate.
-                                                const role = !agreement.college_signed_at ? 'college' : 'corporate';
-
+                                                const role = activeRole;
                                                 await signAgreement(agreement.id, signature, role);
 
                                                 toast({

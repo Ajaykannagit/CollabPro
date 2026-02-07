@@ -3,16 +3,37 @@
 import { useLoadAction } from '@/lib/data-actions';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import loadPlatformAnalyticsAction from '@/actions/loadPlatformAnalytics';
+import loadMonthlyTrendsAction from '@/actions/loadMonthlyTrends';
+import loadExpertiseDistributionAction from '@/actions/loadExpertiseDistribution';
 import { formatINRCompact, usdToINR } from '@/lib/currency';
 import { BarChart3, TrendingUp, Users, Briefcase, DollarSign, Award, Target } from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface AnalyticsMetric {
   metric_name: string;
   metric_value: number;
 }
 
+interface MonthlyTrend {
+  month_label: string;
+  timestamp: number;
+  total_requests: number;
+  approved_requests: number;
+  signed_agreements: number;
+  avg_budget: number;
+}
+
+interface ExpertiseArea {
+  expertise_area: string;
+  project_count: number;
+  collaboration_count: number;
+  total_funding: number;
+}
+
 export function AnalyticsDashboard() {
   const [analytics] = useLoadAction<AnalyticsMetric[]>(loadPlatformAnalyticsAction, [], { category: null });
+  const [monthlyTrends, loadingTrends] = useLoadAction<MonthlyTrend[]>(loadMonthlyTrendsAction, []);
+  const [expertiseAreas, loadingExpertise] = useLoadAction<ExpertiseArea[]>(loadExpertiseDistributionAction, []);
 
   const getMetric = (name: string) => {
     const metric = analytics.find((m: AnalyticsMetric) => m.metric_name === name);
@@ -95,14 +116,72 @@ export function AnalyticsDashboard() {
         })}
       </div>
 
-      {/* Charts Placeholder */}
+      {/* Charts */}
       <div className="grid lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Monthly Collaboration Trends</CardTitle>
           </CardHeader>
-          <CardContent className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-            <p className="text-gray-500">Chart visualization coming soon...</p>
+          <CardContent className="h-80">
+            {loadingTrends ? (
+              <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg">
+                <p className="text-gray-500">Loading chart data...</p>
+              </div>
+            ) : monthlyTrends && monthlyTrends.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={monthlyTrends}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
+                    dataKey="month_label"
+                    tick={{ fontSize: 12 }}
+                    stroke="#6b7280"
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    stroke="#6b7280"
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#fff',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      fontSize: '12px'
+                    }}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: '12px' }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="total_requests"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    name="Total Requests"
+                    dot={{ fill: '#3b82f6', r: 4 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="approved_requests"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    name="Approved"
+                    dot={{ fill: '#10b981', r: 4 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="signed_agreements"
+                    stroke="#8b5cf6"
+                    strokeWidth={2}
+                    name="Signed"
+                    dot={{ fill: '#8b5cf6', r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg">
+                <p className="text-gray-500">No trend data available</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -110,8 +189,57 @@ export function AnalyticsDashboard() {
           <CardHeader>
             <CardTitle>Top Expertise Areas</CardTitle>
           </CardHeader>
-          <CardContent className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-            <p className="text-gray-500">Chart visualization coming soon...</p>
+          <CardContent className="h-80">
+            {loadingExpertise ? (
+              <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg">
+                <p className="text-gray-500">Loading chart data...</p>
+              </div>
+            ) : expertiseAreas && expertiseAreas.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={expertiseAreas} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 12 }}
+                    stroke="#6b7280"
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="expertise_area"
+                    width={150}
+                    tick={{ fontSize: 11 }}
+                    stroke="#6b7280"
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#fff',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      fontSize: '12px'
+                    }}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: '12px' }}
+                  />
+                  <Bar
+                    dataKey="project_count"
+                    fill="#3b82f6"
+                    name="Projects"
+                    radius={[0, 4, 4, 0]}
+                  />
+                  <Bar
+                    dataKey="collaboration_count"
+                    fill="#10b981"
+                    name="Collaborations"
+                    radius={[0, 4, 4, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg">
+                <p className="text-gray-500">No expertise data available</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

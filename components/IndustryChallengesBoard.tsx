@@ -26,7 +26,11 @@ type IndustryChallenge = {
   created_at: string;
 };
 
-export function IndustryChallengesBoard() {
+type IndustryChallengesBoardProps = {
+  onNavigate?: (section: any) => void;
+};
+
+export function IndustryChallengesBoard({ onNavigate }: IndustryChallengesBoardProps) {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -154,10 +158,18 @@ export function IndustryChallengesBoard() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    toast({
-                      title: "Matching Projects",
-                      description: `Finding projects compatible with ${challenge.title}...`,
-                    });
+                    if (onNavigate) {
+                      onNavigate('matchmaking');
+                      toast({
+                        title: "Finding Matches",
+                        description: `Redirecting to AI Matchmaking for ${challenge.title}...`
+                      });
+                    } else {
+                      toast({
+                        title: "Matching Projects",
+                        description: `Finding projects compatible with ${challenge.title}...`,
+                      });
+                    }
                   }}
                 >
                   View Matching Projects

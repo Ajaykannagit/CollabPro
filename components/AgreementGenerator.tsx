@@ -1,5 +1,6 @@
 // Agreement template generator and review interface
 
+import { useState, useEffect } from 'react';
 import { useLoadAction } from '@/lib/data-actions';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
 import { FileText, CheckCircle2, AlertCircle, User } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/lib/supabase';
 
 type AgreementDetails = {
   id: number;
@@ -30,6 +32,15 @@ type AgreementDetails = {
   company_name: string;
 };
 
+type ChecklistItem = {
+  id: number;
+  agreement_id: number;
+  item_label: string;
+  item_key: string;
+  is_checked: boolean;
+  display_order: number;
+};
+
 type AgreementGeneratorProps = {
   collaborationRequestId: number;
 };
@@ -43,6 +54,73 @@ export function AgreementGenerator({ collaborationRequestId }: AgreementGenerato
   );
 
   const agreementData = agreement[0];
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
+  const [loadingChecklist, setLoadingChecklist] = useState(false);
+
+  // Load checklist items when agreement is loaded
+  useEffect(() => {
+    const loadChecklist = async () => {
+      if (!agreementData?.id) return;
+
+      setLoadingChecklist(true);
+      try {
+        const { data, error } = await supabase
+          .from('agreement_checklist_items')
+          .select('*')
+          .eq('agreement_id', agreementData.id)
+          .order('display_order', { ascending: true });
+
+        if (error) throw error;
+        if (data) setChecklistItems(data);
+      } catch (error) {
+        console.error('Error loading checklist:', error);
+      } finally {
+        setLoadingChecklist(false);
+      }
+    };
+
+    loadChecklist();
+  }, [agreementData?.id]);
+
+  const handleChecklistChange = async (itemKey: string, checked: boolean) => {
+    if (!agreementData?.id) return;
+
+    // Optimistically update UI
+    setChecklistItems(prev =>
+      prev.map(item =>
+        item.item_key === itemKey ? { ...item, is_checked: checked } : item
+      )
+    );
+
+    try {
+      const { error } = await supabase
+        .from('agreement_checklist_items')
+        .update({ is_checked: checked, updated_at: new Date().toISOString() })
+        .eq('agreement_id', agreementData.id)
+        .eq('item_key', itemKey);
+
+      if (error) throw error;
+
+      const item = checklistItems.find(i => i.item_key === itemKey);
+      toast({
+        title: "Checklist Updated",
+        description: `${item?.item_label} marked as ${checked ? 'reviewed' : 'unreviewed'}.`,
+      });
+    } catch (error) {
+      console.error('Error updating checklist:', error);
+      // Revert optimistic update
+      setChecklistItems(prev =>
+        prev.map(item =>
+          item.item_key === itemKey ? { ...item, is_checked: !checked } : item
+        )
+      );
+      toast({
+        title: "Error",
+        description: "Failed to update checklist item.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (loading || !agreementData) {
     return (
@@ -214,40 +292,27 @@ export function AgreementGenerator({ collaborationRequestId }: AgreementGenerato
               <CardTitle>Legal Checklist</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-start gap-2">
-                <Checkbox id="legal1" defaultChecked onCheckedChange={(checked) => {
-                  toast({
-                    title: "Checklist Updated",
-                    description: `College IP policy mark as ${checked ? 'reviewed' : 'unreviewed'}.`,
-                  });
-                }} />
-                <label htmlFor="legal1" className="text-sm text-gray-700">
-                  College IP policy reviewed
-                </label>
-              </div>
-              <div className="flex items-start gap-2">
-                <Checkbox id="legal2" defaultChecked />
-                <label htmlFor="legal2" className="text-sm text-gray-700">
-                  Corporate compliance verified
-                </label>
-              </div>
-              <div className="flex items-start gap-2">
-                <Checkbox id="legal3" />
-                <label htmlFor="legal3" className="text-sm text-gray-700">
-                  Ethics committee approval
-                </label>
-              </div>
-              <div className="flex items-start gap-2">
-                <Checkbox id="legal4" onCheckedChange={(checked) => {
-                  toast({
-                    title: "Checklist Updated",
-                    description: `Data protection mark as ${checked ? 'compliant' : 'non-compliant'}.`,
-                  });
-                }} />
-                <label htmlFor="legal4" className="text-sm text-gray-700">
-                  Data protection compliance
-                </label>
-              </div>
+              {loadingChecklist ? (
+                <p className="text-xs text-gray-500">Loading checklist...</p>
+              ) : (
+                checklistItems.map((item) => (
+                  <div key={item.id} className="flex items-start gap-2">
+                    <Checkbox
+                      id={`checklist-${item.item_key}`}
+                      checked={item.is_checked}
+                      onCheckedChange={(checked) =>
+                        handleChecklistChange(item.item_key, checked as boolean)
+                      }
+                    />
+                    <label
+                      htmlFor={`checklist-${item.item_key}`}
+                      className="text-sm text-gray-700 cursor-pointer"
+                    >
+                      {item.item_label}
+                    </label>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
 

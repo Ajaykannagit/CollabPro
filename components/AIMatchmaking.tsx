@@ -1,13 +1,15 @@
 // AI-powered matchmaking view showing scored matches
 
+
 import { useState } from 'react';
-import { useLoadAction } from '@/lib/data-actions';
+import { useLoadAction, useMutateAction } from '@/lib/data-actions';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import loadMatchmakingScoresAction from '@/actions/loadMatchmakingScores';
-import { Sparkles, TrendingUp, Lightbulb, ArrowRight } from 'lucide-react';
+import createCollaborationRequestAction from '@/actions/createCollaborationRequest';
+import { Sparkles, TrendingUp, Lightbulb, ArrowRight, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 
@@ -37,6 +39,32 @@ export function AIMatchmaking() {
     { minScore }
   );
 
+  const [initiateCollaboration, initiating] = useMutateAction(createCollaborationRequestAction);
+
+  const handleInitiateCollaboration = async (match: MatchmakingScore) => {
+    try {
+      await initiateCollaboration({
+        corporatePartnerId: 1, // Hardcoded for demo - usually from session
+        researchProjectId: match.project_id,
+        industryChallengeId: match.challenge_id,
+        projectBrief: match.reasoning, // Use AI reasoning as initial brief
+        budgetProposed: 1000000, // Default placeholder
+        timelineProposed: '6 months' // Default placeholder
+      });
+
+      toast({
+        title: "Collaboration Initiated",
+        description: `Request sent to ${match.College_name} for ${match.project_title}`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Initiation Failed",
+        description: err.message || "Failed to send collaboration request",
+        variant: "destructive"
+      });
+    }
+  };
+
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'text-green-600 bg-green-100';
     if (score >= 80) return 'text-blue-600 bg-blue-100';
@@ -46,6 +74,7 @@ export function AIMatchmaking() {
 
   return (
     <div className="p-8">
+      {/* ... (Header and Score Filter remain unchanged) ... */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
           <Sparkles className="h-8 w-8 text-purple-600" />
@@ -202,15 +231,15 @@ export function AIMatchmaking() {
                 <div className="mt-6 pt-6 border-t flex gap-3">
                   <Button
                     className="flex-1"
-                    onClick={() => {
-                      toast({
-                        title: "Collaboration Initiated",
-                        description: `Initiating match between ${match.project_title} and ${match.challenge_title}.`,
-                      });
-                    }}
+                    onClick={() => handleInitiateCollaboration(match)}
+                    disabled={initiating}
                   >
-                    <ArrowRight className="h-4 w-4 mr-2" />
-                    Initiate Collaboration
+                    {initiating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <ArrowRight className="h-4 w-4 mr-2" />
+                    )}
+                    {initiating ? 'Initiating...' : 'Initiate Collaboration'}
                   </Button>
                   <Button
                     variant="outline"

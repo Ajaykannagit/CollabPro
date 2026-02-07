@@ -11,7 +11,7 @@ import loadCollegesAction from '@/actions/loadColleges';
 import { College } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 
-export function UniversityProfiles() {
+export function UniversityProfiles({ onNavigate }: { onNavigate?: (section: any) => void }) {
   const [collegesData, loading, error] = useLoadAction(loadCollegesAction, [] as College[]);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
@@ -147,7 +147,9 @@ export function UniversityProfiles() {
                         title: "Redirecting to Projects",
                         description: `Viewing projects for ${College.name}`,
                       });
-                      // navigate logic or routing here if available
+                      if (onNavigate) {
+                        onNavigate('challenges');
+                      }
                     }}
                   >
                     View Projects

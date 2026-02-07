@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import loadStudentProfilesAction from '@/actions/loadStudentProfiles';
-import { Search, GraduationCap, Briefcase, Mail, Star } from 'lucide-react';
+import { Search, GraduationCap, Briefcase, Mail, Star, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import createInterviewRequestAction from '@/actions/createInterviewRequest';
 
 type StudentProfile = {
   id: number;
@@ -30,6 +31,7 @@ export function TalentShowcase() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [degreeFilter, setDegreeFilter] = useState('');
+  const [requestingId, setRequestingId] = useState<number | null>(null);
   const [students, loading, error] = useLoadAction(
     loadStudentProfilesAction,
     [],
@@ -172,14 +174,33 @@ export function TalentShowcase() {
                   <Button
                     className="flex-1"
                     size="sm"
-                    onClick={() => {
-                      toast({
-                        title: "Interview Requested",
-                        description: `Request sent to ${student.name}.`,
-                      });
+                    disabled={requestingId === student.id}
+                    onClick={async () => {
+                      setRequestingId(student.id);
+                      try {
+                        await createInterviewRequestAction({
+                          studentProfileId: student.id,
+                          requesterName: 'Current User', // Replace with context
+                          requesterEmail: 'user@example.com',
+                          requesterOrganization: 'My Org'
+                        });
+                        toast({
+                          title: "Interview Requested",
+                          description: `Request sent to ${student.name}.`,
+                        });
+                      } catch (e: any) {
+                        toast({
+                          title: "Request Failed",
+                          description: e.message,
+                          variant: "destructive"
+                        });
+                      } finally {
+                        setRequestingId(null);
+                      }
                     }}
                   >
-                    Request Interview
+                    {requestingId === student.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {requestingId === student.id ? 'Sending...' : 'Request Interview'}
                   </Button>
                   <Button
                     variant="outline"
