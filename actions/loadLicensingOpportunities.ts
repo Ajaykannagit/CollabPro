@@ -15,8 +15,8 @@ function loadLicensingOpportunities() {
         lo.created_at,
         ip.invention_category,
         ip.status as ip_status
-      FROM Pretablename_licensing_opportunities lo
-      JOIN Pretablename_ip_disclosures ip ON lo.ip_disclosure_id = ip.id
+      FROM licensing_opportunities lo
+      JOIN ip_disclosures ip ON lo.ip_disclosure_id = ip.id
       WHERE 
         lo.visibility = 'public'
         AND (COALESCE({{params.industrySector}}, '') = '' OR lo.industry_sectors ILIKE {{ '%' + params.industrySector + '%' }})

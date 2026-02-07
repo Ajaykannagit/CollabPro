@@ -11,14 +11,33 @@ import {
     ArrowRight,
     PenTool
 } from 'lucide-react';
-import { useTestData } from '@/contexts/TestDataContext';
+import { useLoadAction } from '@/lib/data-actions';
+import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function AgreementCompareReview() {
-    const { agreementVersions, agreementComments } = useTestData();
-    const [v1Version, setV1Version] = useState(agreementVersions[0].version_number);
-    const [v2Version, setV2Version] = useState(agreementVersions[agreementVersions.length > 1 ? 1 : 0].version_number);
+    const [agreement, loading, error] = useLoadAction(loadAgreementDetailsAction, null, { collaborationRequestId: 1 });
+
+    // Transform single agreement into versions array for compatibility
+    const agreementVersions = agreement ? [{
+        version_number: '1.0',
+        created_at: agreement.created_at,
+        created_by: 'System',
+        sections: [
+            { id: '1', title: 'Scope', text: agreement.project_brief || 'No content' },
+            { id: '2', title: 'Terms', text: agreement.confidentiality_terms || 'No terms' }
+        ]
+    }] : [];
+
+    const agreementComments: any[] = [];
+
+    const [v1Version, setV1Version] = useState('1.0');
+    const [v2Version, setV2Version] = useState('1.0');
     const [selectedSection, setSelectedSection] = useState<string | null>(null);
+
+    if (loading || !agreement) {
+        return <div className="p-8 text-slate-400">Loading agreement details...</div>;
+    }
 
     const v1 = agreementVersions.find(v => v.version_number === v1Version) || agreementVersions[0];
     const v2 = agreementVersions.find(v => v.version_number === v2Version) || agreementVersions[0];

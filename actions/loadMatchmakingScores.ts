@@ -20,14 +20,14 @@ function loadMatchmakingScores() {
         ARRAY_AGG(DISTINCT ea1.name) as project_expertise,
         ARRAY_AGG(DISTINCT ea2.name) as challenge_expertise
       FROM matchmaking_scores ms
-      JOIN Pretablename_research_projects rp ON ms.research_project_id = rp.id
-      JOIN Pretablename_Colleges u ON rp.College_id = u.id
-      JOIN Pretablename_industry_challenges ic ON ms.industry_challenge_id = ic.id
-      JOIN Pretablename_corporate_partners cp ON ic.corporate_partner_id = cp.id
-      LEFT JOIN Pretablename_research_project_expertise rpe ON rp.id = rpe.research_project_id
-      LEFT JOIN Pretablename_expertise_areas ea1 ON rpe.expertise_area_id = ea1.id
+      JOIN research_projects rp ON ms.research_project_id = rp.id
+      JOIN colleges u ON rp.college_id = u.id
+      JOIN industry_challenges ic ON ms.industry_challenge_id = ic.id
+      JOIN corporate_partners cp ON ic.corporate_partner_id = cp.id
+      LEFT JOIN research_project_expertise rpe ON rp.id = rpe.research_project_id
+      LEFT JOIN expertise_areas ea1 ON rpe.expertise_area_id = ea1.id
       LEFT JOIN industry_challenge_expertise ice ON ic.id = ice.industry_challenge_id
-      LEFT JOIN Pretablename_expertise_areas ea2 ON ice.expertise_area_id = ea2.id
+      LEFT JOIN expertise_areas ea2 ON ice.expertise_area_id = ea2.id
       WHERE ms.compatibility_score >= {{params.minScore}}::numeric
       GROUP BY ms.id, rp.id, u.name, ic.id, cp.name
       ORDER BY ms.compatibility_score DESC

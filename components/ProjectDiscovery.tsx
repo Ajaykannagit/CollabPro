@@ -22,21 +22,15 @@ type ResearchProject = {
   expertise_areas: string[];
 };
 
-import { useTestData } from '@/contexts/TestDataContext';
+import { useLoadAction } from '@/lib/data-actions';
+import loadResearchProjectsAction from '@/actions/loadResearchProjects';
 
 export function ProjectDiscovery() {
-  const { projects: allProjects } = useTestData();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
-  // Filter projects based on search query
-  const projects = allProjects.filter(p =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.College_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const loading = false;
-  const error: any = null;
+  const [data, loading, error] = useLoadAction(loadResearchProjectsAction, [], { searchQuery });
+  const projects = data || [];
 
   const formatCurrency = (amount: number) => {
     return formatINRCompact(usdToINR(amount));

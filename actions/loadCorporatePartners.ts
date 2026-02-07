@@ -11,7 +11,7 @@ function loadCorporatePartners() {
         location,
         website,
         company_size
-      FROM Pretablename_corporate_partners
+      FROM corporate_partners
       ORDER BY name ASC;
     `,
   });

@@ -4,7 +4,7 @@ function createIPDisclosure() {
   return action('createIPDisclosure', 'SQL', {
     datasourceName: 'collabsync_pro_db',
     query: `
-      INSERT INTO Pretablename_ip_disclosures (
+      INSERT INTO ip_disclosures (
         active_project_id,
         title,
         description,

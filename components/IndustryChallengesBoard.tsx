@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Building2, DollarSign, Clock } from 'lucide-react';
 import { CreateChallengeDialog } from '@/components/CreateChallengeDialog';
 import { formatINRCompact, usdToINR } from '@/lib/currency';
-import { useTestData } from '@/contexts/TestDataContext';
+import { useLoadAction } from '@/lib/data-actions';
+import loadIndustryChallengesAction from '@/actions/loadIndustryChallenges';
 
 type IndustryChallenge = {
   id: number;
@@ -25,19 +26,11 @@ type IndustryChallenge = {
 };
 
 export function IndustryChallengesBoard() {
-  const { challenges: allChallenges } = useTestData();
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  // Filter challenges based on search query
-  const challenges = allChallenges.filter(c =>
-    c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.company_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const loading = false;
-  const error: any = null;
-  const refresh = () => { };
+  const [data, loading, error, refresh] = useLoadAction(loadIndustryChallengesAction, [], { searchQuery });
+  const challenges = data || [];
 
   const formatCurrency = (amount: number) => {
     return formatINRCompact(usdToINR(amount));

@@ -4,7 +4,7 @@ function createNegotiationMessage() {
   return action('createNegotiationMessage', 'SQL', {
     datasourceName: 'collabsync_pro_db',
     query: `
-      INSERT INTO Pretablename_negotiation_messages (
+      INSERT INTO negotiation_messages (
         negotiation_thread_id,
         sender_name,
         sender_organization,

@@ -13,13 +13,27 @@ import {
     GraduationCap,
     History
 } from 'lucide-react';
-import { useTestData } from '@/contexts/TestDataContext';
+import { useLoadAction } from '@/lib/data-actions';
+import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function DigitalSignature() {
-    const { signatureWorkflow } = useTestData();
+    const [agreement, loading, error] = useLoadAction(loadAgreementDetailsAction, null, { collaborationRequestId: 1 });
+
+    const signatureWorkflow = {
+        status: agreement?.status || 'draft',
+        College_approval: !!agreement?.college_signed_at,
+        corporate_approval: !!agreement?.corporate_signed_at,
+        College_signed: !!agreement?.college_signed_at,
+        corporate_signed: !!agreement?.corporate_signed_at,
+        audit_trail: [] as any[]
+    };
     const [isSigning, setIsSigning] = useState(false);
     const [signature, setSignature] = useState('');
+
+    if (loading || !agreement) {
+        return <div className="p-8 text-slate-400">Loading signature workflow...</div>;
+    }
 
     const steps = [
         { id: 'draft', label: 'Agreement Draft', icon: Clock },

@@ -151,14 +151,146 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE student_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE licensing_opportunities ENABLE ROW LEVEL SECURITY;
 
--- Create policies for public read access (adjust based on your security needs)
-CREATE POLICY "Allow public read access" ON colleges FOR SELECT USING (true);
-CREATE POLICY "Allow public read access" ON research_projects FOR SELECT USING (true);
-CREATE POLICY "Allow public read access" ON industry_challenges FOR SELECT USING (true);
-CREATE POLICY "Allow public read access" ON collaboration_requests FOR SELECT USING (true);
-CREATE POLICY "Allow public read access" ON ip_disclosures FOR SELECT USING (true);
-CREATE POLICY "Allow public read access" ON negotiations FOR SELECT USING (true);
-CREATE POLICY "Allow public read access" ON agreements FOR SELECT USING (true);
-CREATE POLICY "Allow public read access" ON notifications FOR SELECT USING (true);
-CREATE POLICY "Allow public read access" ON student_profiles FOR SELECT USING (true);
-CREATE POLICY "Allow public read access" ON licensing_opportunities FOR SELECT USING (true);
+-- EXTENDED SCHEMA (Added by Agent to support Action Files) --
+
+-- Corporate Partners
+CREATE TABLE IF NOT EXISTS corporate_partners (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    industry TEXT,
+    location TEXT,
+    website TEXT,
+    company_size TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Expertise Areas
+CREATE TABLE IF NOT EXISTS expertise_areas (
+    id BIGSERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Join table: Research Projects <-> Expertise
+CREATE TABLE IF NOT EXISTS research_project_expertise (
+    research_project_id BIGINT REFERENCES research_projects(id),
+    expertise_area_id BIGINT REFERENCES expertise_areas(id),
+    PRIMARY KEY (research_project_id, expertise_area_id)
+);
+
+-- Join table: Industry Challenges <-> Expertise
+CREATE TABLE IF NOT EXISTS industry_challenge_expertise (
+    industry_challenge_id BIGINT REFERENCES industry_challenges(id),
+    expertise_area_id BIGINT REFERENCES expertise_areas(id),
+    PRIMARY KEY (industry_challenge_id, expertise_area_id)
+);
+
+-- Matchmaking Scores
+CREATE TABLE IF NOT EXISTS matchmaking_scores (
+    id BIGSERIAL PRIMARY KEY,
+    compatibility_score NUMERIC(5, 2),
+    reasoning TEXT,
+    research_project_id BIGINT REFERENCES research_projects(id),
+    industry_challenge_id BIGINT REFERENCES industry_challenges(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Saved Candidates
+CREATE TABLE IF NOT EXISTS saved_candidates (
+    id BIGSERIAL PRIMARY KEY,
+    notes TEXT,
+    interest_level TEXT,
+    student_profile_id BIGINT REFERENCES student_profiles(id),
+    corporate_partner_id BIGINT REFERENCES corporate_partners(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Student Skills
+CREATE TABLE IF NOT EXISTS student_skills (
+    id BIGSERIAL PRIMARY KEY,
+    student_profile_id BIGINT REFERENCES student_profiles(id),
+    skill_name TEXT NOT NULL
+);
+
+-- Negotiation Messages
+CREATE TABLE IF NOT EXISTS negotiation_messages (
+    id BIGSERIAL PRIMARY KEY,
+    negotiation_thread_id BIGINT REFERENCES negotiations(id),
+    sender_name TEXT,
+    sender_organization TEXT,
+    message_type TEXT,
+    content TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Project Scope Versions
+CREATE TABLE IF NOT EXISTS project_scope_versions (
+    id BIGSERIAL PRIMARY KEY,
+    negotiation_thread_id BIGINT REFERENCES negotiations(id),
+    version_number INTEGER,
+    scope_description TEXT,
+    deliverables TEXT,
+    timeline TEXT,
+    budget NUMERIC(12, 2),
+    created_by TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- IP Contributors
+CREATE TABLE IF NOT EXISTS ip_contributors (
+    id BIGSERIAL PRIMARY KEY,
+    ip_disclosure_id BIGINT REFERENCES ip_disclosures(id),
+    contributor_name TEXT,
+    organization TEXT,
+    ownership_percentage NUMERIC(5, 2),
+    role TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Add missing columns to existing tables matches code expectations
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS college_id BIGINT REFERENCES colleges(id);
+
+ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS corporate_partner_id BIGINT REFERENCES corporate_partners(id);
+ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS project_brief TEXT;
+ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS budget_proposed NUMERIC(12, 2);
+ALTER TABLE collaboration_requests ADD COLUMN IF NOT EXISTS timeline_proposed TEXT;
+
+ALTER TABLE industry_challenges ADD COLUMN IF NOT EXISTS corporate_partner_id BIGINT REFERENCES corporate_partners(id);
+
+-- IP Disclosures Updates
+ALTER TABLE ip_disclosures ADD COLUMN IF NOT EXISTS invention_category TEXT;
+ALTER TABLE ip_disclosures ADD COLUMN IF NOT EXISTS potential_applications TEXT;
+ALTER TABLE ip_disclosures ADD COLUMN IF NOT EXISTS prior_art_references TEXT;
+ALTER TABLE ip_disclosures ADD COLUMN IF NOT EXISTS commercial_potential TEXT;
+ALTER TABLE ip_disclosures ADD COLUMN IF NOT EXISTS filing_date TIMESTAMP WITH TIME ZONE;
+ALTER TABLE ip_disclosures ADD COLUMN IF NOT EXISTS patent_number TEXT;
+
+-- Licensing Opportunities Updates
+ALTER TABLE licensing_opportunities ADD COLUMN IF NOT EXISTS anonymized_title TEXT;
+ALTER TABLE licensing_opportunities ADD COLUMN IF NOT EXISTS anonymized_description TEXT;
+ALTER TABLE licensing_opportunities ADD COLUMN IF NOT EXISTS licensing_type TEXT;
+ALTER TABLE licensing_opportunities ADD COLUMN IF NOT EXISTS asking_price NUMERIC(12, 2);
+ALTER TABLE licensing_opportunities ADD COLUMN IF NOT EXISTS industry_sectors TEXT;
+ALTER TABLE licensing_opportunities ADD COLUMN IF NOT EXISTS inquiries_count INTEGER DEFAULT 0;
+ALTER TABLE licensing_opportunities ADD COLUMN IF NOT EXISTS visibility TEXT DEFAULT 'private';
+
+-- Student Profiles Updates
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS degree_level TEXT;
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS field_of_study TEXT;
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS graduation_year INTEGER;
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS gpa NUMERIC(3, 2);
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS bio TEXT;
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS availability_status TEXT;
+
+-- Student Project Involvement Table
+CREATE TABLE IF NOT EXISTS student_project_involvement (
+    id BIGSERIAL PRIMARY KEY,
+    student_profile_id BIGINT REFERENCES student_profiles(id),
+    research_project_id BIGINT REFERENCES research_projects(id),
+    role TEXT,
+    start_date DATE,
+    end_date DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);

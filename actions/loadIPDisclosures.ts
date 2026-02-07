@@ -15,15 +15,15 @@ function loadIPDisclosures() {
         ip.filing_date,
         ip.patent_number,
         ip.created_at,
-        ap.project_name,
+        ap.title as project_name,
         ARRAY_AGG(jsonb_build_object(
           'name', ipc.contributor_name,
           'organization', ipc.organization,
           'ownership_percentage', ipc.ownership_percentage,
           'role', ipc.role
         )) as contributors
-      FROM Pretablename_ip_disclosures ip
-      JOIN active_projects ap ON ip.active_project_id = ap.id
+      FROM ip_disclosures ip
+      JOIN research_projects ap ON ip.active_project_id = ap.id
       LEFT JOIN ip_contributors ipc ON ip.id = ipc.ip_disclosure_id
       WHERE 
         COALESCE({{params.status}}, '') = ''

@@ -29,7 +29,7 @@ const item = {
 };
 
 export function DashboardOverview() {
-  const { metrics, chartData, recentActivity } = useTestData();
+  const { metrics, chartData } = useTestData();
   const [requests] = useLoadAction<CollaborationRequest[]>(loadCollaborationRequestsAction, [], { status: null });
   const [projects] = useLoadAction<ResearchProject[]>(loadResearchProjectsAction, [], { searchQuery: null });
   const [challenges] = useLoadAction<IndustryChallenge[]>(loadIndustryChallengesAction, [], { searchQuery: null });
@@ -37,6 +37,7 @@ export function DashboardOverview() {
   const safeRequests = requests || [];
   const safeProjects = projects || [];
   const safeChallenges = challenges || [];
+  const recentActivity = safeProjects.slice(0, 5);
 
   const pendingRequests = safeRequests.filter((r: CollaborationRequest) => r.status === 'pending').length;
 
@@ -200,7 +201,7 @@ export function DashboardOverview() {
                       <p className="font-semibold text-sm text-gray-200 truncate group-hover:text-primary transition-colors">
                         {project.title || "New Research Initiative"}
                       </p>
-                      <p className="text-xs text-gray-500 group-hover:text-gray-400">{project.college_name || "Partner College"}</p>
+                      <p className="text-xs text-gray-500 group-hover:text-gray-400">{project.College_name || "Partner College"}</p>
                     </div>
                     <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-primary group-hover:text-white transition-all">
                       <ArrowRight className="h-4 w-4" />

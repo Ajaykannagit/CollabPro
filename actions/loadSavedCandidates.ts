@@ -20,8 +20,8 @@ function loadSavedCandidates() {
         u.name as College_name,
         ARRAY_AGG(DISTINCT ss.skill_name) FILTER (WHERE ss.skill_name IS NOT NULL) as skills
       FROM saved_candidates sc
-      JOIN Pretablename_student_profiles sp ON sc.student_profile_id = sp.id
-      JOIN Pretablename_Colleges u ON sp.College_id = u.id
+      JOIN student_profiles sp ON sc.student_profile_id = sp.id
+      JOIN colleges u ON sp.college_id = u.id
       LEFT JOIN student_skills ss ON sp.id = ss.student_profile_id
       WHERE sc.corporate_partner_id = {{params.corporatePartnerId}}::int
       GROUP BY sc.id, sp.id, u.name

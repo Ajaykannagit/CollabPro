@@ -17,10 +17,10 @@ function loadIndustryChallenges() {
         cp.industry,
         cp.location as company_location,
         ARRAY_AGG(ea.name) as required_expertise
-      FROM Pretablename_industry_challenges ic
-      JOIN Pretablename_corporate_partners cp ON ic.corporate_partner_id = cp.id
+      FROM industry_challenges ic
+      JOIN corporate_partners cp ON ic.corporate_partner_id = cp.id
       LEFT JOIN industry_challenge_expertise ice ON ic.id = ice.industry_challenge_id
-      LEFT JOIN Pretablename_expertise_areas ea ON ice.expertise_area_id = ea.id
+      LEFT JOIN expertise_areas ea ON ice.expertise_area_id = ea.id
       WHERE 
         ic.status = 'open'
         AND (COALESCE({{params.searchQuery}}, '') = '' OR ic.title ILIKE {{ '%' + params.searchQuery + '%' }})

@@ -5,7 +5,7 @@ function loadExpertiseAreas() {
     datasourceName: 'collabsync_pro_db',
     query: `
       SELECT id, name, description
-      FROM Pretablename_expertise_areas
+      FROM expertise_areas
       ORDER BY name ASC;
     `,
   });
