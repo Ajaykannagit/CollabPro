@@ -4,14 +4,12 @@ import App from './app.tsx'
 import '../index.css'
 
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { UserProvider } from '@/contexts/UserContext';
+// User context removed in favor of Zustand
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <ErrorBoundary>
-            <UserProvider>
-                <App />
-            </UserProvider>
+            <App />
         </ErrorBoundary>
     </React.StrictMode>,
 )

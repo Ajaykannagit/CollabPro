@@ -13,7 +13,7 @@ import { MessageSquare, FileText, Send, Building2, GraduationCap } from 'lucide-
 import { formatINR } from '@/lib/currency';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
-import { useUser } from '@/contexts/UserContext';
+import { useAppStore } from '@/lib/store';
 import createProjectScopeAction from '@/actions/createProjectScope';
 import approveProjectScopeAction from '@/actions/approveProjectScope';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -60,7 +60,7 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
   );
   const [sendMessage, sending] = useMutateAction(createNegotiationMessageAction);
   const { toast } = useToast();
-  const { user, loading: userLoading } = useUser();
+  const { user, userLoading } = useAppStore();
 
   // Scope Management State
   const [isScopeDialogOpen, setIsScopeDialogOpen] = useState(false);

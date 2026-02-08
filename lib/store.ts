@@ -1,5 +1,17 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import { create } from 'zustand';
+import { supabase } from './supabase';
 
+// User Types
+export type User = {
+    user_id: string;
+    name: string;
+    email: string;
+    organization: string;
+    organization_type: 'college' | 'corporate';
+    role: string;
+};
+
+// Test Data Types
 export interface MetricData {
     title: string;
     value: string | number;
@@ -77,6 +89,17 @@ export interface TestData {
     userRole: string;
 }
 
+interface AppState {
+    // User State
+    user: User | null;
+    userLoading: boolean;
+    loadUser: (userId: string) => Promise<void>;
+    setCurrentUser: (userId: string) => Promise<void>;
+
+    // Test Data State (Static for now, as in Context)
+    testData: TestData;
+}
+
 const defaultTestData: TestData = {
     projectName: "CollabSync Pro",
     userRole: "Lead Researcher",
@@ -86,7 +109,6 @@ const defaultTestData: TestData = {
         { title: 'Pending Requests', value: 0, trend: '0%', color: 'from-amber-500 to-orange-500', bg: 'bg-amber-500/10 text-amber-500' },
         { title: 'Success Rate', value: '0%', trend: '0%', color: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-500/10 text-emerald-500' }
     ],
-
     chartData: [],
     recentActivity: [],
     agreementVersions: [],
@@ -104,14 +126,31 @@ const defaultTestData: TestData = {
     Colleges: []
 };
 
-const TestDataContext = createContext<TestData>(defaultTestData);
+export const useAppStore = create<AppState>((set, get) => ({
+    // User State
+    user: null,
+    userLoading: true,
+    loadUser: async (userId: string) => {
+        set({ userLoading: true });
+        try {
+            const { data, error } = await supabase
+                .from('user_sessions')
+                .select('*')
+                .eq('user_id', userId)
+                .single();
 
-export const TestDataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    return (
-        <TestDataContext.Provider value={defaultTestData}>
-            {children}
-        </TestDataContext.Provider>
-    );
-};
+            if (error) throw error;
+            if (data) set({ user: data });
+        } catch (error) {
+            console.error('Error loading user:', error);
+        } finally {
+            set({ userLoading: false });
+        }
+    },
+    setCurrentUser: async (userId: string) => {
+        await get().loadUser(userId);
+    },
 
-export const useTestData = () => useContext(TestDataContext);
+    // Test Data State
+    testData: defaultTestData,
+}));

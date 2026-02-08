@@ -16,7 +16,7 @@ import createResearchProjectAction from '@/actions/createResearchProject';
 import { TrendingUp, Briefcase, Target, Users, ArrowRight, Sparkles, Activity, Clock } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Counter, ShinyButton } from '@/components/ui/animated-primitives';
-import { useTestData } from '@/contexts/TestDataContext';
+import { useAppStore } from '@/lib/store';
 import { CollaborationRequest, ResearchProject, IndustryChallenge } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 import { StaggerContainer, FadeInUp, SpringPress } from '@/components/ui/animation-wrapper';
@@ -28,7 +28,7 @@ type DashboardOverviewProps = {
 
 export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOverviewProps) {
   const { toast } = useToast();
-  const { metrics, chartData } = useTestData();
+  const { metrics, chartData } = useAppStore((state) => state.testData);
   const [requests] = useLoadAction<CollaborationRequest[]>(loadCollaborationRequestsAction, [], { status: null });
   const [projects] = useLoadAction<ResearchProject[]>(loadResearchProjectsAction, [], { searchQuery: null });
   const [challenges] = useLoadAction<IndustryChallenge[]>(loadIndustryChallengesAction, [], { searchQuery: null });
