@@ -29,10 +29,11 @@ type IPFormData = z.infer<typeof ipSchema>;
 
 type IPDisclosureFormProps = {
   activeProjectId: number;
-  onSuccess: () => void;
+  onSuccess?: () => void;
+  onNavigate?: (section: any) => void;
 };
 
-export function IPDisclosureForm({ activeProjectId, onSuccess }: IPDisclosureFormProps) {
+export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPDisclosureFormProps) {
   const [step, setStep] = useState(1);
   const [createDisclosure, submitting] = useMutateAction(createIPDisclosureAction);
   const { toast } = useToast();
@@ -59,7 +60,10 @@ export function IPDisclosureForm({ activeProjectId, onSuccess }: IPDisclosureFor
         title: 'Success',
         description: 'IP disclosure submitted successfully',
       });
-      onSuccess();
+      onSuccess?.();
+      if (onNavigate) {
+        onNavigate('ip-portfolio');
+      }
     } catch {
       toast({
         title: 'Error',
@@ -95,13 +99,12 @@ export function IPDisclosureForm({ activeProjectId, onSuccess }: IPDisclosureFor
               <div key={s.id} className="flex items-center flex-1">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`h-10 w-10 rounded-full flex items-center justify-center font-semibold ${
-                      step > s.id
-                        ? 'bg-green-600 text-white'
-                        : step === s.id
+                    className={`h-10 w-10 rounded-full flex items-center justify-center font-semibold ${step > s.id
+                      ? 'bg-green-600 text-white'
+                      : step === s.id
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-200 text-gray-600'
-                    }`}
+                      }`}
                   >
                     {step > s.id ? <CheckCircle className="h-5 w-5" /> : s.id}
                   </div>
@@ -109,9 +112,8 @@ export function IPDisclosureForm({ activeProjectId, onSuccess }: IPDisclosureFor
                 </div>
                 {idx < steps.length - 1 && (
                   <div
-                    className={`flex-1 h-1 mx-4 ${
-                      step > s.id ? 'bg-green-600' : 'bg-gray-200'
-                    }`}
+                    className={`flex-1 h-1 mx-4 ${step > s.id ? 'bg-green-600' : 'bg-gray-200'
+                      }`}
                   />
                 )}
               </div>

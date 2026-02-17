@@ -27,7 +27,7 @@ type ResearchProject = {
 import { useLoadAction } from '@/lib/data-actions';
 import loadResearchProjectsAction from '@/actions/loadResearchProjects';
 
-export function ProjectDiscovery() {
+export function ProjectDiscovery({ onNavigate }: { onNavigate?: (section: any) => void }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProject, setSelectedProject] = useState<ResearchProject | null>(null);
 
@@ -186,6 +186,7 @@ export function ProjectDiscovery() {
         <ProjectDetailModal
           project={selectedProject}
           onClose={() => setSelectedProject(null)}
+          onNavigate={onNavigate}
         />
       )}
     </div>

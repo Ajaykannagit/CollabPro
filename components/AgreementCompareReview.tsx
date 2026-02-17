@@ -44,7 +44,13 @@ type AgreementComment = {
     created_at: string;
 };
 
-export function AgreementCompareReview({ collaborationRequestId = 1 }: { collaborationRequestId?: number }) {
+export function AgreementCompareReview({
+    collaborationRequestId = 1,
+    onNavigate
+}: {
+    collaborationRequestId?: number;
+    onNavigate?: (section: any) => void;
+}) {
     const [agreement, loadingAgreement] = useLoadAction<any[]>(loadAgreementDetailsAction, [], { collaborationRequestId });
 
     // Get agreement ID from the loaded agreement
@@ -454,7 +460,10 @@ export function AgreementCompareReview({ collaborationRequestId = 1 }: { collabo
                     </div>
 
                     <div className="p-4 border-t border-white/10 bg-[#111114]">
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
+                        <Button
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                            onClick={() => onNavigate?.('digital-signature')}
+                        >
                             <PenTool className="h-4 w-4" />
                             Proceed to Signature
                             <ArrowRight className="h-4 w-4" />

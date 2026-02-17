@@ -14,7 +14,7 @@ import loadProjectDetailsAction from '@/actions/loadProjectDetails';
 import loadProjectDocumentsAction from '@/actions/loadProjectDocuments';
 import loadProjectIPDisclosuresAction from '@/actions/loadProjectIPDisclosures';
 import uploadProjectDocumentAction from '@/actions/uploadProjectDocument';
-import submitProjectIPDisclosureAction from '@/actions/submitProjectIPDisclosure';
+import { IPDisclosureForm } from '@/components/IPDisclosureForm';
 import {
   Calendar,
   DollarSign,
@@ -28,10 +28,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { StaggerContainer, FadeInUp, SpringPress, LayoutTransition } from '@/components/ui/animation-wrapper';
 import { AnimatePresence } from 'framer-motion';
 
@@ -87,12 +84,16 @@ type IPDisclosure = {
   description: string;
 };
 
-export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
+export function ProjectWorkspace({
+  projectId = 1,
+  onNavigate
+}: {
+  projectId?: number;
+  onNavigate?: (section: any) => void;
+}) {
   const { toast } = useToast();
   const [selectedProjectId] = useState(projectId);
   const [isIPDialogOpen, setIsIPDialogOpen] = useState(false);
-  const [ipTitle, setIpTitle] = useState('');
-  const [ipDescription, setIpDescription] = useState('');
 
   const projectParams = useMemo(() => ({ projectId: selectedProjectId }), [selectedProjectId]);
   const [projectData, loading] = useLoadAction<ProjectDetails | null>(
@@ -148,7 +149,6 @@ export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
   };
 
   const [uploading, setUploading] = useState(false);
-  const [submittingIP, setSubmittingIP] = useState(false);
 
 
   // File Upload Handler
@@ -226,47 +226,7 @@ export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
     }
   };
 
-  // IP Disclosure Submission Handler
-  const handleIPSubmit = async () => {
-    if (!ipTitle || !ipDescription) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setSubmittingIP(true);
-    try {
-      await submitProjectIPDisclosureAction({
-        projectId: selectedProjectId,
-        title: ipTitle,
-        description: ipDescription
-      });
-
-      toast({
-        title: "Success",
-        description: "IP Disclosure submitted successfully"
-      });
-
-      setIsIPDialogOpen(false);
-      setIpTitle('');
-      setIpDescription('');
-
-      // Refresh list
-      window.location.reload();
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Submission Failed",
-        description: "Failed to submit IP disclosure",
-        variant: "destructive"
-      });
-    } finally {
-      setSubmittingIP(false);
-    }
-  };
+  // IP Disclosure handled by IPDisclosureForm component
 
   if (loading || !projectData) {
     return (
@@ -714,46 +674,12 @@ export function ProjectWorkspace({ projectId = 1 }: { projectId?: number }) {
       </Tabs>
 
       <Dialog open={isIPDialogOpen} onOpenChange={setIsIPDialogOpen}>
-        <DialogContent className="sm:max-w-[525px] bg-white text-slate-900 border-slate-200">
-          <DialogHeader className="border-b border-slate-100 pb-4 -mx-6 px-6">
-            <DialogTitle className="text-slate-900 font-bold">Submit IP Disclosure</DialogTitle>
-            <DialogDescription className="text-slate-500">
-              Document a new invention or software for project "{projectData?.project_name}".
-            </DialogDescription>
-
-          </DialogHeader>
-          <div className="grid gap-4 py-6">
-            <div className="grid gap-2">
-              <Label htmlFor="title" className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1">Invention Title</Label>
-              <Input
-                id="title"
-                placeholder="e.g., Novel Battery Chemistry"
-                value={ipTitle}
-                onChange={(e) => setIpTitle(e.target.value)}
-                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 font-medium"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description" className="text-xs font-bold text-slate-500 uppercase tracking-widest px-1">Brief Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe the core innovation..."
-                value={ipDescription}
-                onChange={(e) => setIpDescription(e.target.value)}
-                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 font-medium min-h-[100px]"
-              />
-            </div>
-          </div>
-          <DialogFooter className="bg-slate-50 p-4 -mx-6 -mb-6 border-t border-slate-200">
-            <Button variant="outline" onClick={() => {
-              setIsIPDialogOpen(false);
-              setIpTitle('');
-              setIpDescription('');
-            }} className="border-slate-200 bg-white text-slate-600 font-bold hover:bg-slate-50">Cancel</Button>
-            <Button onClick={handleIPSubmit} disabled={submittingIP} className="bg-primary hover:bg-primary/90 text-white font-bold">
-              {submittingIP ? 'Submitting...' : 'Submit Disclosure'}
-            </Button>
-          </DialogFooter>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white p-0">
+          <IPDisclosureForm
+            activeProjectId={selectedProjectId}
+            onSuccess={() => setIsIPDialogOpen(false)}
+            onNavigate={onNavigate}
+          />
         </DialogContent>
       </Dialog>
     </div>

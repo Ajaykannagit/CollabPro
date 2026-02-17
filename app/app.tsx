@@ -75,6 +75,7 @@ function App() {
 
   const navItems = [
     { id: 'dashboard' as NavSection, label: 'Dashboard', icon: HiOutlineHome },
+    // ProjectDetailModal props removed in favor of inline type for simplicity
     { id: 'projects' as NavSection, label: 'Research Projects', icon: HiOutlineBriefcase },
     {
       id: 'challenges' as NavSection,
@@ -306,16 +307,25 @@ function App() {
                   onProjectSelect={navigateToProject}
                 />
               )}
-              {activeSection === 'projects' && <ProjectDiscovery />}
+              {activeSection === 'projects' && (
+                <ProjectDiscovery onNavigate={setActiveSection} />
+              )}
               {activeSection === 'challenges' && (
                 <IndustryChallengesBoard onNavigate={setActiveSection} />
               )}
               {activeSection === 'partners' && <PartnerShowcase onNavigate={setActiveSection} />}
               {activeSection === 'matchmaking' && <AIMatchmaking />}
-              {activeSection === 'agreement-review' && <AgreementCompareReview />}
+              {activeSection === 'agreement-review' && (
+                <AgreementCompareReview onNavigate={setActiveSection} />
+              )}
               {activeSection === 'digital-signature' && <DigitalSignature />}
               {activeSection === 'notifications' && <NotificationsPanel />}
-              {activeSection === 'workspace' && <ProjectWorkspace projectId={activeProjectId} />}
+              {activeSection === 'workspace' && (
+                <ProjectWorkspace
+                  projectId={activeProjectId}
+                  onNavigate={setActiveSection}
+                />
+              )}
               {activeSection === 'talent' && <TalentShowcase />}
               {activeSection === 'ip' && <IPPortfolio onNavigate={setActiveSection} />}
               {activeSection === 'negotiate' && <NegotiationWorkspace collaborationRequestId={1} />}

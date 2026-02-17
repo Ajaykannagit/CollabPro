@@ -72,59 +72,31 @@ function nextId(rows: any[]): number {
 }
 
 export function createDemoTables(): DemoTables {
-  const colleges = Array.from({ length: 20 }).map((_, i) => {
+  const colleges = Array.from({ length: 30 }).map((_, i) => {
     const id = i + 1;
     const names = [
-      'IIT Bombay',
-      'IIT Delhi',
-      'IIT Madras',
-      'IIT Kanpur',
-      'IIT Kharagpur',
-      'IIT Roorkee',
-      'IIT Guwahati',
-      'IIT Hyderabad',
-      'IISc Bangalore',
-      'BITS Pilani',
-      'MIT',
-      'Stanford University',
-      'University of Cambridge',
-      'ETH Zurich',
-      'NUS',
-      'Tsinghua University',
-      'University of Tokyo',
-      'Imperial College London',
-      'KAIST',
-      'NTU',
+      'IIT Bombay', 'IIT Delhi', 'IIT Madras', 'IIT Kanpur', 'IIT Kharagpur',
+      'IIT Roorkee', 'IIT Guwahati', 'IIT Hyderabad', 'IISc Bangalore', 'BITS Pilani',
+      'MIT', 'Stanford University', 'University of Cambridge', 'ETH Zurich', 'NUS',
+      'Tsinghua University', 'University of Tokyo', 'Imperial College London', 'KAIST', 'NTU',
+      'Princeton', 'Harvard', 'Caltech', 'Oxford', 'Yale',
+      'UCLA', 'Columbia', 'Cornell', 'UPenn', 'University of Chicago'
     ];
     const locations = [
-      'Mumbai, India',
-      'New Delhi, India',
-      'Chennai, India',
-      'Kanpur, India',
-      'Kharagpur, India',
-      'Roorkee, India',
-      'Guwahati, India',
-      'Hyderabad, India',
-      'Bangalore, India',
-      'Pilani, India',
-      'Cambridge, MA, USA',
-      'Stanford, CA, USA',
-      'Cambridge, UK',
-      'Zurich, Switzerland',
-      'Singapore',
-      'Beijing, China',
-      'Tokyo, Japan',
-      'London, UK',
-      'Daejeon, South Korea',
-      'Singapore',
+      'Mumbai, India', 'New Delhi, India', 'Chennai, India', 'Kanpur, India', 'Kharagpur, India',
+      'Roorkee, India', 'Guwahati, India', 'Hyderabad, India', 'Bangalore, India', 'Pilani, India',
+      'Cambridge, MA, USA', 'Stanford, CA, USA', 'Cambridge, UK', 'Zurich, Switzerland', 'Singapore',
+      'Beijing, China', 'Tokyo, Japan', 'London, UK', 'Daejeon, South Korea', 'Singapore',
+      'Princeton, NJ, USA', 'Cambridge, MA, USA', 'Pasadena, CA, USA', 'Oxford, UK', 'New Haven, CT, USA',
+      'Los Angeles, CA, USA', 'New York, NY, USA', 'Ithaca, NY, USA', 'Philadelphia, PA, USA', 'Chicago, IL, USA'
     ];
     return {
       id,
-      name: names[i],
-      location: locations[i],
+      name: names[i % names.length],
+      location: locations[i % locations.length],
       website: `https://example.edu/${id}`,
-      research_strengths: 'AI, Robotics, Systems',
-      available_resources: 'Labs, compute, partnerships',
+      research_strengths: 'AI, Robotics, Systems, Quantum, Bio',
+      available_resources: 'Labs, compute, partnerships, research grants',
       success_rate: 80 + (i % 15),
       past_partnerships_count: 10 + i * 2,
       active_projects_count: 3 + (i % 7),
@@ -132,79 +104,37 @@ export function createDemoTables(): DemoTables {
     };
   });
 
-  const corporate_partners = Array.from({ length: 20 }).map((_, i) => {
+  const corporate_partners = Array.from({ length: 30 }).map((_, i) => {
     const id = i + 1;
     const names = [
-      'NHSRCL',
-      'Reliance',
-      'TCS',
-      'Infosys',
-      'Wipro',
-      'Tech Mahindra',
-      'L&T',
-      'BHEL',
-      'Mahindra',
-      'Adani',
-      'Google',
-      'Microsoft',
-      'Amazon',
-      'Apple',
-      'IBM',
-      'Siemens',
-      'Bosch',
-      'Samsung',
-      'Huawei',
-      'SAP',
+      'NHSRCL', 'Reliance', 'TCS', 'Infosys', 'Wipro',
+      'Tech Mahindra', 'L&T', 'BHEL', 'Mahindra', 'Adani',
+      'Google', 'Microsoft', 'Amazon', 'Apple', 'IBM',
+      'Siemens', 'Bosch', 'Samsung', 'Huawei', 'SAP',
+      'Meta', 'NVIDIA', 'Tesla', 'Oracle', 'Intel',
+      'Adobe', 'Salesforce', 'Cisco', 'Qualcomm', 'Netflix'
     ];
     const industries = [
-      'Transportation',
-      'Energy',
-      'IT Services',
-      'IT Services',
-      'IT Services',
-      'IT Services',
-      'Engineering',
-      'Industrial',
-      'Automotive',
-      'Infrastructure',
-      'Technology',
-      'Technology',
-      'E-commerce, Cloud',
-      'Technology',
-      'Technology, Consulting',
-      'Industrial Technology',
-      'Automotive, Tech',
-      'Electronics',
-      'Telecom',
-      'Enterprise Software',
+      'Transportation', 'Energy', 'IT Services', 'IT Services', 'IT Services',
+      'IT Services', 'Engineering', 'Industrial', 'Automotive', 'Infrastructure',
+      'Technology', 'Technology', 'E-commerce, Cloud', 'Technology', 'Technology, Consulting',
+      'Industrial Technology', 'Automotive, Tech', 'Electronics', 'Telecom', 'Enterprise Software',
+      'Social Media', 'AI Hardware', 'Automotive, AI', 'Cloud Enterprise', 'Semiconductors',
+      'Creative Software', 'CRM SaaS', 'Networking Tech', 'Mobile Tech', 'Entertainment Streaming'
     ];
     const locations = [
-      'New Delhi, India',
-      'Mumbai, India',
-      'Mumbai, India',
-      'Bangalore, India',
-      'Bangalore, India',
-      'Pune, India',
-      'Mumbai, India',
-      'New Delhi, India',
-      'Mumbai, India',
-      'Ahmedabad, India',
-      'Mountain View, USA',
-      'Redmond, USA',
-      'Seattle, USA',
-      'Cupertino, USA',
-      'Armonk, USA',
-      'Munich, Germany',
-      'Stuttgart, Germany',
-      'Seoul, South Korea',
-      'Shenzhen, China',
-      'Walldorf, Germany',
+      'New Delhi, India', 'Mumbai, India', 'Mumbai, India', 'Bangalore, India', 'Bangalore, India',
+      'Pune, India', 'Mumbai, India', 'New Delhi, India', 'Mumbai, India', 'Ahmedabad, India',
+      'Mountain View, USA', 'Redmond, USA', 'Seattle, USA', 'Cupertino, USA', 'Armonk, USA',
+      'Munich, Germany', 'Stuttgart, Germany', 'Seoul, South Korea', 'Shenzhen, China', 'Walldorf, Germany',
+      'Menlo Park, USA', 'Santa Clara, USA', 'Austin, USA', 'Austin, USA', 'Santa Clara, USA',
+      'San Jose, USA', 'San Francisco, USA', 'San Jose, USA', 'San Diego, USA', 'Los Gatos, USA'
     ];
     return {
       id,
-      name: names[i],
-      industry: industries[i],
-      location: locations[i],
+      name: names[i % names.length],
+      industry: industries[i % industries.length],
+      location: locations[i % locations.length],
       website: `https://example.com/company/${id}`,
       company_size: 'Large',
       created_at: isoDaysAgo(300 + i),
@@ -226,7 +156,7 @@ export function createDemoTables(): DemoTables {
     { id: 12, name: 'Blockchain', description: 'Distributed ledger', created_at: isoDaysAgo(389) },
   ];
 
-  const research_projects = Array.from({ length: 20 }).map((_, i) => {
+  const research_projects = Array.from({ length: 30 }).map((_, i) => {
     const id = i + 1;
     const college_id = (i % colleges.length) + 1;
     const c = colleges[college_id - 1];
@@ -236,18 +166,23 @@ export function createDemoTables(): DemoTables {
       'Cybersecurity Threat Detection',
       'Robotics for Inspection',
       'NLP for Technical Documents',
+      'Quantum Algorithm Benchmarking',
+      'Advanced Material Characterization',
+      'Biometric Authentication Systems',
+      'Smart City Traffic Modeling',
+      'Autonomous Drone Navigation'
     ];
     return {
       id,
       college_id,
       title: `Project ${id}: ${titles[i % titles.length]}`,
-      description: `Applied research initiative #${id} with clear milestones and deployment targets.`,
+      description: `Applied research initiative #${id} with clear milestones and deployment targets. Focused on high-impact technology development.`,
       funding_needed: 800000 + id * 25000,
       funding_allocated: 500000 + id * 20000,
       budget_utilized: 100000 + id * 5000,
       trl_level: ((id - 1) % 9) + 1,
-      status: 'active',
-      team_lead: `Dr. Lead ${id}`,
+      status: i % 10 === 0 ? 'completed' : 'active',
+      team_lead: `Dr. Expert ${id}`,
       team_size: 4 + (id % 12),
       publications_count: id % 7,
       college_name: c?.name ?? '',
@@ -267,20 +202,24 @@ export function createDemoTables(): DemoTables {
     ];
   });
 
-  const industry_challenges = Array.from({ length: 20 }).map((_, i) => {
+  const industry_challenges = Array.from({ length: 30 }).map((_, i) => {
     const id = i + 1;
-    const corporate_partner_id = id;
+    const corporate_partner_id = (i % corporate_partners.length) + 1;
     const cp = corporate_partners[corporate_partner_id - 1];
-    const themes = ['Operational Efficiency', 'Reliability & Monitoring', 'Security & Compliance', 'Automation & Analytics'];
+    const themes = [
+      'Operational Efficiency', 'Reliability & Monitoring', 'Security & Compliance',
+      'Automation & Analytics', 'Carbon Footprint Reduction', 'Scalable Infrastructure',
+      'Supply Chain Resilience', 'Customer Experience AI'
+    ];
     return {
       id,
       corporate_partner_id,
       title: `Challenge ${id}: ${themes[id % themes.length]}`,
-      description: 'Industry partner challenge with measurable outcomes and deliverables.',
+      description: `Industry partner challenge #${id} with measurable outcomes, seeking innovative academic collaboration for rapid prototyping and validation.`,
       budget_min: 300000 + id * 15000,
       budget_max: 600000 + id * 25000,
       timeline_months: 6 + (id % 24),
-      status: 'open',
+      status: i % 5 === 0 ? 'closed' : 'open',
       company_name: cp?.name ?? '',
       industry: cp?.industry ?? '',
       company_location: cp?.location ?? '',
@@ -289,31 +228,31 @@ export function createDemoTables(): DemoTables {
     };
   });
 
-  const matchmaking_scores = Array.from({ length: 20 }).map((_, i) => {
+  const matchmaking_scores = Array.from({ length: 30 }).map((_, i) => {
     const id = i + 1;
-    const research_project_id = id;
-    const industry_challenge_id = id;
+    const research_project_id = (i % research_projects.length) + 1;
+    const industry_challenge_id = (i % industry_challenges.length) + 1;
     return {
       id,
       research_project_id,
       industry_challenge_id,
-      compatibility_score: 70 + (id % 31),
-      reasoning: 'Auto-generated match reasoning for demo.',
+      compatibility_score: 65 + (id % 34),
+      reasoning: `Highly compatible match based on technological overlap and expertise focus in ${expertise_areas[i % expertise_areas.length].name}.`,
       created_at: isoDaysAgo(30 - id),
     };
   });
 
-  const collaboration_requests = Array.from({ length: 20 }).map((_, i) => {
+  const collaboration_requests = Array.from({ length: 30 }).map((_, i) => {
     const id = i + 1;
-    const corporate_partner_id = id;
-    const research_project_id = id;
-    const industry_challenge_id = id;
+    const corporate_partner_id = (i % corporate_partners.length) + 1;
+    const research_project_id = (i % research_projects.length) + 1;
+    const industry_challenge_id = (i % industry_challenges.length) + 1;
     return {
       id,
       corporate_partner_id,
       research_project_id,
       industry_challenge_id,
-      project_brief: `Collaboration brief for project ${id} and challenge ${id}.`,
+      project_brief: `Strategic collaboration brief for project ${id} and challenge ${id}, detailing joint R&D goals.`,
       budget_proposed: 500000 + id * 20000,
       timeline_proposed: `${6 + (id % 18)} months`,
       status: id % 3 === 0 ? 'accepted' : id % 3 === 1 ? 'pending' : 'under_review',
@@ -321,7 +260,7 @@ export function createDemoTables(): DemoTables {
     };
   });
 
-  const agreements = Array.from({ length: 20 }).map((_, i) => {
+  const agreements = Array.from({ length: 30 }).map((_, i) => {
     const id = i + 1;
     return {
       id,
@@ -333,12 +272,12 @@ export function createDemoTables(): DemoTables {
       termination_clauses: '90-day termination notice',
       compliance_requirements: 'Compliance with applicable regulations',
       status: id % 4 === 0 ? 'signed' : id % 4 === 1 ? 'draft' : id % 4 === 2 ? 'under_review' : 'approved',
-      college_signed_at: null,
-      college_signatory: null,
-      corporate_signed_at: null,
-      corporate_signatory: null,
-      college_approval_status: id % 3 === 0,
-      corporate_approval_status: id % 5 === 0,
+      college_signed_at: id % 4 === 0 ? isoDaysAgo(5) : null,
+      college_signatory: id % 4 === 0 ? 'Dr. Sarah Chen' : null,
+      corporate_signed_at: id % 4 === 0 ? isoDaysAgo(4) : null,
+      corporate_signatory: id % 4 === 0 ? 'Rajesh Kumar' : null,
+      college_approval_status: id % 3 === 0 || id % 4 === 0,
+      corporate_approval_status: id % 5 === 0 || id % 4 === 0,
       created_at: isoDaysAgo(80 - id),
       updated_at: isoDaysAgo(10 - (id % 10)),
     };
@@ -402,18 +341,18 @@ export function createDemoTables(): DemoTables {
     created_at: isoDaysAgo(500 - i),
   }));
 
-  const active_projects = Array.from({ length: 20 }).map((_, i) => {
+  const active_projects = Array.from({ length: 30 }).map((_, i) => {
     const id = i + 1;
     return {
       id,
       collaboration_request_id: id,
-      project_name: `Active Project ${id}`,
-      description: 'Execution phase with milestones and team.',
+      project_name: `Execution: ${research_projects[(id - 1) % research_projects.length].title}`,
+      description: 'Active execution phase with critical milestones and interdisciplinary team participation.',
       funding_allocated: 600000 + id * 25000,
       start_date: isoDateDaysFrom('2024-02-01', id * 10),
       end_date: isoDateDaysFrom('2025-12-31', id * 4),
       budget_utilized: 120000 + id * 6000,
-      status: 'in_progress',
+      status: i % 15 === 0 ? 'completed' : 'in_progress',
       created_at: isoDaysAgo(40 - id),
       updated_at: isoDaysAgo(2),
     };
@@ -462,21 +401,21 @@ export function createDemoTables(): DemoTables {
     };
   });
 
-  const ip_disclosures = Array.from({ length: 20 }).map((_, i) => {
+  const ip_disclosures = Array.from({ length: 30 }).map((_, i) => {
     const id = i + 1;
     const invention_category = id % 3 === 0 ? 'Software/Algorithm' : id % 3 === 1 ? 'Device/System' : 'Process/Method';
     return {
       id,
-      research_project_id: id,
-      title: `IP Disclosure ${id}`,
-      description: 'Disclosure describing a novel technique and its applications.',
+      research_project_id: (i % research_projects.length) + 1,
+      title: `Novel IP: ${invention_category} for ${expertise_areas[id % expertise_areas.length].name}`,
+      description: `Technological disclosure describing a novel technique in ${invention_category}, with significant industrial scalability and market readiness.`,
       invention_category,
-      potential_applications: 'Transportation, energy, and enterprise applications',
-      commercial_potential: 'High commercial potential with scalable licensing pathways',
-      prior_art_references: 'Prior art references: placeholders',
+      potential_applications: 'Aviation, Rail, Renewable Energy, and Smart Manufacturing',
+      commercial_potential: 'High commercial potential with established licensing pathways and strong patentability.',
+      prior_art_references: 'Referenced IEEE and USPTO archives for primary technical novelty validation.',
       status: id % 4 === 0 ? 'under_review' : id % 4 === 1 ? 'disclosed' : id % 4 === 2 ? 'draft' : 'patent_pending',
       filing_date: isoDateDaysFrom('2024-03-01', id * 5),
-      patent_number: id % 5 === 0 ? `US-${100000 + id}` : null,
+      patent_number: id % 5 === 0 ? `US-${100000 + id}-B2` : null,
       created_at: isoDaysAgo(35 - id),
       submission_date: isoDaysAgo(id),
       category: invention_category,
@@ -552,13 +491,21 @@ export function createDemoTables(): DemoTables {
     };
   });
 
-  const student_profiles = Array.from({ length: 20 }).map((_, i) => {
+  const student_profiles = Array.from({ length: 30 }).map((_, i) => {
     const id = i + 1;
     const college_id = (i % colleges.length) + 1;
+    const names = [
+      'Amit Sharma', 'Sarah Johnson', 'Chen Wei', 'Elena Rossi', 'Hiroshi Tanaka',
+      'Priya Nair', 'James Miller', 'Sofia Garcia', 'Lucas Meyer', 'Zoe Chen',
+      'Arjun Gupta', 'Emma Wilson', 'Li Na', 'Matteo Ricci', 'Yuki Sato',
+      'Anjali Devi', 'William Brown', 'Isabella Martinez', 'Hans Schmidt', 'Mia Wong',
+      'Rohan Das', 'Olivia Taylor', 'Wang Jun', 'Giulia Bianchi', 'Kenji Ito',
+      'Sita Ram', 'Robert Smith', 'Carmen Ortiz', 'Felix Wagner', 'Chloe Lin'
+    ];
     return {
       id,
       college_id,
-      name: `Student ${id}`,
+      name: names[i % names.length],
       email: `student${id}@example.edu`,
       degree_level: id % 3 === 0 ? 'PhD' : id % 3 === 1 ? 'Masters' : 'Bachelors',
       field_of_study:
@@ -571,7 +518,7 @@ export function createDemoTables(): DemoTables {
               : 'Data Science',
       graduation_year: 2024 + (id % 3),
       gpa: Number((3.5 + (id % 40) / 100).toFixed(2)),
-      bio: 'Profile bio with research interests and project experience.',
+      bio: `Dedicated ${id % 3 === 0 ? 'doctoral candidate' : 'graduate student'} with strong focus on ${expertise_areas[i % expertise_areas.length].name} and practical implementation skills.`,
       availability_status: id % 2 === 0 ? 'available' : 'busy',
       created_at: isoDaysAgo(70 - id),
       updated_at: isoDaysAgo(3),
@@ -736,9 +683,9 @@ export function attachRelations(tables: DemoTables, table: keyof DemoTables, row
     r.research_projects = rp ? attachRelations(tables, 'research_projects', rp) : null;
     r.industry_challenges = ic
       ? {
-          ...ic,
-          corporate_partners: cp ? { name: cp.name } : null,
-        }
+        ...ic,
+        corporate_partners: cp ? { name: cp.name } : null,
+      }
       : null;
   }
 
@@ -786,7 +733,7 @@ export function createDemoBackend() {
   const api = {
     tables,
     files,
-    async delay(ms = 180) {
+    async delay(ms = 600) {
       await new Promise((r) => setTimeout(r, ms));
     },
     getTable(name: keyof DemoTables) {

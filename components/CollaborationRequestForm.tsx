@@ -32,49 +32,68 @@ type CollaborationRequestFormProps = {
   projectTitle: string;
   corporatePartnerId?: number;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess?: () => void; // Changed to optional based on snippet
+  onNavigate?: (section: any) => void; // Added onNavigate
 };
 
 export function CollaborationRequestForm({
   projectId,
   projectTitle,
-  corporatePartnerId = 1,
   onClose,
   onSuccess,
+  onNavigate, // Added onNavigate
 }: CollaborationRequestFormProps) {
-  const [createRequest, isSubmitting] = useMutateAction(createCollaborationRequestAction);
   const { toast } = useToast();
-
-  const form = useForm<RequestFormData>({
-    resolver: zodResolver(requestSchema),
-    defaultValues: {
-      projectBrief: '',
-      budgetProposed: '',
-      timelineProposed: '',
-    },
+  const [submitting, setSubmitting] = useState(false); // Replaced isSubmitting from useMutateAction
+  const [formData, setFormData] = useState({ // Replaced react-hook-form state
+    budget: '',
+    timeline: '',
+    brief: ''
   });
 
-  const onSubmit = async (data: RequestFormData) => {
+  // Removed useMutateAction and useForm hooks as per snippet's new state management
+
+  const handleSubmit = async (e: React.FormEvent) => { // Renamed onSubmit to handleSubmit and changed signature
+    e.preventDefault();
+    if (!formData.brief || !formData.budget || !formData.timeline) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSubmitting(true);
     try {
-      await createRequest({
-        corporatePartnerId,
-        researchProjectId: projectId,
-        industryChallengeId: null,
-        projectBrief: data.projectBrief,
-        budgetProposed: parseFloat(data.budgetProposed),
-        timelineProposed: data.timelineProposed,
+      await createCollaborationRequestAction({
+        research_project_id: projectId,
+        corporate_partner_id: 1, // Simulated current user partner (hardcoded as per snippet)
+        project_brief: formData.brief,
+        budget_proposed: parseFloat(formData.budget),
+        timeline_proposed: formData.timeline
       });
+
       toast({
-        title: 'Success',
-        description: 'Collaboration request sent successfully',
+        title: "Request Submitted",
+        description: `Your collaboration request for "${projectTitle}" has been sent.`,
       });
-      onSuccess();
-    } catch {
+
+      onSuccess?.();
+      onClose();
+
+      // Navigate to tracking if needed
+      if (onNavigate) {
+        onNavigate('agreements');
+      }
+    } catch (error: any) {
       toast({
-        title: 'Error',
-        description: 'Failed to send request',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 

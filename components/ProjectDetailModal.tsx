@@ -22,12 +22,13 @@ type ResearchProject = {
   expertise_areas: string[];
 };
 
-type ProjectDetailModalProps = {
+// ProjectDetailModal showing full information
+
+export function ProjectDetailModal({ project, onClose, onNavigate }: {
   project: ResearchProject;
   onClose: () => void;
-};
-
-export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps) {
+  onNavigate?: (section: any) => void;
+}) {
   const [showRequestForm, setShowRequestForm] = useState(false);
 
   const formatCurrency = (amount: number) => {
@@ -41,6 +42,7 @@ export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps
         projectTitle={project.title}
         onClose={() => setShowRequestForm(false)}
         onSuccess={onClose}
+        onNavigate={onNavigate}
       />
     );
   }
