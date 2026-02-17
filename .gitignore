@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.DS_Store
+.env
+.env*
+.env.local
+!.env.example
+coverage/
+*.log
+*.txt
+.antigravityignore
+
+*storybook.log
+storybook-static
