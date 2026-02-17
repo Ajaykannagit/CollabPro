@@ -1,5 +1,3 @@
-
-
 import { useState } from 'react';
 import { useLoadAction, useMutateAction } from '@/lib/data-actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +17,9 @@ import { Counter, ShinyButton } from '@/components/ui/animated-primitives';
 import { useAppStore } from '@/lib/store';
 import { CollaborationRequest, ResearchProject, IndustryChallenge } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
-import { StaggerContainer, FadeInUp, SpringPress } from '@/components/ui/animation-wrapper';
+import { StaggerContainer, FadeInUp, SpringPress, GlowWrapper, MagneticWrapper } from '@/components/ui/animation-wrapper';
+import { SystemStatus, SmartLoader } from '@/components/ui/AIFeedback';
+import { motion } from 'framer-motion';
 
 type DashboardOverviewProps = {
   onNavigate?: (section: any) => void;
@@ -45,55 +45,34 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
   const safeProjects = projects || [];
   const safeChallenges = challenges || [];
   const recentActivity = safeProjects.slice(0, 5);
-
   const pendingRequests = safeRequests.filter((r: CollaborationRequest) => r.status === 'pending').length;
 
   const handleCreateProject = async () => {
     try {
       if (!newProject.title || !newProject.description) {
-        toast({
-          title: "Validation Error",
-          description: "Please fill in all required fields",
-          variant: "destructive"
-        });
+        toast({ title: "Validation Error", description: "Please fill in all required fields", variant: "destructive" });
         return;
       }
-
       const result = await createProject({
         title: newProject.title,
         description: newProject.description,
-        collegeId: 1, // Hardcoded for demo/MVP - assuming current user's college
+        collegeId: 1,
         fundingAllocated: newProject.fundingAllocated
       });
-
-      toast({
-        title: "Project Created",
-        description: "Research initiative initiated successfully.",
-      });
-
+      toast({ title: "Project Created", description: "Research initiative initiated successfully." });
       setIsDialogOpen(false);
       setNewProject({ title: '', description: '', fundingAllocated: 500000 });
-
-      // Navigate to the new project if we have an ID and handler
-      // result is likely an array from the SQL action
       const createdId = Array.isArray(result) && result.length > 0 ? result[0].id : (result as any)?.id;
-
       if (createdId && onProjectSelect) {
         onProjectSelect(createdId);
       } else if (onNavigate) {
         onNavigate('projects');
       }
-
     } catch (error: any) {
-      toast({
-        title: "Creation Failed",
-        description: error.message || "Failed to create project",
-        variant: "destructive"
-      });
+      toast({ title: "Creation Failed", description: error.message || "Failed to create project", variant: "destructive" });
     }
   };
 
-  // Map icons to the metrics from context
   const iconMap: Record<string, React.ElementType> = {
     'Active Projects': Briefcase,
     'Open Challenges': Target,
@@ -119,10 +98,13 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
   return (
     <div className="p-8 space-y-8">
       <div className="flex items-center justify-between">
-        <div>
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <h1 className="text-4xl font-bold text-slate-900 mb-2 tracking-tight">Dashboard</h1>
-          <p className="text-slate-500">Welcome back! Here's your collaboration overview</p>
-        </div>
+          <div className="flex items-center gap-4">
+            <p className="text-slate-500 font-medium">Welcome back! Here's your collaboration overview</p>
+            <SystemStatus status="Optimizing Data" />
+          </div>
+        </motion.div>
         <div className="flex gap-3">
           <Button
             variant="outline"
@@ -131,9 +113,11 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
           >
             <Clock className="mr-2 h-4 w-4" /> Last 30 Days
           </Button>
-          <ShinyButton onClick={() => setIsDialogOpen(true)}>
-            <span className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> New Project</span>
-          </ShinyButton>
+          <MagneticWrapper strength={0.1}>
+            <ShinyButton onClick={() => setIsDialogOpen(true)}>
+              <span className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> New Project</span>
+            </ShinyButton>
+          </MagneticWrapper>
         </div>
       </div>
 
@@ -142,27 +126,29 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
           const Icon = metric.icon;
           return (
             <FadeInUp key={idx}>
-              <SpringPress className="h-full">
-                <Card className="h-full border-slate-200 bg-white hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group overflow-hidden relative border cursor-pointer" onClick={() => onNavigate && onNavigate(metric.title === 'Active Projects' ? 'projects' : metric.title === 'Open Challenges' ? 'challenges' : 'collaboration')}>
-                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${metric.color} opacity-[0.03] group-hover:opacity-[0.1] rounded-bl-full transition-opacity`} />
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`h-12 w-12 rounded-xl ${metric.bg} flex items-center justify-center ring-1 ring-white/10`}>
-                        <Icon className="h-6 w-6" />
+              <GlowWrapper color={metric.title === 'Active Projects' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(6, 182, 212, 0.2)'}>
+                <SpringPress className="h-full">
+                  <Card className="h-full border-slate-200 bg-white shadow-sm hover:shadow-xl transition-all duration-500 group overflow-hidden relative border cursor-pointer" onClick={() => onNavigate && onNavigate(metric.title === 'Active Projects' ? 'projects' : metric.title === 'Open Challenges' ? 'challenges' : 'collaboration')}>
+                    <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${metric.color} opacity-[0.03] group-hover:opacity-[0.1] rounded-bl-full transition-opacity`} />
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className={`h-12 w-12 rounded-xl ${metric.bg} flex items-center justify-center ring-1 ring-white/10 group-hover:scale-110 transition-transform duration-500`}>
+                          <Icon className="h-6 w-6" />
+                        </div>
+                        <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
+                          {metric.trend}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20">
-                        {metric.trend}
-                      </Badge>
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
-                        {typeof metric.value === 'number' ? <Counter value={metric.value} /> : metric.value}
-                      </h3>
-                      <p className="text-sm text-slate-500 font-semibold uppercase tracking-wider">{metric.title}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </SpringPress>
+                      <div className="space-y-1">
+                        <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
+                          {typeof metric.value === 'number' ? <Counter value={metric.value} /> : metric.value}
+                        </h3>
+                        <p className="text-sm text-slate-500 font-black uppercase tracking-widest mt-1 opacity-70 group-hover:opacity-100 transition-opacity">{metric.title}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </SpringPress>
+              </GlowWrapper>
             </FadeInUp>
           );
         })}
@@ -170,7 +156,7 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
 
       <div className="grid lg:grid-cols-3 gap-8">
         <FadeInUp delay={0.3} className="lg:col-span-2">
-          <Card className="h-full border-slate-200 bg-white shadow-sm border">
+          <Card className="h-full border-slate-200 bg-white shadow-sm border overflow-hidden neon-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-900">
                 <Activity className="h-5 w-5 text-primary" />
@@ -200,7 +186,7 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
         </FadeInUp>
 
         <FadeInUp delay={0.4} className="lg:col-span-1">
-          <Card className="h-full border-slate-200 bg-white shadow-sm border">
+          <Card className="h-full border-slate-200 bg-white shadow-sm border overflow-hidden neon-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-900">
                 <Briefcase className="h-5 w-5 text-secondary" />
@@ -233,13 +219,15 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
                     </SpringPress>
                   </FadeInUp>
                 ))}
-                <Button
-                  variant="ghost"
-                  className="w-full text-gray-400 hover:text-white hover:bg-white/5 mt-2"
-                  onClick={() => onNavigate && onNavigate('projects')}
-                >
-                  View All Activity
-                </Button>
+                <div className="pt-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-colors"
+                    onClick={() => onNavigate && onNavigate('projects')}
+                  >
+                    View All Activity
+                  </Button>
+                </div>
               </StaggerContainer>
             </CardContent>
           </Card>
@@ -247,9 +235,12 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-white text-slate-900 border-slate-200">
+        <DialogContent className="sm:max-w-[425px] bg-white text-slate-900 border-slate-200 glass-panel rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="text-slate-900">Start New Research Project</DialogTitle>
+            <DialogTitle className="text-slate-900 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Start New Research Project
+            </DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -258,7 +249,7 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
                 id="title"
                 value={newProject.title}
                 onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
+                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl focus:ring-primary/20"
                 placeholder="e.g., Nanotech Water Filtration"
               />
             </div>
@@ -268,7 +259,7 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
                 id="description"
                 value={newProject.description}
                 onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
+                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl focus:ring-primary/20 min-h-[100px]"
                 placeholder="Describe the research goals..."
               />
             </div>
@@ -279,14 +270,14 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
                 type="number"
                 value={newProject.fundingAllocated}
                 onChange={(e) => setNewProject({ ...newProject, fundingAllocated: parseInt(e.target.value) })}
-                className="bg-white border-slate-200 text-slate-900"
+                className="bg-white border-slate-200 text-slate-900 rounded-xl focus:ring-primary/20"
               />
             </div>
           </div>
-          <DialogFooter className="bg-slate-50 p-4 -mx-6 -mb-6 border-t border-slate-200">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="border-slate-200 bg-white text-slate-600 hover:bg-slate-50">Cancel</Button>
-            <Button onClick={handleCreateProject} disabled={creatingProject} className="bg-primary hover:bg-primary/90 text-white">
-              {creatingProject ? 'Creating...' : 'Create Project'}
+          <DialogFooter className="bg-slate-50 p-4 -mx-6 -mb-6 border-t border-slate-200 rounded-b-3xl">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="border-slate-200 bg-white text-slate-600 hover:bg-slate-50 rounded-xl">Cancel</Button>
+            <Button onClick={handleCreateProject} disabled={creatingProject} className="bg-primary hover:bg-primary/90 text-white rounded-xl min-w-[120px]">
+              {creatingProject ? <SmartLoader /> : 'Create Project'}
             </Button>
           </DialogFooter>
         </DialogContent>

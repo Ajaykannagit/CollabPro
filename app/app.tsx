@@ -35,9 +35,13 @@ import { AgreementTracking } from '@/components/AgreementTracking';
 import { ProfilePage } from '@/components/ProfilePage';
 
 import { ParticleBackground } from '@/components/ui/animated-primitives';
+import { DatabaseStatus } from '@/components/DatabaseStatus';
+import { getRoleLabel, getInitials } from '@/lib/userUtils';
 import { useAppStore } from '@/lib/store';
-import DecryptedText from '@/components/ui/DecryptedText';
 import { useNotifications } from '@/hooks/useDatabase';
+import DecryptedText from '@/components/ui/DecryptedText';
+import { FuturisticPageTransition } from '@/components/ui/animation-wrapper';
+import { SystemStatus } from '@/components/ui/AIFeedback';
 
 type NavSection =
   | 'dashboard'
@@ -58,8 +62,6 @@ type NavSection =
   | 'licensing'
   | 'analytics'
   | 'agreement-tracking';
-
-import { DatabaseStatus } from '@/components/DatabaseStatus';
 
 function App() {
   const [activeSection, setActiveSection] = useState<NavSection>('dashboard');
@@ -125,12 +127,7 @@ function App() {
     if (isAcademic) {
       // Hide company-focused main menu items for academy users
       if (
-        item.id === 'challenges' ||
-        item.id === 'matchmaking' ||
-        item.id === 'agreement-review' ||
-        item.id === 'digital-signature' ||
-        item.id === 'licensing' ||
-        item.id === 'analytics'
+        ['challenges', 'matchmaking', 'agreement-review', 'digital-signature', 'licensing', 'analytics'].includes(item.id)
       ) {
         return false;
       }
@@ -141,12 +138,7 @@ function App() {
   const filteredSecondaryItems = secondaryItems.filter((item) => {
     if (isAcademic) {
       // Academy users should not see company-only negotiation / licensing analytics tools
-      if (
-        item.id === 'negotiate' ||
-        item.id === 'agreement' ||
-        item.id === 'licensing' ||
-        item.id === 'analytics'
-      ) {
+      if (['negotiate', 'agreement', 'licensing', 'analytics'].includes(item.id)) {
         return false;
       }
     } else {
@@ -171,7 +163,7 @@ function App() {
         initial={{ x: -50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-64 z-10 relative flex flex-col border-r border-slate-200 bg-white"
+        className="w-64 z-10 relative flex flex-col border-r border-slate-200 glass-panel"
       >
         <div className="p-6 border-b border-slate-200">
           <div className="flex items-center gap-3 mb-1">
@@ -191,8 +183,9 @@ function App() {
               </span>
             </div>
           </div>
-          <div className="px-6 py-3">
+          <div className="px-6 py-3 flex flex-col gap-2">
             <DatabaseStatus />
+            <SystemStatus status="System Ready" />
           </div>
         </div>
 
@@ -225,7 +218,7 @@ function App() {
                   <Icon
                     className={cn(
                       'h-4 w-4 relative z-10 transition-transform group-hover:scale-110',
-                      isActive ? 'text-primary' : 'text-gray-500 group-hover:text-white',
+                      isActive ? 'text-primary' : 'text-gray-500 group-hover:text-slate-900',
                     )}
                   />
                   <span className="relative z-10">{item.label}</span>
@@ -270,20 +263,25 @@ function App() {
           </div>
         </nav>
 
-        <div className="p-4 border-t border-slate-200 bg-slate-50/50 space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-gradient-to-tr from-blue-600 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/10 ring-2 ring-white">
-              {storeUser?.name?.slice(0, 2).toUpperCase() ?? 'NH'}
+        <div className="p-4 border-t border-slate-200 bg-slate-50/50">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setActiveSection('profile')}
+            className="flex items-center gap-3 p-2 rounded-xl hover:bg-white hover:shadow-sm cursor-pointer transition-all duration-300 group"
+          >
+            <div className="h-10 w-10 bg-gradient-to-tr from-primary to-cyan-500 rounded-full flex items-center justify-center text-white font-bold shadow-md shadow-primary/10 ring-2 ring-white group-hover:ring-primary/20 transition-all font-mono">
+              {getInitials(storeUser?.name)}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-900 truncate">
-                {storeUser?.organization || 'NHSRCL'}
+              <p className="text-sm font-bold text-slate-900 truncate group-hover:text-primary transition-colors">
+                {storeUser?.organization || 'Personal Profile'}
               </p>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-tighter">
-                {storeUser?.role || 'Corporate Partner'}
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                {getRoleLabel(storeUser)}
               </p>
             </div>
-          </div>
+          </motion.div>
         </div>
       </motion.div>
 
@@ -293,56 +291,34 @@ function App() {
 
         <div className="flex-1 overflow-auto custom-scrollbar p-6">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={activeSection}
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.98 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="h-full max-w-7xl mx-auto"
-            >
-              {activeSection === 'dashboard' && (
-                <DashboardOverview
-                  onNavigate={setActiveSection}
-                  onProjectSelect={navigateToProject}
-                />
-              )}
-              {activeSection === 'projects' && (
-                <ProjectDiscovery onNavigate={setActiveSection} />
-              )}
-              {activeSection === 'challenges' && (
-                <IndustryChallengesBoard onNavigate={setActiveSection} />
-              )}
-              {activeSection === 'partners' && <PartnerShowcase onNavigate={setActiveSection} />}
-              {activeSection === 'matchmaking' && <AIMatchmaking />}
-              {activeSection === 'agreement-review' && (
-                <AgreementCompareReview onNavigate={setActiveSection} />
-              )}
-              {activeSection === 'digital-signature' && <DigitalSignature />}
-              {activeSection === 'notifications' && <NotificationsPanel />}
-              {activeSection === 'workspace' && (
-                <ProjectWorkspace
-                  projectId={activeProjectId}
-                  onNavigate={setActiveSection}
-                />
-              )}
-              {activeSection === 'talent' && <TalentShowcase />}
-              {activeSection === 'ip' && <IPPortfolio onNavigate={setActiveSection} />}
-              {activeSection === 'negotiate' && <NegotiationWorkspace collaborationRequestId={1} />}
-              {activeSection === 'agreement' && <AgreementGenerator collaborationRequestId={1} />}
-              {activeSection === 'ipdisclosure' && (
-                <IPDisclosureForm
-                  activeProjectId={activeProjectId}
-                  onSuccess={() => setActiveSection('ip')}
-                />
-              )}
-              {activeSection === 'licensing' && <LicensingMarketplace />}
-              {activeSection === 'analytics' && <AnalyticsDashboard />}
-              {activeSection === 'agreement-tracking' && <AgreementTracking />}
-              {activeSection === 'profile' && (
-                <ProfilePage />
-              )}
-            </motion.div>
+            <FuturisticPageTransition key={activeSection}>
+              <div className="h-full max-w-7xl mx-auto">
+                {activeSection === 'dashboard' && (
+                  <DashboardOverview onNavigate={setActiveSection} onProjectSelect={navigateToProject} />
+                )}
+                {activeSection === 'projects' && <ProjectDiscovery onNavigate={setActiveSection} />}
+                {activeSection === 'challenges' && <IndustryChallengesBoard onNavigate={setActiveSection} />}
+                {activeSection === 'partners' && <PartnerShowcase onNavigate={setActiveSection} />}
+                {activeSection === 'matchmaking' && <AIMatchmaking />}
+                {activeSection === 'agreement-review' && <AgreementCompareReview onNavigate={setActiveSection} />}
+                {activeSection === 'digital-signature' && <DigitalSignature />}
+                {activeSection === 'notifications' && <NotificationsPanel />}
+                {activeSection === 'workspace' && (
+                  <ProjectWorkspace projectId={activeProjectId} onNavigate={setActiveSection} />
+                )}
+                {activeSection === 'talent' && <TalentShowcase />}
+                {activeSection === 'ip' && <IPPortfolio onNavigate={setActiveSection} />}
+                {activeSection === 'negotiate' && <NegotiationWorkspace collaborationRequestId={1} />}
+                {activeSection === 'agreement' && <AgreementGenerator collaborationRequestId={1} />}
+                {activeSection === 'ipdisclosure' && (
+                  <IPDisclosureForm activeProjectId={activeProjectId} onSuccess={() => setActiveSection('ip')} />
+                )}
+                {activeSection === 'licensing' && <LicensingMarketplace />}
+                {activeSection === 'analytics' && <AnalyticsDashboard />}
+                {activeSection === 'agreement-tracking' && <AgreementTracking />}
+                {activeSection === 'profile' && <ProfilePage />}
+              </div>
+            </FuturisticPageTransition>
           </AnimatePresence>
         </div>
       </div>

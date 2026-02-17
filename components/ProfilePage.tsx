@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Briefcase, Building2, Camera, User as UserIcon } from 'lucide-react';
 import { FadeInUp, SpringPress } from '@/components/ui/animation-wrapper';
+import { getRoleLabel } from '@/lib/userUtils';
 
 export function ProfilePage() {
     const { user, updateUser } = useAppStore();
@@ -73,7 +74,9 @@ export function ProfilePage() {
                                 </button>
                             </div>
                             <h3 className="font-bold text-slate-900 text-lg mb-1">{formData.name}</h3>
-                            <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-4">{user?.organization_type}</p>
+                            <p className="text-primary text-[10px] font-black uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full mb-4">
+                                {getRoleLabel(user)}
+                            </p>
 
                             <div className="w-full space-y-2 pt-4 border-t border-slate-100">
                                 <div className="flex items-center gap-2 text-sm text-slate-600">

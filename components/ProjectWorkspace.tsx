@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { StaggerContainer, FadeInUp, SpringPress, LayoutTransition } from '@/components/ui/animation-wrapper';
 import { AnimatePresence } from 'framer-motion';
+import { SmartLoader } from '@/components/ui/AIFeedback';
 
 type Milestone = {
   id: number;
@@ -228,10 +229,12 @@ export function ProjectWorkspace({
 
   // IP Disclosure handled by IPDisclosureForm component
 
+  // ... (in component)
   if (loading || !projectData) {
     return (
-      <div className="p-8">
-        <p className="text-gray-500">Loading project...</p>
+      <div className="h-full min-h-[400px] flex flex-col items-center justify-center space-y-4 p-8">
+        <SmartLoader />
+        <p className="text-slate-500 font-medium animate-pulse tracking-tight">Synchronizing Project DNA...</p>
       </div>
     );
   }

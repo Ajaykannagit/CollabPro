@@ -570,7 +570,7 @@ export function createDemoTables(): DemoTables {
   });
 
   const user_sessions = [
-    { id: 1, user_id: 'user_1', name: 'Rajesh Kumar', email: 'rajesh.kumar@nhsrcl.in', organization: 'NHSRCL', organization_type: 'corporate', role: 'Project Manager', created_at: isoDaysAgo(5) },
+    { id: 1, user_id: 'user_1', name: 'Rajesh Kumar', email: 'rajesh.kumar@rail-solutions.com', organization: 'Global Rail Solutions', organization_type: 'corporate', role: 'Project Manager', created_at: isoDaysAgo(5) },
     { id: 2, user_id: 'user_2', name: 'Dr. Sarah Chen', email: 'sarah.chen@iitb.ac.in', organization: 'IIT Bombay', organization_type: 'college', role: 'Principal Investigator', created_at: isoDaysAgo(10) },
     { id: 3, user_id: 'user_3', name: 'Vikram Mehta', email: 'vikram.mehta@tcs.com', organization: 'TCS', organization_type: 'corporate', role: 'Technology Lead', created_at: isoDaysAgo(15) },
     { id: 4, user_id: 'user_4', name: 'Dr. Neha Singh', email: 'neha.singh@iitd.ac.in', organization: 'IIT Delhi', organization_type: 'college', role: 'Research Director', created_at: isoDaysAgo(20) },

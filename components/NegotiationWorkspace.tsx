@@ -183,15 +183,15 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
                       <div className="flex items-start gap-4">
                         <SpringPress>
                           <div
-                            className={`h-12 w-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover/msg:scale-105 ${message.sender_organization === 'NHSRCL'
-                              ? 'bg-primary shadow-primary/20'
-                              : 'bg-slate-700 shadow-slate-200'
+                            className={`h-12 w-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover/msg:scale-105 ${message.sender_organization?.toLowerCase().includes('iit') || message.sender_organization?.toLowerCase().includes('university') || message.sender_organization?.toLowerCase().includes('college')
+                              ? 'bg-slate-700 shadow-slate-200'
+                              : 'bg-primary shadow-primary/20'
                               }`}
                           >
-                            {message.sender_organization === 'NHSRCL' ? (
-                              <Building2 className="h-6 w-6" />
-                            ) : (
+                            {message.sender_organization?.toLowerCase().includes('iit') || message.sender_organization?.toLowerCase().includes('university') || message.sender_organization?.toLowerCase().includes('college') ? (
                               <GraduationCap className="h-6 w-6" />
+                            ) : (
+                              <Building2 className="h-6 w-6" />
                             )}
                           </div>
                         </SpringPress>
