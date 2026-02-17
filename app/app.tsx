@@ -176,7 +176,7 @@ function App() {
           <div className="flex items-center gap-3 mb-1">
             <div className="h-10 w-10 flex items-center justify-center overflow-hidden rounded-xl shadow-lg ring-1 ring-slate-200/50">
               <img
-                src="https://image2url.com/r2/default/images/1771223599414-fd9daea2-2753-4424-86dc-7fb1c2192ed0.png"
+                src="https://image2url.com/r2/default/images/1771329385661-8f28ce43-1650-4db7-b0d6-8fe239ee1acc.png"
                 alt="CollabSync Pro Logo"
                 className="h-full w-full object-cover"
               />
