@@ -37,6 +37,9 @@ import { AgreementTracking } from '@/components/AgreementTracking';
 import { ProfilePage } from '@/components/ProfilePage';
 import { MatchmakingBlueprint } from '@/components/MatchmakingBlueprint';
 import { IndustryProfileSettings } from '@/components/IndustryProfileSettings';
+import { QuantumDashboard } from '@/components/QuantumDashboard';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+
 
 
 
@@ -167,8 +170,13 @@ function App() {
   const mainMenuTitle = isAcademic ? 'Academy Menu' : 'Company Menu';
   const workspaceTitle = isAcademic ? 'Academy Workspace' : 'Company Workspace';
 
+  const { theme } = useAppStore();
+
   return (
-    <div className="flex h-screen bg-[#F8FAFC] text-slate-900 overflow-hidden selection:bg-primary/10">
+    <div className={cn(
+      "flex h-screen overflow-hidden selection:bg-primary/10 transition-colors duration-500",
+      theme === 'quantum' ? "bg-[#020617] text-white" : "bg-[#F8FAFC] text-slate-900"
+    )}>
       {/* Ambient Background Mesh */}
       <ParticleBackground />
 
@@ -177,9 +185,12 @@ function App() {
         initial={{ x: -50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-64 z-10 relative flex flex-col border-r border-slate-200 glass-panel"
+        className={cn(
+          "w-64 z-10 relative flex flex-col border-r transition-colors duration-500",
+          theme === 'quantum' ? "bg-black/40 border-white/10" : "border-slate-200 glass-panel"
+        )}
       >
-        <div className="p-6 border-b border-slate-200">
+        <div className={cn("p-6 border-b transition-colors duration-500", theme === 'quantum' ? "border-white/10" : "border-slate-200")}>
           <div className="flex items-center gap-3 mb-1">
             <div className="h-10 w-10 flex items-center justify-center overflow-hidden rounded-xl shadow-lg ring-1 ring-slate-200/50">
               <img
@@ -189,7 +200,7 @@ function App() {
               />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900 leading-tight">
+              <h1 className={cn("text-xl font-bold leading-tight transition-colors", theme === 'quantum' ? "text-white" : "text-slate-900")}>
                 <DecryptedText text="CollabSync Pro" />
               </h1>
               <span className="text-[10px] font-bold text-primary tracking-widest uppercase py-0.5 px-2 bg-primary/10 rounded-full inline-block mt-1">
@@ -200,12 +211,15 @@ function App() {
           <div className="px-6 py-3 flex flex-col gap-2">
             <DatabaseStatus />
             <SystemStatus status="System Ready" />
+            <div className="mt-4">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
 
         <nav className="flex-1 p-4 space-y-6 overflow-y-auto custom-scrollbar">
           <div className="space-y-1">
-            <p className="text-xs font-semibold text-gray-500 px-3 mb-2 uppercase tracking-wider">
+            <p className={cn("text-xs font-semibold px-3 mb-2 uppercase tracking-wider transition-colors", theme === 'quantum' ? "text-slate-500" : "text-gray-500")}>
               {mainMenuTitle}
             </p>
             {filteredNavItems.map((item) => {
@@ -218,8 +232,8 @@ function App() {
                   className={cn(
                     'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 group relative overflow-hidden mb-1',
                     isActive
-                      ? 'text-primary bg-primary/5'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50',
+                      ? (theme === 'quantum' ? 'text-cyan-400 bg-cyan-500/10' : 'text-primary bg-primary/5')
+                      : (theme === 'quantum' ? 'text-slate-500 hover:text-white hover:bg-white/5' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'),
                   )}
                 >
                   {isActive && (
@@ -308,7 +322,7 @@ function App() {
             <FuturisticPageTransition key={activeSection}>
               <div className="h-full max-w-7xl mx-auto">
                 {activeSection === 'dashboard' && (
-                  <DashboardOverview onNavigate={setActiveSection} onProjectSelect={navigateToProject} />
+                  theme === 'quantum' ? <QuantumDashboard /> : <DashboardOverview onNavigate={setActiveSection} onProjectSelect={navigateToProject} />
                 )}
                 {activeSection === 'projects' && <ProjectDiscovery onNavigate={setActiveSection} />}
                 {activeSection === 'challenges' && <IndustryChallengesBoard onNavigate={setActiveSection} />}

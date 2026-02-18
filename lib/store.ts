@@ -101,6 +101,12 @@ interface AppState {
 
     // Test Data State (Static for now, as in Context)
     testData: TestData;
+
+    // Quantum Theme State
+    theme: 'light' | 'quantum';
+    setTheme: (theme: 'light' | 'quantum') => void;
+    livePulse: { id: string; message: string; type: 'match' | 'system' | 'alert'; timestamp: string }[];
+    addPulse: (pulse: { message: string; type: 'match' | 'system' | 'alert' }) => void;
 }
 
 const defaultTestData: TestData = {
@@ -194,4 +200,22 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     // Test Data State
     testData: defaultTestData,
+
+    // Quantum Theme State
+    theme: (localStorage.getItem('collabpro_theme') as 'light' | 'quantum') || 'light',
+    setTheme: (theme) => {
+        set({ theme });
+        localStorage.setItem('collabpro_theme', theme);
+    },
+    livePulse: [],
+    addPulse: (pulse) => {
+        const newPulse = {
+            ...pulse,
+            id: Math.random().toString(36).substring(7),
+            timestamp: new Date().toLocaleTimeString(),
+        };
+        set((state) => ({
+            livePulse: [newPulse, ...state.livePulse].slice(0, 15)
+        }));
+    },
 }));
