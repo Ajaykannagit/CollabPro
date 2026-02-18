@@ -10,6 +10,7 @@ import {
   HiOutlineChatBubbleBottomCenterText,
   HiOutlineDocumentText,
   HiOutlinePencilSquare,
+  HiOutlineCpuChip,
 } from 'react-icons/hi2';
 import { BsClockHistory, BsGraphUpArrow, BsShieldCheck, BsSearch } from 'react-icons/bs';
 import { RiExchangeLine, RiQuillPenLine, RiDraftLine } from 'react-icons/ri';
@@ -33,6 +34,8 @@ import { AgreementCompareReview } from '@/components/AgreementCompareReview';
 import { DigitalSignature } from '@/components/DigitalSignature';
 import { AgreementTracking } from '@/components/AgreementTracking';
 import { ProfilePage } from '@/components/ProfilePage';
+import { MatchmakingBlueprint } from '@/components/MatchmakingBlueprint';
+
 
 import { ParticleBackground } from '@/components/ui/animated-primitives';
 import { DatabaseStatus } from '@/components/DatabaseStatus';
@@ -61,7 +64,9 @@ type NavSection =
   | 'ipdisclosure'
   | 'licensing'
   | 'analytics'
-  | 'agreement-tracking';
+  | 'agreement-tracking'
+  | 'engine-blueprint';
+
 
 function App() {
   const [activeSection, setActiveSection] = useState<NavSection>('dashboard');
@@ -99,7 +104,9 @@ function App() {
       badge: unreadCount,
     },
     { id: 'profile' as NavSection, label: 'Profile', icon: HiOutlineUser },
+    { id: 'engine-blueprint' as NavSection, label: 'Engine Blueprint', icon: HiOutlineCpuChip },
   ];
+
 
   const secondaryItems = [
     { id: 'workspace' as NavSection, label: 'Project Workspace', icon: BsSearch },
@@ -317,7 +324,9 @@ function App() {
                 {activeSection === 'analytics' && <AnalyticsDashboard />}
                 {activeSection === 'agreement-tracking' && <AgreementTracking />}
                 {activeSection === 'profile' && <ProfilePage />}
+                {activeSection === 'engine-blueprint' && <MatchmakingBlueprint />}
               </div>
+
             </FuturisticPageTransition>
           </AnimatePresence>
         </div>
