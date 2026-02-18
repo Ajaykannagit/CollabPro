@@ -11,6 +11,7 @@ import {
   HiOutlineDocumentText,
   HiOutlinePencilSquare,
   HiOutlineCpuChip,
+  HiOutlineCheckBadge,
 } from 'react-icons/hi2';
 import { BsClockHistory, BsGraphUpArrow, BsShieldCheck, BsSearch } from 'react-icons/bs';
 import { RiExchangeLine, RiQuillPenLine, RiDraftLine } from 'react-icons/ri';
@@ -35,6 +36,8 @@ import { DigitalSignature } from '@/components/DigitalSignature';
 import { AgreementTracking } from '@/components/AgreementTracking';
 import { ProfilePage } from '@/components/ProfilePage';
 import { MatchmakingBlueprint } from '@/components/MatchmakingBlueprint';
+import { IndustryProfileSettings } from '@/components/IndustryProfileSettings';
+
 
 
 import { ParticleBackground } from '@/components/ui/animated-primitives';
@@ -65,7 +68,9 @@ type NavSection =
   | 'licensing'
   | 'analytics'
   | 'agreement-tracking'
-  | 'engine-blueprint';
+  | 'engine-blueprint'
+  | 'industry-profile';
+
 
 
 function App() {
@@ -105,7 +110,9 @@ function App() {
     },
     { id: 'profile' as NavSection, label: 'Profile', icon: HiOutlineUser },
     { id: 'engine-blueprint' as NavSection, label: 'Engine Blueprint', icon: HiOutlineCpuChip },
+    { id: 'industry-profile' as NavSection, label: 'Industry Profile', icon: HiOutlineCheckBadge },
   ];
+
 
 
   const secondaryItems = [
@@ -325,6 +332,7 @@ function App() {
                 {activeSection === 'agreement-tracking' && <AgreementTracking />}
                 {activeSection === 'profile' && <ProfilePage />}
                 {activeSection === 'engine-blueprint' && <MatchmakingBlueprint />}
+                {activeSection === 'industry-profile' && <IndustryProfileSettings />}
               </div>
 
             </FuturisticPageTransition>
