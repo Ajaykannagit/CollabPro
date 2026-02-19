@@ -1,3 +1,5 @@
+import { predictTRLTransition } from './intelligence/trl-forecaster';
+import { calculateSynergy } from './intelligence/matcher';
 export type DemoTables = {
   colleges: any[];
   corporate_partners: any[];
@@ -184,6 +186,11 @@ export function createDemoTables(): DemoTables {
       status: i % 10 === 0 ? 'completed' : 'active',
       team_lead: `Dr. Expert ${id}`,
       team_size: 4 + (id % 12),
+      project_type: id % 3 === 0 ? 'software' : id % 3 === 1 ? 'hardware' : 'system',
+      trl_history: [
+        { trl: 1, date: isoDaysAgo(300 + id) },
+        { trl: Math.max(1, ((id - 1) % 9)), date: isoDaysAgo(100 + id) }
+      ],
       publications_count: id % 7,
       college_name: c?.name ?? '',
       start_date: isoDateDaysFrom('2024-01-01', id * 7),
@@ -232,12 +239,19 @@ export function createDemoTables(): DemoTables {
     const id = i + 1;
     const research_project_id = (i % research_projects.length) + 1;
     const industry_challenge_id = (i % industry_challenges.length) + 1;
+    const project = research_projects[research_project_id - 1];
+    const challenge = industry_challenges[industry_challenge_id - 1];
+
+    const synergy = calculateSynergy(project, challenge);
+
     return {
       id,
       research_project_id,
       industry_challenge_id,
-      compatibility_score: 65 + (id % 34),
-      reasoning: `Highly compatible match based on technological overlap and expertise focus in ${expertise_areas[i % expertise_areas.length].name}.`,
+      compatibility_score: synergy.score,
+      reasoning: synergy.reasoning,
+      strategic_fit: synergy.strategicFit,
+      technical_overlap: synergy.technicalOverlap,
       created_at: isoDaysAgo(30 - id),
     };
   });
@@ -645,6 +659,7 @@ export function attachRelations(tables: DemoTables, table: keyof DemoTables, row
     r.activity_logs = tables.activity_logs
       .filter((l) => l.project_id === r.id)
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    r.trl_prediction = predictTRLTransition(r);
   }
 
   if (table === 'industry_challenges') {

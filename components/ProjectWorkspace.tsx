@@ -25,6 +25,9 @@ import {
   Lightbulb,
   Building2,
   Mail,
+  ShieldAlert,
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +64,12 @@ type ProjectDetails = {
   status: string;
   milestones: Milestone[];
   team_members: TeamMember[];
+  risk_assessment?: {
+    score: number;
+    level: string;
+    factors: { label: string; impact: number; description: string }[];
+    recommendation: string;
+  };
 };
 
 type ProjectDocument = {
@@ -348,6 +357,10 @@ export function ProjectWorkspace({
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="ip">IP Disclosures</TabsTrigger>
+          <TabsTrigger value="risk" className="text-primary font-bold">
+            <ShieldAlert className="h-4 w-4 mr-2" />
+            Health & Risk
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -667,6 +680,106 @@ export function ProjectWorkspace({
                     <div className="p-8 border-2 border-dashed rounded-lg text-center bg-gray-50/20 mt-4">
                       <Lightbulb className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-500">Document new inventions or software created during this project</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </LayoutTransition>
+          </AnimatePresence>
+        </TabsContent>
+
+        <TabsContent value="risk">
+          <AnimatePresence mode="wait">
+            <LayoutTransition key="risk-trans">
+              <Card className="border-slate-200 bg-white shadow-sm border">
+                <CardHeader className="border-b border-slate-100 flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-slate-900">Collaboration Health Analysis</CardTitle>
+                    <p className="text-xs font-medium text-slate-500 mt-1 uppercase tracking-widest">AI-Driven Risk Oversight</p>
+                  </div>
+                  {projectData.risk_assessment && (
+                    <Badge className={cn(
+                      "font-black text-[10px] uppercase tracking-tighter h-7 px-4",
+                      projectData.risk_assessment.level === 'Critical' ? 'bg-red-600 text-white' :
+                        projectData.risk_assessment.level === 'High' ? 'bg-orange-600 text-white' :
+                          projectData.risk_assessment.level === 'Medium' ? 'bg-yellow-500 text-white' :
+                            'bg-green-600 text-white'
+                    )}>
+                      {projectData.risk_assessment.level} RISK
+                    </Badge>
+                  )}
+                </CardHeader>
+                <CardContent className="pt-8 pb-10">
+                  {projectData.risk_assessment ? (
+                    <div className="space-y-10">
+                      <div className="max-w-md mx-auto text-center">
+                        <div className="relative h-4 w-full bg-slate-100 rounded-full overflow-hidden mb-4 border border-slate-100">
+                          <div
+                            className={cn(
+                              "h-full transition-all duration-1000 ease-out",
+                              projectData.risk_assessment.score > 75 ? 'bg-red-600' :
+                                projectData.risk_assessment.score > 50 ? 'bg-orange-500' :
+                                  'bg-green-500'
+                            )}
+                            style={{ width: `${projectData.risk_assessment.score}%` }}
+                          />
+                        </div>
+                        <p className="text-4xl font-black text-slate-900 tracking-tighter mb-1">{projectData.risk_assessment.score}%</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Aggregate Failure Probability</p>
+                      </div>
+
+                      <Separator className="bg-slate-100" />
+
+                      <div className="grid md:grid-cols-2 gap-8">
+                        <div>
+                          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-orange-500" />
+                            Risk Factors Identified
+                          </h3>
+                          <div className="space-y-3">
+                            {projectData.risk_assessment.factors.map((factor, i) => (
+                              <div key={i} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-sm font-bold text-slate-900">{factor.label}</span>
+                                  <span className="text-[10px] font-black text-red-600">+{factor.impact} RISK</span>
+                                </div>
+                                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                                  {factor.description}
+                                </p>
+                              </div>
+                            ))}
+                            {projectData.risk_assessment.factors.length === 0 && (
+                              <div className="p-12 text-center border border-dashed rounded-xl flex flex-col items-center">
+                                <CheckCircle2 className="h-8 w-8 text-green-500 mb-2" />
+                                <p className="text-sm font-bold text-slate-600">No critical risk factors detected</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <Info className="h-4 w-4 text-primary" />
+                            AI Strategic Recommendation
+                          </h3>
+                          <div className="bg-primary/5 border border-primary/10 rounded-2xl p-6 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-3 opacity-10">
+                              <Lightbulb className="h-24 w-24 text-primary" />
+                            </div>
+                            <p className="text-slate-800 font-bold leading-relaxed relative z-10 italic">
+                              "{projectData.risk_assessment.recommendation}"
+                            </p>
+                            <div className="mt-6 pt-6 border-t border-primary/10 relative z-10 flex gap-3">
+                              <Button size="sm" className="font-bold">Schedule Sync</Button>
+                              <Button size="sm" variant="outline" className="font-bold">View Mitigation Plan</Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-12 text-center">
+                      <p className="text-slate-500">Risk analytics not available for this project profile.</p>
                     </div>
                   )}
                 </CardContent>

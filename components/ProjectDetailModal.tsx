@@ -20,6 +20,12 @@ type ResearchProject = {
   College_name: string;
   College_location: string;
   expertise_areas: string[];
+  trl_prediction?: {
+    estimatedMonthsToNext: number;
+    stallRisk: number;
+    bottlenecks: string[];
+    confidenceScore: number;
+  };
 };
 
 // ProjectDetailModal showing full information
@@ -84,12 +90,22 @@ export function ProjectDetailModal({ project, onClose, onNavigate }: {
               </p>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 p-4 rounded-lg relative overflow-hidden group">
               <div className="flex items-center gap-2 text-gray-600 mb-1">
                 <TrendingUp className="h-4 w-4" />
                 <span className="text-sm">TRL Level</span>
               </div>
               <p className="text-xl font-bold text-gray-900">{project.trl_level}/9</p>
+              {project.trl_prediction && (
+                <div className="mt-2 pt-2 border-t border-gray-200">
+                  <p className="text-[10px] font-black uppercase text-primary tracking-wider">
+                    Next in {project.trl_prediction.estimatedMonthsToNext} months
+                  </p>
+                  <p className="text-[9px] text-gray-400 font-bold">
+                    Confidence: {(project.trl_prediction.confidenceScore * 100).toFixed(0)}%
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="bg-gray-50 p-4 rounded-lg">
@@ -108,6 +124,42 @@ export function ProjectDetailModal({ project, onClose, onNavigate }: {
               <p className="text-xl font-bold text-gray-900">{project.publications_count}</p>
             </div>
           </div>
+
+          {/* Intelligent TRL Forecast Details */}
+          {project.trl_prediction && (
+            <div className="bg-primary/5 rounded-xl p-6 border border-primary/10">
+              <h3 className="font-bold text-primary flex items-center gap-2 mb-3">
+                <TrendingUp className="h-5 w-5" />
+                Intelligent TRL Forecast
+              </h3>
+              <div className="grid md:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <p className="text-gray-500 font-bold mb-1 uppercase text-[10px] tracking-widest">Potential Bottlenecks</p>
+                  <ul className="space-y-1">
+                    {project.trl_prediction.bottlenecks.map((b, i) => (
+                      <li key={i} className="flex items-center gap-2 text-gray-700 font-medium">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-gray-500 font-bold mb-1 uppercase text-[10px] tracking-widest">Execution Risk</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${project.trl_prediction.stallRisk > 0.5 ? 'bg-red-500' : 'bg-green-500'}`}
+                        style={{ width: `${project.trl_prediction.stallRisk * 100}%` }}
+                      />
+                    </div>
+                    <span className="font-bold text-gray-700">{(project.trl_prediction.stallRisk * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1">Based on budget utilization and team velocity.</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Team Information */}
           <div>

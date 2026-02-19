@@ -13,6 +13,8 @@ export default async function loadMatchmakingScores(params?: LoadMatchmakingScor
       id,
       compatibility_score,
       reasoning,
+      strategic_fit,
+      technical_overlap,
       research_projects (
         id,
         title,
@@ -55,8 +57,10 @@ export default async function loadMatchmakingScores(params?: LoadMatchmakingScor
       challenge_title: ic?.title ?? '',
       challenge_description: ic?.description ?? '',
       company_name: ic?.corporate_partners?.name ?? '',
-      project_expertise: [], // can be filled later from expertise tables
-      challenge_expertise: [],
+      project_expertise: rp?.expertise_areas ?? [],
+      challenge_expertise: ic?.required_expertise ?? [],
+      strategic_fit: row.strategic_fit ?? 'Standard',
+      technical_overlap: row.technical_overlap ?? [],
     };
   });
 }

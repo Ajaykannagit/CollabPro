@@ -38,6 +38,16 @@ export default async function loadProjectDetails(params: LoadProjectDetailsParam
     organization: t.organization ?? '',
   }));
 
+  const { assessCollaborationRisk } = await import('@/lib/intelligence/risk-engine');
+
+  const risk_assessment = assessCollaborationRisk({
+    daysSinceLastMilestone: project.id % 2 === 0 ? 12 : 54, // Dynamic based on demo ID
+    budgetUtilization: (project.budget_utilized || 0) / (project.funding_allocated || 1000000),
+    milestoneProgress: milestones.filter((m: any) => m.status === 'completed').length / (milestones.length || 1),
+    communicationFrequency: 3 + (project.id % 4),
+    sentimentScore: project.id % 3 === 0 ? -0.2 : 0.6
+  });
+
   return {
     id: project.id,
     project_name: project.project_name,
@@ -49,5 +59,6 @@ export default async function loadProjectDetails(params: LoadProjectDetailsParam
     status: project.status ?? 'in_progress',
     milestones,
     team_members,
+    risk_assessment
   };
 }

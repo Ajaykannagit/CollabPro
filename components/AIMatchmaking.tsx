@@ -28,6 +28,8 @@ type MatchmakingScore = {
   company_name: string;
   project_expertise: string[];
   challenge_expertise: string[];
+  strategic_fit: string;
+  technical_overlap: string[];
 };
 
 export function AIMatchmaking() {
@@ -146,10 +148,18 @@ export function AIMatchmaking() {
                       </div>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="text-sm">
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    AI Matched
-                  </Badge>
+                  <div className="flex flex-col items-end gap-2">
+                    <Badge variant="secondary" className="text-sm">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      AI Matched
+                    </Badge>
+                    <Badge variant="outline" className={`font-bold ${match.strategic_fit === 'Transformative' ? 'border-purple-500 text-purple-700 bg-purple-50' :
+                        match.strategic_fit === 'Experimental' ? 'border-orange-500 text-orange-700 bg-orange-50' :
+                          'border-blue-500 text-blue-700 bg-blue-50'
+                      }`}>
+                      {match.strategic_fit} Synergy
+                    </Badge>
+                  </div>
                 </div>
 
                 <div className="bg-white rounded-lg p-4">
@@ -162,6 +172,18 @@ export function AIMatchmaking() {
                       <p className="text-sm text-gray-700 leading-relaxed">
                         {match.reasoning}
                       </p>
+                      {match.technical_overlap && match.technical_overlap.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-[10px] font-black uppercase text-purple-600 tracking-widest mb-2">Technical Overlap</p>
+                          <div className="flex flex-wrap gap-1">
+                            {match.technical_overlap.map((skill, i) => (
+                              <Badge key={i} className="bg-purple-600/10 text-purple-700 border-none text-[10px] h-5">
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

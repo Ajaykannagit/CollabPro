@@ -22,6 +22,12 @@ type ResearchProject = {
   College_name: string;
   College_location: string;
   expertise_areas: string[];
+  trl_prediction?: {
+    estimatedMonthsToNext: number;
+    stallRisk: number;
+    bottlenecks: string[];
+    confidenceScore: number;
+  };
 };
 
 import { useLoadAction } from '@/lib/data-actions';
@@ -134,10 +140,15 @@ export function ProjectDiscovery({ onNavigate }: { onNavigate?: (section: any) =
                       <TrendingUp className="h-3 w-3" />
                       TRL Level
                     </span>
-                    <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                    <div className="flex flex-col items-end gap-1">
                       <Badge variant="outline" className="h-6 px-2 bg-slate-50 text-slate-900 font-bold border-slate-200">
                         {project.trl_level}/9
                       </Badge>
+                      {project.trl_prediction && (
+                        <span className="text-[10px] text-primary font-bold">
+                          Next in {project.trl_prediction.estimatedMonthsToNext}m
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
