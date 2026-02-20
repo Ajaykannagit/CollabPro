@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { StaggerContainer, FadeInUp, SpringPress, GlowWrapper, MagneticWrapper } from '@/components/ui/animation-wrapper';
 import { SystemStatus, SmartLoader } from '@/components/ui/AIFeedback';
 import { motion } from 'framer-motion';
+import { ProjectRoadmap } from '@/components/ProjectRoadmap';
 
 type DashboardOverviewProps = {
   onNavigate?: (section: any) => void;
@@ -233,6 +234,10 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
           </Card>
         </FadeInUp>
       </div>
+
+      <FadeInUp delay={0.5}>
+        <ProjectRoadmap />
+      </FadeInUp>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px] bg-white text-slate-900 border-slate-200 glass-panel rounded-3xl">

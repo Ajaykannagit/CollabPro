@@ -12,6 +12,8 @@ import { BsActivity } from 'react-icons/bs';
 import { useAppStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts';
+import { calculateQuantumReadiness, generateLivePulseData, QuantumMetrics } from '@/lib/intelligence/quantum-readiness';
+import { useState } from 'react';
 
 const HudCard = ({ children, title, icon: Icon, className }: any) => (
     <motion.div
@@ -41,19 +43,21 @@ const HudCard = ({ children, title, icon: Icon, className }: any) => (
 export const QuantumDashboard = () => {
     const { testData, livePulse, addPulse } = useAppStore();
     const { chartData } = testData;
+    const [metrics, setMetrics] = useState<QuantumMetrics>(calculateQuantumReadiness({ team_size: 8, funding_allocated: 250000 }));
 
-    // Simulate pulse messages
+    // Simulate pulse messages and metric updates
     useEffect(() => {
-        const messages = [
-            { message: "Neural Matchmaking engine optimized.", type: 'system' },
-            { message: "New Industry Challenge detected in AI domain.", type: 'alert' },
-            { message: "Compatibility match (98%) found for Water-Gen project.", type: 'match' },
-            { message: "Secure IP vault synced successfully.", type: 'system' },
-        ];
-
         const interval = setInterval(() => {
-            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-            addPulse(randomMsg as any);
+            const pulse = generateLivePulseData();
+            addPulse(pulse as any);
+
+            // Randomly oscillate metrics slightly
+            setMetrics(prev => ({
+                ...prev,
+                cryptoAgility: Math.max(0, Math.min(100, prev.cryptoAgility + (Math.random() * 4 - 2))),
+                innovationVelocity: Math.max(0, Math.min(10, prev.innovationVelocity + (Math.random() * 0.4 - 0.2))),
+                readinessScore: Math.max(0, Math.min(100, prev.readinessScore + (Math.random() * 2 - 1)))
+            }));
         }, 5000);
 
         return () => clearInterval(interval);
@@ -99,16 +103,20 @@ export const QuantumDashboard = () => {
                 <div className="col-span-3 flex flex-col gap-6">
                     <HudCard title="Engine Metrics" icon={HiOutlineCpuChip}>
                         <div className="space-y-4">
-                            {['Match Accuracy', 'Innovation Index', 'IP Throughput'].map((m, i) => (
+                            {[
+                                { label: 'Crypto-Agility', val: Math.round(metrics.cryptoAgility) },
+                                { label: 'Quantum Readiness', val: Math.round(metrics.readinessScore) },
+                                { label: 'Resource Resilience', val: Math.round(metrics.resourceResilience) }
+                            ].map((m, i) => (
                                 <div key={i} className="space-y-1">
                                     <div className="flex justify-between text-[9px] font-black tracking-widest text-slate-500 uppercase">
-                                        <span>{m}</span>
-                                        <span className="text-cyan-400">{Math.floor(Math.random() * 20) + 80}%</span>
+                                        <span>{m.label}</span>
+                                        <span className="text-cyan-400">{m.val}%</span>
                                     </div>
                                     <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
                                         <motion.div
                                             initial={{ width: 0 }}
-                                            animate={{ width: `${Math.floor(Math.random() * 20) + 80}%` }}
+                                            animate={{ width: `${m.val}%` }}
                                             className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
                                         />
                                     </div>
@@ -217,9 +225,9 @@ export const QuantumDashboard = () => {
                     <HudCard title="Strategic Targets" icon={HiOutlineArrowTrendingUp} className="flex-1">
                         <div className="space-y-4">
                             {[
-                                { label: 'Market Cap Target', val: '$5.2M', trend: '+12%' },
-                                { label: 'Innovation Velocity', val: '8.4', trend: '+0.8' },
-                                { label: 'Talent Acquisition', val: '142', trend: '+18' },
+                                { label: 'Entanglement Factor', val: metrics.entanglementFactor.toFixed(2), trend: '+0.04' },
+                                { label: 'Innovation Velocity', val: metrics.innovationVelocity.toFixed(1), trend: '+0.8' },
+                                { label: 'Readiness Index', val: Math.round(metrics.readinessScore), trend: '+1.2' },
                             ].map((t, i) => (
                                 <div key={i} className="p-3 bg-white/5 rounded-xl border border-white/5">
                                     <div className="flex justify-between items-center">

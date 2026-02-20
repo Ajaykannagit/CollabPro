@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { ReactNode, useRef, useState } from 'react';
 import { transitions } from '@/lib/motion-config';
 

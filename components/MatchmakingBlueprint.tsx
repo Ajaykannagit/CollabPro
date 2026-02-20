@@ -1,8 +1,7 @@
-import React from 'react';
+import { ReactNode, Fragment } from 'react';
 import { motion } from 'framer-motion';
 import {
-    HiOutlineShieldCheck,
-    HiOutlineArrowRight
+    HiOutlineShieldCheck
 } from 'react-icons/hi2';
 import { GiBrain } from 'react-icons/gi';
 import { BsLightningCharge, BsShieldLock } from 'react-icons/bs';
@@ -13,7 +12,7 @@ const Glow = ({ className }: { className?: string }) => (
     <div className={cn("absolute rounded-full blur-3xl opacity-20 bg-cyan-500", className)} />
 );
 
-const GlassCard = ({ children, className, title }: { children: React.ReactNode, className?: string, title?: string }) => (
+const GlassCard = ({ children, className, title }: { children: ReactNode, className?: string, title?: string }) => (
     <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -27,19 +26,6 @@ const GlassCard = ({ children, className, title }: { children: React.ReactNode, 
     </motion.div>
 );
 
-const NeonArrow = ({ className }: { className?: string }) => (
-    <div className={cn("flex items-center justify-center", className)}>
-        <motion.div
-            animate={{ x: [0, 5, 0] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-            className="h-[1px] w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent relative"
-        >
-            <div className="absolute right-0 -top-1 text-cyan-500 text-xs">
-                <HiOutlineArrowRight />
-            </div>
-        </motion.div>
-    </div>
-);
 
 export const MatchmakingBlueprint = () => {
     return (
@@ -115,7 +101,7 @@ export const MatchmakingBlueprint = () => {
                             { id: 5, label: "Risk Adjustor", text: "Apply compliance penalties", brain: true },
                             { id: 6, label: "Learning Loop", text: "Adjust weights via feedback", brain: true },
                         ].map((node, i) => (
-                            <React.Fragment key={node.id}>
+                            <Fragment key={node.id}>
                                 <motion.div
                                     initial={{ scale: 0.8, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
@@ -146,7 +132,7 @@ export const MatchmakingBlueprint = () => {
                                         />
                                     </div>
                                 )}
-                            </React.Fragment>
+                            </Fragment>
                         ))}
                     </div>
 

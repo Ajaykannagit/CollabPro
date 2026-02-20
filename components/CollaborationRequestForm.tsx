@@ -1,6 +1,6 @@
 // Form for initiating collaboration requests
 
-import { useMutateAction } from '@/lib/data-actions';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -32,8 +32,8 @@ type CollaborationRequestFormProps = {
   projectTitle: string;
   corporatePartnerId?: number;
   onClose: () => void;
-  onSuccess?: () => void; // Changed to optional based on snippet
-  onNavigate?: (section: any) => void; // Added onNavigate
+  onSuccess?: () => void;
+  onNavigate?: (section: any) => void;
 };
 
 export function CollaborationRequestForm({
@@ -41,37 +41,29 @@ export function CollaborationRequestForm({
   projectTitle,
   onClose,
   onSuccess,
-  onNavigate, // Added onNavigate
+  onNavigate,
 }: CollaborationRequestFormProps) {
   const { toast } = useToast();
-  const [submitting, setSubmitting] = useState(false); // Replaced isSubmitting from useMutateAction
-  const [formData, setFormData] = useState({ // Replaced react-hook-form state
-    budget: '',
-    timeline: '',
-    brief: ''
+  const [submitting, setSubmitting] = useState(false);
+
+  const form = useForm<RequestFormData>({
+    resolver: zodResolver(requestSchema),
+    defaultValues: {
+      projectBrief: '',
+      budgetProposed: '',
+      timelineProposed: '',
+    },
   });
 
-  // Removed useMutateAction and useForm hooks as per snippet's new state management
-
-  const handleSubmit = async (e: React.FormEvent) => { // Renamed onSubmit to handleSubmit and changed signature
-    e.preventDefault();
-    if (!formData.brief || !formData.budget || !formData.timeline) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all fields.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const onSubmit = async (data: RequestFormData) => {
     setSubmitting(true);
     try {
       await createCollaborationRequestAction({
-        research_project_id: projectId,
-        corporate_partner_id: 1, // Simulated current user partner (hardcoded as per snippet)
-        project_brief: formData.brief,
-        budget_proposed: parseFloat(formData.budget),
-        timeline_proposed: formData.timeline
+        researchProjectId: projectId,
+        corporatePartnerId: 1, // Simulated current user partner
+        projectBrief: data.projectBrief,
+        budgetProposed: parseFloat(data.budgetProposed),
+        timelineProposed: data.timelineProposed
       });
 
       toast({
@@ -82,7 +74,6 @@ export function CollaborationRequestForm({
       onSuccess?.();
       onClose();
 
-      // Navigate to tracking if needed
       if (onNavigate) {
         onNavigate('agreements');
       }
@@ -100,62 +91,65 @@ export function CollaborationRequestForm({
   return (
     <>
       <Dialog open onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-white text-slate-900 border-slate-200">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Initiate Collaboration Request</DialogTitle>
-            <DialogDescription>Project: {projectTitle}</DialogDescription>
+            <DialogTitle className="text-2xl font-bold">Initiate Collaboration Request</DialogTitle>
+            <DialogDescription className="text-slate-500">Project: {projectTitle}</DialogDescription>
           </DialogHeader>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid gap-2">
-              <Label htmlFor="projectBrief">Project Brief</Label>
+              <Label htmlFor="projectBrief" className="text-slate-700 font-semibold">Project Brief</Label>
               <Textarea
                 id="projectBrief"
                 placeholder="Describe your collaboration proposal, objectives, and expected outcomes..."
                 rows={8}
                 {...form.register('projectBrief')}
+                className="bg-white border-slate-200 text-slate-900 focus:ring-primary/20"
               />
               {form.formState.errors.projectBrief && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-red-600 font-medium">
                   {form.formState.errors.projectBrief.message}
                 </p>
               )}
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="budgetProposed">Proposed Budget ($)</Label>
+              <Label htmlFor="budgetProposed" className="text-slate-700 font-semibold">Proposed Budget ($)</Label>
               <Input
                 id="budgetProposed"
                 type="number"
                 placeholder="850000"
                 {...form.register('budgetProposed')}
+                className="bg-white border-slate-200 text-slate-900 focus:ring-primary/20"
               />
               {form.formState.errors.budgetProposed && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-red-600 font-medium">
                   {form.formState.errors.budgetProposed.message}
                 </p>
               )}
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="timelineProposed">Proposed Timeline</Label>
+              <Label htmlFor="timelineProposed" className="text-slate-700 font-semibold">Proposed Timeline</Label>
               <Input
                 id="timelineProposed"
                 placeholder="e.g., 24 months with 6-month pilot phase"
                 {...form.register('timelineProposed')}
+                className="bg-white border-slate-200 text-slate-900 focus:ring-primary/20"
               />
               {form.formState.errors.timelineProposed && (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-red-600 font-medium">
                   {form.formState.errors.timelineProposed.message}
                 </p>
               )}
             </div>
 
-            <div className="flex gap-3 pt-4 border-t">
-              <Button type="submit" disabled={isSubmitting} className="flex-1">
-                {isSubmitting ? 'Sending...' : 'Send Request'}
+            <div className="flex gap-3 pt-4 border-t border-slate-100">
+              <Button type="submit" disabled={submitting} className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold">
+                {submitting ? 'Sending...' : 'Send Request'}
               </Button>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={onClose} className="border-slate-200 text-slate-600 hover:bg-slate-50">
                 Cancel
               </Button>
             </div>

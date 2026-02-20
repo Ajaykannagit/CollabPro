@@ -16,6 +16,8 @@ import { useLoadAction } from '@/lib/data-actions';
 import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
+import { analyzeSectionRisk, SectionRisk, calculateOverallRisk } from '@/lib/intelligence/agreement-analyzer';
+import { AlertCircle, ShieldAlert, BadgeCheck, Info } from 'lucide-react';
 
 type AgreementVersion = {
     id: number;
@@ -74,6 +76,11 @@ export function AgreementCompareReview({
     const [isAddingComment, setIsAddingComment] = useState(false);
     const [newCommentText, setNewCommentText] = useState('');
     const [submittingComment, setSubmittingComment] = useState(false);
+
+    // AI Risk Analysis State
+    const [sectionRisks, setSectionRisks] = useState<Record<string, SectionRisk[]>>({});
+    const [overallRisk, setOverallRisk] = useState<number>(0);
+    const [showAIOverlay, setShowAIOverlay] = useState(true);
 
     // Load versions when agreementId is available
     useEffect(() => {
@@ -164,6 +171,19 @@ export function AgreementCompareReview({
 
                 if (v1Result.data) setV1Sections(v1Result.data);
                 if (v2Result.data) setV2Sections(v2Result.data);
+
+                // Run AI Risk Analysis
+                if (v2Result.data) {
+                    const newRisks: Record<string, SectionRisk[]> = {};
+                    let allRisksList: SectionRisk[] = [];
+                    (v2Result.data as any[]).forEach((section: any) => {
+                        const risks = analyzeSectionRisk(section.section_id, section.title, section.content);
+                        newRisks[section.section_id] = risks;
+                        allRisksList = [...allRisksList, ...risks];
+                    });
+                    setSectionRisks(newRisks);
+                    setOverallRisk(calculateOverallRisk(allRisksList));
+                }
             } catch (error) {
                 console.error('Error loading sections:', error);
             } finally {
@@ -283,6 +303,31 @@ export function AgreementCompareReview({
                         </select>
                     </div>
                 </div>
+                <div className="flex items-center gap-4">
+                    <div className="flex flex-col items-end mr-4">
+                        <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">AI Risk Index</span>
+                        <div className="flex items-center gap-2">
+                            <span className={`text-xl font-black ${overallRisk > 60 ? 'text-red-500' : overallRisk > 30 ? 'text-amber-500' : 'text-green-500'}`}>
+                                {overallRisk}%
+                            </span>
+                            <div className="w-20 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full transition-all duration-1000 ${overallRisk > 60 ? 'bg-red-500' : overallRisk > 30 ? 'bg-amber-500' : 'bg-green-500'}`}
+                                    style={{ width: `${overallRisk}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAIOverlay(!showAIOverlay)}
+                        className={`border-white/10 text-xs font-bold gap-2 ${showAIOverlay ? 'bg-blue-500/10 border-blue-500/50 text-blue-400' : 'bg-transparent text-slate-400'}`}
+                    >
+                        <ShieldAlert className="h-3.5 w-3.5" />
+                        AI Insights: {showAIOverlay ? 'ON' : 'OFF'}
+                    </Button>
+                </div>
             </div>
 
             {/* Main Content */}
@@ -342,6 +387,11 @@ export function AgreementCompareReview({
                                                 Changes Detected
                                             </Badge>
                                         )}
+                                        {showAIOverlay && sectionRisks[v1Section.section_id]?.length > 0 && (
+                                            <Badge className="bg-red-500/10 text-red-500 border-red-500/20 text-[10px] ml-2 animate-pulse">
+                                                {sectionRisks[v1Section.section_id].length} AI Risks
+                                            </Badge>
+                                        )}
                                     </CardHeader>
                                     <CardContent className="p-0">
                                         <div className="flex divide-x divide-white/5">
@@ -373,18 +423,52 @@ export function AgreementCompareReview({
                     <div className="p-4 border-b border-white/10 bg-[#111114]">
                         <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2">
                             <MessageSquare className="h-4 w-4 text-blue-500" />
-                            Annotations
+                            Annotations & AI Analysis
                         </h3>
                     </div>
-                    <div className="flex-1 p-4 overflow-auto">
+                    <div className="flex-1 p-4 overflow-auto custom-scrollbar">
                         <AnimatePresence mode="popLayout">
                             {selectedSection ? (
                                 <motion.div
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 20 }}
-                                    className="space-y-4"
+                                    className="space-y-6"
                                 >
+                                    {/* AI Risk Summary for Section */}
+                                    {showAIOverlay && sectionRisks[selectedSection]?.length > 0 && (
+                                        <div className="space-y-3">
+                                            <h4 className="text-[10px] font-black text-red-500 uppercase tracking-widest flex items-center gap-2">
+                                                <AlertCircle className="h-3 w-3" />
+                                                Detected Exposure Points
+                                            </h4>
+                                            {sectionRisks[selectedSection].map((risk, idx) => (
+                                                <div key={idx} className="p-3 bg-red-950/20 border border-red-500/20 rounded-xl relative overflow-hidden group">
+                                                    <div className="absolute top-0 right-0 p-1.5 opacity-20 group-hover:opacity-100 transition-opacity">
+                                                        <Info className="h-3 w-3 text-red-400 cursor-help" />
+                                                    </div>
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <span className="text-[xs] font-bold text-red-400">{risk.label}</span>
+                                                        <Badge className={`text-[8px] h-3.5 ${risk.severity === 'Critical' ? 'bg-red-500' :
+                                                            risk.severity === 'High' ? 'bg-orange-500' : 'bg-amber-500'
+                                                            }`}>
+                                                            {risk.severity}
+                                                        </Badge>
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-300 leading-normal mb-2">
+                                                        {risk.description}
+                                                    </p>
+                                                    <div className="pt-2 border-t border-red-500/10">
+                                                        <p className="text-[9px] text-green-400 font-bold uppercase tracking-tight flex items-center gap-1">
+                                                            <BadgeCheck className="h-2.5 w-2.5" />
+                                                            Mitigation: {risk.mitigation}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
                                     <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                                         <p className="text-[11px] font-bold text-blue-400 uppercase tracking-widest mb-1">Active Section</p>
                                         <p className="text-sm text-slate-200 font-medium">
