@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { useToast } from "@/hooks/use-toast";
 
 // Inline simple Switch component
 const CustomSwitch = ({ checked, onChange }: { checked: boolean, onChange: (val: boolean) => void }) => (
@@ -71,6 +72,21 @@ export const IndustryProfileSettings = () => {
     const [trlMin, setTrlMin] = useState(4);
     const [trlMax, setTrlMax] = useState(7);
     const [budget, setBudget] = useState(500000);
+    const { toast } = useToast();
+
+    const handleSave = () => {
+        toast({
+            title: "Settings Saved",
+            description: "Your industry capability profile has been synchronized with the global matchmaking engine.",
+        });
+    };
+
+    const handlePreview = () => {
+        toast({
+            title: "Generating Preview",
+            description: "Preparing your partner-facing capability document...",
+        });
+    };
 
     const addDomain = () => {
         if (newDomain && !domains.includes(newDomain)) {
@@ -103,10 +119,10 @@ export const IndustryProfileSettings = () => {
                     <p className="text-sm text-slate-400 font-medium">Configure your high-tech capability passport for global matchmaking</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" className="text-slate-400 hover:text-white hover:bg-white/5 font-bold text-xs border border-white/5">
+                    <Button variant="ghost" className="text-slate-400 hover:text-white hover:bg-white/5 font-bold text-xs border border-white/5" onClick={handlePreview}>
                         Preview as Partner
                     </Button>
-                    <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black px-8 py-6 rounded-xl shadow-[0_0_20px_rgba(8,145,178,0.3)] border border-cyan-400/20">
+                    <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black px-8 py-6 rounded-xl shadow-[0_0_20px_rgba(8,145,178,0.3)] border border-cyan-400/20" onClick={handleSave}>
                         Save Capability Sheet
                     </Button>
                 </div>

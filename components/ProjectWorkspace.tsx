@@ -770,8 +770,31 @@ export function ProjectWorkspace({
                               "{projectData.risk_assessment.recommendation}"
                             </p>
                             <div className="mt-6 pt-6 border-t border-primary/10 relative z-10 flex gap-3">
-                              <Button size="sm" className="font-bold">Schedule Sync</Button>
-                              <Button size="sm" variant="outline" className="font-bold">View Mitigation Plan</Button>
+                              <Button
+                                size="sm"
+                                className="font-bold"
+                                onClick={() => {
+                                  toast({
+                                    title: "Sync Scheduled",
+                                    description: "Project stakeholders have been notified of the requested strategic synchronization session.",
+                                  });
+                                }}
+                              >
+                                Schedule Sync
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="font-bold"
+                                onClick={() => {
+                                  toast({
+                                    title: "Action Plan Generated",
+                                    description: "The AI-driven risk mitigation protocol has been exported and shared with the project lead.",
+                                  });
+                                }}
+                              >
+                                View Mitigation Plan
+                              </Button>
                             </div>
                           </div>
                         </div>

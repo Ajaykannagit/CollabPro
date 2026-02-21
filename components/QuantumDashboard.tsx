@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts';
 import { calculateQuantumReadiness, generateLivePulseData, QuantumMetrics } from '@/lib/intelligence/quantum-readiness';
 import { useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
 
 const HudCard = ({ children, title, icon: Icon, className }: any) => (
     <motion.div
@@ -44,6 +45,14 @@ export const QuantumDashboard = () => {
     const { testData, livePulse, addPulse } = useAppStore();
     const { chartData } = testData;
     const [metrics, setMetrics] = useState<QuantumMetrics>(calculateQuantumReadiness({ team_size: 8, funding_allocated: 250000 }));
+    const { toast } = useToast();
+
+    const handleAnalyze = () => {
+        toast({
+            title: "Deep Target Analysis Initiated",
+            description: "Executing recursive strategic evaluation of all connected research nodes...",
+        });
+    };
 
     // Simulate pulse messages and metric updates
     useEffect(() => {
@@ -242,6 +251,7 @@ export const QuantumDashboard = () => {
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            onClick={handleAnalyze}
                             className="w-full mt-6 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(6,182,212,0.3)] border border-cyan-400/20"
                         >
                             Analyze Deep Targets

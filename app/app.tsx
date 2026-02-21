@@ -337,7 +337,7 @@ function App() {
                 {activeSection === 'talent' && <TalentShowcase />}
                 {activeSection === 'ip' && <IPPortfolio onNavigate={setActiveSection} />}
                 {activeSection === 'negotiate' && <NegotiationWorkspace collaborationRequestId={1} />}
-                {activeSection === 'agreement' && <AgreementGenerator collaborationRequestId={1} />}
+                {activeSection === 'agreement' && <AgreementGenerator collaborationRequestId={1} onNavigate={setActiveSection} />}
                 {activeSection === 'ipdisclosure' && (
                   <IPDisclosureForm activeProjectId={activeProjectId} onSuccess={() => setActiveSection('ip')} />
                 )}

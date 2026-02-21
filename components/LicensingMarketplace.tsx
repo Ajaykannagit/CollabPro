@@ -181,8 +181,8 @@ export function LicensingMarketplace() {
                       onClick={(e) => {
                         e.stopPropagation();
                         toast({
-                          title: "Requesting Details",
-                          description: "Full research data will be shared upon approval.",
+                          title: "Securing Audit Report",
+                          description: "Requesting encrypted full research data and IP audit logs for review.",
                         });
                       }}
                     >

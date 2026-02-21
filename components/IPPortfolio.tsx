@@ -267,7 +267,7 @@ export function IPPortfolio({ onNavigate }: IPPortfolioProps) {
                 <p className="text-gray-600 mb-4">
                   Start documenting your innovations
                 </p>
-                <Button>Submit IP Disclosure</Button>
+                <Button onClick={() => onNavigate?.('ip-disclosure')}>Submit IP Disclosure</Button>
               </CardContent>
             </Card>
           )}

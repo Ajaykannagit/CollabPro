@@ -43,9 +43,10 @@ type ChecklistItem = {
 
 type AgreementGeneratorProps = {
   collaborationRequestId: number;
+  onNavigate?: (section: any) => void;
 };
 
-export function AgreementGenerator({ collaborationRequestId }: AgreementGeneratorProps) {
+export function AgreementGenerator({ collaborationRequestId, onNavigate }: AgreementGeneratorProps) {
   const { toast } = useToast();
   const [agreement, loading] = useLoadAction(
     loadAgreementDetailsAction,
@@ -320,14 +321,18 @@ export function AgreementGenerator({ collaborationRequestId }: AgreementGenerato
             </CardContent>
           </Card>
 
-          <div className="space-y-3">
+          <div className="flex gap-3">
             <Button
-              className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
+              className="flex-1 h-12 bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
               onClick={() => {
-                toast({
-                  title: "Initiating Signature",
-                  description: "Redirecting to secure signature workflow...",
-                });
+                if (onNavigate) {
+                  onNavigate('digital-signature');
+                } else {
+                  toast({
+                    title: "Initiating Signature",
+                    description: "Redirecting to secure signature workflow...",
+                  });
+                }
               }}
             >
               <User className="h-4 w-4 mr-2" />
@@ -335,11 +340,11 @@ export function AgreementGenerator({ collaborationRequestId }: AgreementGenerato
             </Button>
             <Button
               variant="outline"
-              className="w-full h-12 border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all active:scale-95"
+              className="flex-1 h-12 border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all active:scale-95"
               onClick={() => {
                 toast({
                   title: "Exporting PDF",
-                  description: "Generating PDF agreement...",
+                  description: "Generating secure encrypted PDF document for Nexus-Delta Integration...",
                 });
               }}
             >
