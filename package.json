@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest",
-    "prepare": "husky"
+    "prepare": "husky",
+    "audit": "npm audit --audit-level=high",
+    "audit:ci": "npm audit --omit=dev --audit-level=high"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
