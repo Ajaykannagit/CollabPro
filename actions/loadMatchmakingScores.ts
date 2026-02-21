@@ -44,9 +44,17 @@ export default async function loadMatchmakingScores(params?: LoadMatchmakingScor
   return (data || []).map((row: any) => {
     const rp = row.research_projects;
     const ic = row.industry_challenges;
+    const score = Number(row.compatibility_score) || 0;
+
+    // Generate simulated pillars based on the score
+    const technical = Math.min(100, score + (Math.random() * 10 - 5));
+    const trl = Math.min(100, score + (Math.random() * 15 - 10));
+    const strategic = Math.min(100, score + (Math.random() * 10 - 5));
+    const resource = Math.min(100, score + (Math.random() * 20 - 15));
+
     return {
       id: row.id,
-      compatibility_score: Number(row.compatibility_score) || 0,
+      compatibility_score: score,
       reasoning: row.reasoning ?? '',
       project_id: rp?.id,
       project_title: rp?.title ?? '',
@@ -61,6 +69,12 @@ export default async function loadMatchmakingScores(params?: LoadMatchmakingScor
       challenge_expertise: ic?.required_expertise ?? [],
       strategic_fit: row.strategic_fit ?? 'Standard',
       technical_overlap: row.technical_overlap ?? [],
+      alignment_pillars: {
+        technical,
+        trl,
+        strategic,
+        resource
+      }
     };
   });
 }

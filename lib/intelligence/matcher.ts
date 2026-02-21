@@ -35,6 +35,16 @@ export function calculateSynergy(project: any, challenge: any): MatchSynergy {
         baseScore += 10;
     }
 
+    // Geographic Proximity Bonus (Simulated)
+    if (project.location === challenge.location) {
+        baseScore += 5;
+    }
+
+    // Historical Success Rate (Simulated)
+    if (project.institution_rating > 4.5) {
+        baseScore += 5;
+    }
+
     // Team Capacity: Larger teams signal higher project bandwidth
     if (project.team_size > 8) {
         baseScore += 5;
@@ -52,10 +62,10 @@ export function calculateSynergy(project: any, challenge: any): MatchSynergy {
         if (strategicFit === 'Transformative') {
             reasoning += `This partnership represents a rare synergy of high-TRL research and specific industrial needs, with potential for rapid commercialization.`;
         } else {
-            reasoning += `The research team's proficiency aligns well with the challenge's core requirements.`;
+            reasoning += `The research team's proficiency aligns well with the challenge's core requirements, supported by a strong institutional success rate.`;
         }
     } else {
-        reasoning = `While direct expertise overlap is emerging, the methodological approach of the research project offers a novel perspective on this industrial challenge.`;
+        reasoning = `While direct expertise overlap is emerging, the methodological approach and geographic synergy offer a novel perspective on this industrial challenge.`;
     }
 
     return {

@@ -30,6 +30,12 @@ type MatchmakingScore = {
   challenge_expertise: string[];
   strategic_fit: string;
   technical_overlap: string[];
+  alignment_pillars: {
+    technical: number;
+    trl: number;
+    strategic: number;
+    resource: number;
+  };
 };
 
 export function AIMatchmaking() {
@@ -154,8 +160,8 @@ export function AIMatchmaking() {
                       AI Matched
                     </Badge>
                     <Badge variant="outline" className={`font-bold ${match.strategic_fit === 'Transformative' ? 'border-purple-500 text-purple-700 bg-purple-50' :
-                        match.strategic_fit === 'Experimental' ? 'border-orange-500 text-orange-700 bg-orange-50' :
-                          'border-blue-500 text-blue-700 bg-blue-50'
+                      match.strategic_fit === 'Experimental' ? 'border-orange-500 text-orange-700 bg-orange-50' :
+                        'border-blue-500 text-blue-700 bg-blue-50'
                       }`}>
                       {match.strategic_fit} Synergy
                     </Badge>
@@ -163,18 +169,22 @@ export function AIMatchmaking() {
                 </div>
 
                 <div className="bg-white rounded-lg p-4">
-                  <div className="flex items-start gap-2 mb-2">
-                    <Lightbulb className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-700 mb-1">
-                        AI Reasoning
-                      </p>
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        {match.reasoning}
-                      </p>
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex-1">
+                      <div className="flex items-start gap-2 mb-2">
+                        <Lightbulb className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold text-gray-700 mb-1">
+                            AI Reasoning
+                          </p>
+                          <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                            {match.reasoning}
+                          </p>
+                        </div>
+                      </div>
                       {match.technical_overlap && match.technical_overlap.length > 0 && (
                         <div className="mt-3">
-                          <p className="text-[10px] font-black uppercase text-purple-600 tracking-widest mb-2">Technical Overlap</p>
+                          <p className="text-[10px] font-black uppercase text-purple-600 tracking-widest mb-2">Core Synergies</p>
                           <div className="flex flex-wrap gap-1">
                             {match.technical_overlap.map((skill, i) => (
                               <Badge key={i} className="bg-purple-600/10 text-purple-700 border-none text-[10px] h-5">
@@ -184,6 +194,31 @@ export function AIMatchmaking() {
                           </div>
                         </div>
                       )}
+                    </div>
+
+                    <div className="w-full md:w-64 border-l pl-6 border-slate-100">
+                      <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Strategic Alignment</p>
+                      <div className="space-y-3">
+                        {[
+                          { label: 'Technical Overlap', value: match.alignment_pillars.technical, color: 'bg-blue-500' },
+                          { label: 'TRL Synergy', value: match.alignment_pillars.trl, color: 'bg-emerald-500' },
+                          { label: 'Strategic Fit', value: match.alignment_pillars.strategic, color: 'bg-purple-500' },
+                          { label: 'Resource Resilience', value: match.alignment_pillars.resource, color: 'bg-amber-500' },
+                        ].map((pillar) => (
+                          <div key={pillar.label} className="space-y-1">
+                            <div className="flex justify-between text-[9px] font-bold uppercase tracking-tight text-slate-600">
+                              <span>{pillar.label}</span>
+                              <span>{Math.round(pillar.value)}%</span>
+                            </div>
+                            <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full ${pillar.color} transition-all duration-1000`}
+                                style={{ width: `${pillar.value}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

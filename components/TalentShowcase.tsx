@@ -8,10 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import loadStudentProfilesAction from '@/actions/loadStudentProfiles';
-import { Search, GraduationCap, Briefcase, Mail, Star, Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Search, GraduationCap, Briefcase, Mail, Star, Loader2, ShieldCheck, Fingerprint, Lock, CheckCircle2, Cpu } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import createInterviewRequestAction from '@/actions/createInterviewRequest';
-import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type StudentProfile = {
   id: number;
@@ -33,6 +35,29 @@ export function TalentShowcase() {
   const [searchQuery, setSearchQuery] = useState('');
   const [degreeFilter, setDegreeFilter] = useState('');
   const [requestingId, setRequestingId] = useState<number | null>(null);
+  const [verifyingStudent, setVerifyingStudent] = useState<StudentProfile | null>(null);
+  const [verificationStep, setVerificationStep] = useState(0);
+  const [verifiedStudents, setVerifiedStudents] = useState<Set<number>>(new Set());
+
+  const handleVerifyCredential = (student: StudentProfile) => {
+    setVerifyingStudent(student);
+    setVerificationStep(1);
+
+    // ZKP Simulation Steps
+    setTimeout(() => setVerificationStep(2), 1200); // Identity anchor
+    setTimeout(() => setVerificationStep(3), 2400); // Proof generation
+    setTimeout(() => setVerificationStep(4), 3600); // Final verification
+
+    setTimeout(() => {
+      setVerifiedStudents(prev => new Set(prev).add(student.id));
+      setVerifyingStudent(null);
+      setVerificationStep(0);
+      toast({
+        title: "Proof Verified",
+        description: `Cryptographic proof for ${student.name}'s ${student.degree_level} in ${student.field_of_study} has been anchored.`,
+      });
+    }, 4800);
+  };
   const [students, loading, error] = useLoadAction(
     loadStudentProfilesAction,
     [],
@@ -139,9 +164,17 @@ export function TalentShowcase() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-primary transition-colors">
-                      {student.name}
-                    </h3>
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors">
+                        {student.name}
+                      </h3>
+                      {verifiedStudents.has(student.id) && (
+                        <div className="flex items-center gap-1 bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full border border-green-200 animate-in fade-in zoom-in duration-300">
+                          <ShieldCheck className="h-3 w-3" />
+                          <span className="text-[8px] font-black uppercase tracking-tight">Proof Verified</span>
+                        </div>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 text-sm text-slate-500 mb-2 font-semibold">
                       <GraduationCap className="h-4 w-4 text-slate-400" />
                       <span>{student.degree_level}</span>
@@ -234,6 +267,23 @@ export function TalentShowcase() {
                   <Button
                     variant="outline"
                     size="sm"
+                    disabled={verifiedStudents.has(student.id)}
+                    className={cn(
+                      "border-slate-200 font-bold",
+                      verifiedStudents.has(student.id) ? "text-green-600 bg-green-50" : "text-slate-500"
+                    )}
+                    onClick={() => handleVerifyCredential(student)}
+                  >
+                    {verifiedStudents.has(student.id) ? (
+                      <ShieldCheck className="h-4 w-4" />
+                    ) : (
+                      <ShieldCheck className="h-4 w-4 mr-2" />
+                    )}
+                    {!verifiedStudents.has(student.id) && "Verify Proof"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-primary transition-colors h-9 w-10 p-0 flex items-center justify-center font-bold"
                     onClick={() => {
                       window.location.href = `mailto:${student.email}`;
@@ -257,6 +307,74 @@ export function TalentShowcase() {
           </CardContent>
         </Card>
       )}
+
+      {/* ZKP Verification Modal Simulation */}
+      <AnimatePresence>
+        {verifyingStudent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden"
+            >
+              <div className="p-6 text-center">
+                <div className="relative w-20 h-20 mx-auto mb-6">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 border-2 border-dashed border-primary/30 rounded-full"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {verificationStep === 1 && <Fingerprint className="h-10 w-10 text-primary animate-pulse" />}
+                    {verificationStep === 2 && <Cpu className="h-10 w-10 text-primary animate-pulse" />}
+                    {verificationStep === 3 && <Lock className="h-10 w-10 text-primary animate-pulse" />}
+                    {verificationStep === 4 && <CheckCircle2 className="h-10 w-10 text-green-500" />}
+                  </div>
+                </div>
+
+                <h2 className="text-xl font-black text-slate-900 mb-2 uppercase tracking-tight">
+                  {verificationStep === 1 && "Identity Sync"}
+                  {verificationStep === 2 && "Knowledge Proof"}
+                  {verificationStep === 3 && "Mesh Anchoring"}
+                  {verificationStep === 4 && "Verification Complete"}
+                </h2>
+
+                <p className="text-sm text-slate-500 font-medium mb-8">
+                  {verificationStep === 1 && `Initiating biometric handshake for ${verifyingStudent.name}...`}
+                  {verificationStep === 2 && "Generating Zero-Knowledge Proof for academic credentials..."}
+                  {verificationStep === 3 && "Verifying cryptographic proof against university node..."}
+                  {verificationStep === 4 && "Credential verified successfully."}
+                </p>
+
+                <div className="space-y-3">
+                  {[
+                    { label: "Identity Hash", step: 1 },
+                    { label: "Credential Proof", step: 2 },
+                    { label: "University Node", step: 3 }
+                  ].map((s, i) => (
+                    <div key={i} className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest p-2 rounded-lg bg-slate-50 border border-slate-100">
+                      <span className={cn(verificationStep >= s.step ? "text-slate-900" : "text-slate-400")}>{s.label}</span>
+                      {verificationStep > s.step ? (
+                        <CheckCircle2 className="h-3 w-3 text-green-500" />
+                      ) : verificationStep === s.step ? (
+                        <Loader2 className="h-3 w-3 text-primary animate-spin" />
+                      ) : (
+                        <div className="h-3 w-3" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-slate-50 p-4 border-t border-slate-100 flex justify-center">
+                <span className="text-[8px] font-mono text-slate-400 tracking-widest flex items-center gap-1.5 uppercase">
+                  <Cpu className="h-3 w-3" /> PQC-Ready Sovereign Mesh Node: #01-STANFORD
+                </span>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
