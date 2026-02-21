@@ -59,7 +59,7 @@ export function ProfilePage() {
                 title: "Profile Updated",
                 description: "Your changes have been saved successfully.",
             });
-        } catch (error) {
+        } catch {
             toast({
                 title: "Update Failed",
                 description: "There was an error saving your profile.",

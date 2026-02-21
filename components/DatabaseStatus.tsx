@@ -20,7 +20,7 @@ export function DatabaseStatus() {
           setIsConnected(true);
           setCollegeCount(data?.length || 0);
         }
-      } catch (err) {
+      } catch {
         // Demo mode: never surface DB errors in UI/console.
         setIsConnected(true);
         setCollegeCount(20);

@@ -100,7 +100,7 @@ export function useLoadAction<T>(
         } finally {
             setLoading(false);
         }
-    }, [actionFn, memoizedParams, handleError]);
+    }, [actionFn, memoizedParams, handleError, checkGovernance]);
 
     useEffect(() => {
         fetchData();
@@ -130,7 +130,7 @@ export function useMutateAction<T>(actionFn: (params?: any) => Promise<T>): read
         } finally {
             setLoading(false);
         }
-    }, [actionFn]);
+    }, [actionFn, checkGovernance]);
 
     return [mutate, loading] as const;
 }
