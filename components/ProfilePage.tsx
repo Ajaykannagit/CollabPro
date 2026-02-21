@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Briefcase, Building2, Camera, User as UserIcon } from 'lucide-react';
+import { Mail, Briefcase, Building2, Camera, User as UserIcon, ShieldCheck, Cpu } from 'lucide-react';
 import { FadeInUp, SpringPress } from '@/components/ui/animation-wrapper';
 import { getRoleLabel } from '@/lib/userUtils';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 export function ProfilePage() {
     const { user, updateUser } = useAppStore();
@@ -20,6 +23,28 @@ export function ProfilePage() {
         organization: user?.organization || '',
         department: user?.department || '',
     });
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [verificationStep, setVerificationStep] = useState(0);
+    const [isVerified, setIsVerified] = useState(localStorage.getItem('collabpro_sovereign_verified') === 'true');
+
+    const handleVerifySovereign = () => {
+        setIsVerifying(true);
+        setVerificationStep(1);
+
+        // Simulate multi-step biometric and quantum handshake
+        setTimeout(() => setVerificationStep(2), 1500);
+        setTimeout(() => setVerificationStep(3), 3000);
+        setTimeout(() => {
+            setIsVerifying(false);
+            setIsVerified(true);
+            setVerificationStep(4);
+            localStorage.setItem('collabpro_sovereign_verified', 'true');
+            toast({
+                title: "Sovereign ID Verified",
+                description: "Your professional identity has been anchored to the decentralized sovereign mesh.",
+            });
+        }, 4500);
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -87,6 +112,52 @@ export function ProfilePage() {
                                     <Briefcase className="h-4 w-4 text-slate-400" />
                                     <span>{formData.role}</span>
                                 </div>
+                            </div>
+
+                            <div className="w-full mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <ShieldCheck className={cn("h-4 w-4", isVerified ? "text-green-500" : "text-slate-400")} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sovereign ID</span>
+                                    </div>
+                                    <Badge variant="outline" className={cn("text-[8px] h-4", isVerified ? "bg-green-500/10 text-green-600 border-green-200" : "bg-slate-200 text-slate-500 border-transparent")}>
+                                        {isVerified ? "VERIFIED" : "UNVERIFIED"}
+                                    </Badge>
+                                </div>
+
+                                {!isVerified && !isVerifying && (
+                                    <Button
+                                        onClick={handleVerifySovereign}
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full text-[10px] font-black uppercase tracking-widest h-8 border-primary/20 text-primary hover:bg-primary/5"
+                                    >
+                                        Initiate Handshake
+                                    </Button>
+                                )}
+
+                                {isVerifying && (
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[7px] font-mono text-primary uppercase">
+                                            <span>{verificationStep === 1 ? "Biometric Sync..." : verificationStep === 2 ? "Quantum Handshake..." : "Anchoring Proof..."}</span>
+                                            <span>{Math.round((verificationStep / 3) * 100)}%</span>
+                                        </div>
+                                        <div className="h-1 w-full bg-primary/10 rounded-full overflow-hidden">
+                                            <motion.div
+                                                className="h-full bg-primary"
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${(verificationStep / 3) * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {isVerified && (
+                                    <div className="flex items-center gap-2 text-[9px] text-slate-500 font-medium bg-white p-2 rounded-lg border border-slate-100 italic">
+                                        <Cpu className="h-3 w-3 text-primary" />
+                                        Identity anchored to block #492...AX9
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                     </Card>

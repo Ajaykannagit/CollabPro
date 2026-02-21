@@ -222,12 +222,35 @@ export const QuantumDashboard = () => {
                             <span className="text-[8px] text-slate-500 mt-1">AES-256 Quantum Resistant</span>
                         </div>
                         <div className="mt-4 space-y-2">
-                            {['IP Masking', 'Geo-Fencing', 'Sovereign Node Auth'].map((s, i) => (
+                            {['IP Masking', 'Geo-Fencing', 'Sovereign ID Auth', 'Hybrid PQC Tunnel'].map((s, i) => (
                                 <div key={i} className="flex items-center justify-between text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
                                     <span>{s}</span>
-                                    <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]" />
                                 </div>
                             ))}
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-white/5">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-[7px] text-slate-500 font-black uppercase tracking-widest">Active QKD Stream</span>
+                                <span className="text-[7px] text-green-400 font-mono">INTEGRITY_SAFE</span>
+                            </div>
+                            <div className="flex gap-0.5">
+                                {[...Array(24)].map((_, i) => (
+                                    <motion.div
+                                        key={i}
+                                        animate={{
+                                            opacity: [0.2, 1, 0.2],
+                                            height: [4, 8, 4]
+                                        }}
+                                        transition={{
+                                            duration: 1 + Math.random(),
+                                            repeat: Infinity,
+                                            delay: i * 0.05
+                                        }}
+                                        className="flex-1 bg-cyan-500/40 rounded-full"
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </HudCard>
 

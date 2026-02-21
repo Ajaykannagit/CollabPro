@@ -42,6 +42,30 @@ function useDeepCompareMemoize(value: any) {
     return ref.current;
 }
 
+/**
+ * Simulated Governance Check for Crypto-Agility and Sovereign ID verification.
+ * In a real app, this would verify JWT claims against RLS policies.
+ */
+function useGovernanceCheck() {
+    return useCallback((actionName: string) => {
+        const isVerified = localStorage.getItem('collabpro_sovereign_verified') === 'true';
+        const timestamp = new Date().toISOString();
+
+        console.group(`%c[GOVERNANCE CHECK] ${actionName}`, 'color: #22d3ee; font-weight: bold;');
+        console.log(`Timestamp: ${timestamp}`);
+        console.log(`Identity Status: ${isVerified ? 'VERIFIED (SOVEREIGN)' : 'UNVERIFIED (GUEST)'}`);
+        console.log(`Ciphersuite: Crystals-Kyber (PQC-Enabled)`);
+
+        if (!isVerified && actionName.toLowerCase().includes('ip')) {
+            console.warn('SECURITY ALERT: Accessing sensitive IP data as Unverified Identity.');
+            // In a production environment, we might block this or require stepped-up MFA
+        }
+
+        console.groupEnd();
+        return isVerified;
+    }, []);
+}
+
 export function useLoadAction<T>(
     actionFn: (params?: any) => Promise<T>,
     initialData: T,
@@ -51,6 +75,7 @@ export function useLoadAction<T>(
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<{ message: string } | null>(null);
     const { handleError } = useErrorHandler();
+    const checkGovernance = useGovernanceCheck();
 
     // Use deep comparison for params to prevent infinite re-renders from inline object literals
     const memoizedParams = useDeepCompareMemoize(params);
@@ -58,6 +83,10 @@ export function useLoadAction<T>(
     const fetchData = useCallback(async () => {
         setLoading(true);
         setError(null);
+
+        // Execute governance check before data fetch
+        checkGovernance(actionFn.name || 'AnonymousLoadAction');
+
         try {
             const result = await actionFn(memoizedParams);
             setData(result);
@@ -87,9 +116,14 @@ export function useLoadAction<T>(
  */
 export function useMutateAction<T>(actionFn: (params?: any) => Promise<T>): readonly [(params?: any) => Promise<T>, boolean] {
     const [loading, setLoading] = useState(false);
+    const checkGovernance = useGovernanceCheck();
 
     const mutate = useCallback(async (params?: any) => {
         setLoading(true);
+
+        // Execute governance check before mutation
+        checkGovernance(actionFn.name || 'AnonymousMutationAction');
+
         try {
             const result = await actionFn(params);
             return result;
