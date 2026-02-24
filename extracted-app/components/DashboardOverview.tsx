@@ -61,7 +61,12 @@ export function DashboardOverview() {
     <div className="p-8 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">Dashboard</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-4xl font-bold text-white tracking-tight">Dashboard</h1>
+            <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20 animate-pulse">
+              <div className="h-2 w-2 rounded-full bg-green-500 mr-2" /> Live System
+            </Badge>
+          </div>
           <p className="text-gray-400">Welcome back! Here's your collaboration overview</p>
         </div>
         <div className="flex gap-3">

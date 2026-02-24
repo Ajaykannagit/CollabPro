@@ -1,10 +1,10 @@
 
 import { motion, useSpring, useTransform, useMotionValue } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 // --- Animated Counter ---
-export function Counter({ value, direction = "up" }: { value: number; direction?: "up" | "down" }) {
+export function Counter({ value }: { value: number }) {
     const spring = useSpring(0, { mass: 0.8, stiffness: 75, damping: 15 });
     const display = useTransform(spring, (current) => Math.round(current));
 
