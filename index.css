@@ -46,6 +46,27 @@
     --chart-4: 300 100% 50%;
     --chart-5: 45 100% 50%;
   }
+
+  /* Custom Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsla(var(--background), 0.5);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsla(var(--primary), 0.7);
+    border-radius: 10px;
+    border: 2px solid hsla(var(--background), 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsla(var(--primary), 1);
+  }
 }
 
 @layer base {
@@ -57,7 +78,11 @@
     @apply bg-background text-foreground;
     background-image:
       radial-gradient(at 0% 0%, hsla(263, 70%, 50%, 0.03) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(180, 100%, 50%, 0.03) 0px, transparent 50%);
+      radial-gradient(at 100% 0%, hsla(180, 100%, 50%, 0.03) 0px, transparent 50%),
+      /* Enhanced background pattern: subtle grid */
+      linear-gradient(to right, hsla(var(--primary), 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, hsla(var(--primary), 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 20px 20px, 20px 20px;
     background-attachment: fixed;
   }
 }
@@ -109,6 +134,69 @@
 
     50% {
       transform: translateY(-10px);
+    }
+  }
+
+  /* Quantum Theme Scanline Effect */
+  .scanline-overlay {
+    @apply absolute inset-0 pointer-events-none z-50;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 1px,
+      hsla(var(--primary), 0.05) 1px,
+      hsla(var(--primary), 0.05) 2px
+    );
+    background-size: 100% 4px;
+    animation: scanline-scroll 10s linear infinite;
+  }
+
+  @keyframes scanline-scroll {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 0 400px; /* Adjust value for desired scroll distance */
+    }
+  }
+
+  /* Utility for subtle glow */
+  .glow-sm {
+    box-shadow: 0 0 5px hsla(var(--primary), 0.3);
+  }
+
+  .glow-md {
+    box-shadow: 0 0 15px hsla(var(--primary), 0.4);
+  }
+
+  /* Utility for animated border */
+  .border-animate {
+    @apply relative overflow-hidden;
+  }
+
+  .border-animate::before {
+    content: '';
+    @apply absolute inset-0 rounded-[inherit] border border-transparent;
+    background: linear-gradient(
+      to right,
+      hsla(var(--primary), 0.5),
+      hsla(var(--secondary), 0.5),
+      hsla(var(--primary), 0.5)
+    );
+    background-size: 200% 100%;
+    animation: border-gradient 3s linear infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  @keyframes border-gradient {
+    0% {
+      background-position: 200% 0%;
+    }
+    100% {
+      background-position: -200% 0%;
     }
   }
 }
