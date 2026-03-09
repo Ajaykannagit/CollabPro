@@ -78,22 +78,36 @@ export function CollaborationFeed() {
     const [filter, setFilter] = useState<FeedEventType | 'all'>('all');
     const [liveCount, setLiveCount] = useState(0);
 
-    // Simulate live incoming events
     useEffect(() => {
-        let idx = 0;
-        const interval = setInterval(() => {
-            const src = LIVE_EVENTS[idx % LIVE_EVENTS.length];
-            const newEvent: FeedEvent = {
-                ...src,
-                id: `live-${Date.now()}`,
-                timestamp: new Date(),
-                isNew: true,
-            };
-            setEvents(prev => [newEvent, ...prev].slice(0, 25));
-            setLiveCount(c => c + 1);
-            idx++;
-        }, 8000);
-        return () => clearInterval(interval);
+        let channel: any;
+        import('@/lib/supabase').then(({ supabase }) => {
+            channel = supabase.channel('public:notifications')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload: any) => {
+                    const doc = payload.new;
+                    // Provide a default fallback shape, mapped to FeedEvent from DB notification
+                    const newEvent: FeedEvent = {
+                        id: `live-${doc.id}`,
+                        type: (doc.type as FeedEventType) || 'match',
+                        title: doc.title || 'New Ecosystem Event',
+                        description: doc.description || `A new ${doc.type} event was recorded in the network.`,
+                        actor: doc.actor || 'System',
+                        organization: doc.organization || 'CollabSync AI',
+                        timestamp: doc.created_at ? new Date(doc.created_at) : new Date(),
+                        isNew: true,
+                    };
+                    setEvents(prev => [newEvent, ...prev].slice(0, 25));
+                    setLiveCount(c => c + 1);
+                })
+                .subscribe();
+        });
+
+        return () => {
+            if (channel) {
+                import('@/lib/supabase').then(({ supabase }) => {
+                    supabase.removeChannel(channel);
+                });
+            }
+        };
     }, []);
 
     const filtered = filter === 'all' ? events : events.filter(e => e.type === filter);

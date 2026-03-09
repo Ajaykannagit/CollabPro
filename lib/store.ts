@@ -90,57 +90,33 @@ export interface TestData {
     userRole: string;
 }
 
-interface AppState {
-    // User State
+interface UserSlice {
     user: User | null;
     userLoading: boolean;
     loadUser: (userId: string) => Promise<User | null>;
     updateUser: (updates: Partial<User>) => Promise<void>;
     setCurrentUser: (userId: string) => Promise<void>;
     setUserFromAuth: (authUser: { id: string; email?: string; user_metadata?: { name?: string } }) => void;
+}
 
-    // Test Data State (Static for now, as in Context)
+interface DataSlice {
     testData: TestData;
+}
 
-    // Quantum Theme State
+interface UISlice {
     theme: 'light' | 'quantum';
     setTheme: (theme: 'light' | 'quantum') => void;
     livePulse: { id: string; message: string; type: 'match' | 'system' | 'alert'; timestamp: string }[];
     addPulse: (pulse: { message: string; type: 'match' | 'system' | 'alert' }) => void;
 }
 
-const defaultTestData: TestData = {
-    projectName: "CollabSync Pro",
-    userRole: "Lead Researcher",
-    metrics: [
-        { title: 'Active Projects', value: 0, trend: '0%', color: 'from-blue-500 to-cyan-500', bg: 'bg-blue-500/10 text-blue-500' },
-        { title: 'Open Challenges', value: 0, trend: '0%', color: 'from-purple-500 to-pink-500', bg: 'bg-purple-500/10 text-purple-500' },
-        { title: 'Pending Requests', value: 0, trend: '0%', color: 'from-amber-500 to-orange-500', bg: 'bg-amber-500/10 text-amber-500' },
-        { title: 'Success Rate', value: '0%', trend: '0%', color: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-500/10 text-emerald-500' }
-    ],
-    chartData: [],
-    recentActivity: [],
-    agreementVersions: [],
-    agreementComments: [],
-    signatureWorkflow: {
-        status: 'draft',
-        College_approval: false,
-        corporate_approval: false,
-        College_signed: false,
-        corporate_signed: false,
-        audit_trail: []
-    },
-    projects: [],
-    challenges: [],
-    Colleges: []
-};
+type AppState = UserSlice & DataSlice & UISlice;
+import { StateCreator } from 'zustand';
 
-export const useAppStore = create<AppState>((set, get) => ({
-    // User State
+const createUserSlice: StateCreator<AppState, [], [], UserSlice> = (set, get) => ({
     user: null,
     userLoading: true,
     loadUser: async (userId: string): Promise<User | null> => {
-        // Try local storage first for persistence of demo edits
         const storedUser = localStorage.getItem(`collabpro_user_${userId}`);
         if (storedUser) {
             const parsedUser = JSON.parse(storedUser);
@@ -172,14 +148,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     updateUser: async (updates: Partial<User>) => {
         const currentUser = get().user;
         if (!currentUser) return;
-
         const updatedUser = { ...currentUser, ...updates };
         set({ user: updatedUser });
-
-        // Persist to local storage for demo purposes
         localStorage.setItem(`collabpro_user_${currentUser.user_id}`, JSON.stringify(updatedUser));
-
-        // Simulate a small delay
         await new Promise(resolve => setTimeout(resolve, 500));
     },
     setCurrentUser: async (userId: string) => {
@@ -197,11 +168,39 @@ export const useAppStore = create<AppState>((set, get) => ({
             },
         });
     },
+});
 
-    // Test Data State
+const defaultTestData: TestData = {
+    projectName: "CollabSync Pro",
+    userRole: "Lead Researcher",
+    metrics: [
+        { title: 'Active Projects', value: 0, trend: '0%', color: 'from-blue-500 to-cyan-500', bg: 'bg-blue-500/10 text-blue-500' },
+        { title: 'Open Challenges', value: 0, trend: '0%', color: 'from-purple-500 to-pink-500', bg: 'bg-purple-500/10 text-purple-500' },
+        { title: 'Pending Requests', value: 0, trend: '0%', color: 'from-amber-500 to-orange-500', bg: 'bg-amber-500/10 text-amber-500' },
+        { title: 'Success Rate', value: '0%', trend: '0%', color: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-500/10 text-emerald-500' }
+    ],
+    chartData: [],
+    recentActivity: [],
+    agreementVersions: [],
+    agreementComments: [],
+    signatureWorkflow: {
+        status: 'draft',
+        College_approval: false,
+        corporate_approval: false,
+        College_signed: false,
+        corporate_signed: false,
+        audit_trail: []
+    },
+    projects: [],
+    challenges: [],
+    Colleges: []
+};
+
+const createDataSlice: StateCreator<AppState, [], [], DataSlice> = () => ({
     testData: defaultTestData,
+});
 
-    // Quantum Theme State
+const createUISlice: StateCreator<AppState, [], [], UISlice> = (set) => ({
     theme: (localStorage.getItem('collabpro_theme') as 'light' | 'quantum') || 'light',
     setTheme: (theme) => {
         set({ theme });
@@ -218,4 +217,10 @@ export const useAppStore = create<AppState>((set, get) => ({
             livePulse: [newPulse, ...state.livePulse].slice(0, 15)
         }));
     },
+});
+
+export const useAppStore = create<AppState>()((...a) => ({
+    ...createUserSlice(...a),
+    ...createDataSlice(...a),
+    ...createUISlice(...a),
 }));
