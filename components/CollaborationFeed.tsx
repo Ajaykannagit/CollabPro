@@ -48,13 +48,7 @@ const SEED_EVENTS: Omit<FeedEvent, 'id' | 'timestamp' | 'isNew'>[] = [
     { type: 'project', title: 'Research Milestone Unlocked', description: '"Solid-State Electrolyte Innovation" project progressed to TRL-4. Industry interest: 3 companies.', actor: 'Dr. Vikram Singh', organization: 'IITD Research Lab' },
 ];
 
-const LIVE_EVENTS: Omit<FeedEvent, 'id' | 'timestamp' | 'isNew'>[] = [
-    { type: 'match', title: 'New Match Alert', description: 'TATA Consultancy matched with Anna University on "AI-Powered Crop Disease Detection" — 89% score.', actor: 'AI Engine', organization: 'CollabSync AI' },
-    { type: 'agreement', title: 'Agreement Under Review', description: 'NDA between Wipro & VIT Vellore entered final review stage. Expected signature within 48hrs.', actor: 'Legal Team', organization: 'Wipro × VIT' },
-    { type: 'challenge', title: 'Challenge Deadline Extended', description: '"Autonomous Drone Pathfinding in Dense Urban Areas" deadline extended by 2 weeks due to high interest.', actor: 'Program Manager', organization: 'L&T Technology' },
-    { type: 'milestone', title: 'Funding Goal Reached', description: '"Affordable Dialysis via Graphene Membranes" hit 100% funding. Execution phase starts next week.', actor: 'Finance Team', organization: 'AIIMS × Biocon' },
-    { type: 'ip', title: 'Patent Granted', description: 'Patent for "Self-Healing Polymer Composite for EV Chassis" officially granted. Ready for licensing.', actor: 'IP Cell', organization: 'IIT Madras' },
-];
+// LIVE_EVENTS was unused and removed
 
 function formatTimeAgo(date: Date): string {
     const secs = Math.floor((Date.now() - date.getTime()) / 1000);

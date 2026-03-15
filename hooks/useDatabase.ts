@@ -280,10 +280,10 @@ export function useNotifications() {
 
     const markAllAsRead = async () => {
         const unread = await db.notifications.where('read').equals(0).toArray();
-        await Promise.all(unread.map(n => n.id && db.notifications.update(n.id, { read: true })));
+        await Promise.all(unread.map((n: Notification) => n.id && db.notifications.update(n.id, { read: true })));
     };
 
-    const unreadCount = data.filter(n => !n.read).length;
+    const unreadCount = data.filter((n: Notification) => !n.read).length;
 
     return {
         data,

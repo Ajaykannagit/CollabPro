@@ -1,0 +1,33 @@
+
+> collab-sync-pro@0.0.0 build
+> tsc -b && vite build
+
+vitest.config.ts(1,30): error TS2307: Cannot find module 'vitest/config' or its corresponding type declarations.
+hooks/useDatabase.ts(3,30): error TS2307: Cannot find module 'dexie-react-hooks' or its corresponding type declarations.
+hooks/useDatabase.ts(4,20): error TS2307: Cannot find module '../lib/db' or its corresponding type declarations.
+hooks/useDatabase.ts(283,38): error TS7006: Parameter 'n' implicitly has an 'any' type.
+hooks/useDatabase.ts(286,37): error TS7006: Parameter 'n' implicitly has an 'any' type.
+lib/seedDatabase.ts(3,20): error TS2307: Cannot find module './db' or its corresponding type declarations.
+lib/store.ts(1,24): error TS2307: Cannot find module 'zustand' or its corresponding type declarations.
+lib/store.ts(114,30): error TS2307: Cannot find module 'zustand' or its corresponding type declarations.
+lib/store.ts(116,69): error TS7006: Parameter 'set' implicitly has an 'any' type.
+lib/store.ts(116,74): error TS7006: Parameter 'get' implicitly has an 'any' type.
+lib/store.ts(159,23): error TS7006: Parameter 'authUser' implicitly has an 'any' type.
+lib/store.ts(203,65): error TS7006: Parameter 'set' implicitly has an 'any' type.
+lib/store.ts(205,16): error TS7006: Parameter 'theme' implicitly has an 'any' type.
+lib/store.ts(210,16): error TS7006: Parameter 'pulse' implicitly has an 'any' type.
+lib/store.ts(216,14): error TS7006: Parameter 'state' implicitly has an 'any' type.
+lib/store.ts(222,48): error TS7019: Rest parameter 'a' implicitly has an 'any[]' type.
+lib/repositories/base.repository.ts(1,23): error TS2307: Cannot find module 'dexie' or its corresponding type declarations.
+lib/repositories/base.repository.ts(2,20): error TS2307: Cannot find module '../db' or its corresponding type declarations.
+components/DashboardOverview.tsx(32,47): error TS7006: Parameter 'state' implicitly has an 'any' type.
+components/DashboardOverview.tsx(84,38): error TS7006: Parameter 'm' implicitly has an 'any' type.
+components/DashboardOverview.tsx(94,44): error TS7006: Parameter 'd' implicitly has an 'any' type.
+components/DashboardOverview.tsx(94,47): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/DashboardOverview.tsx(126,30): error TS7006: Parameter 'metric' implicitly has an 'any' type.
+components/DashboardOverview.tsx(126,38): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+components/AgreementTracking.tsx(50,31): error TS7006: Parameter 'state' implicitly has an 'any' type.
+components/QuantumDashboard.tsx(190,49): error TS7006: Parameter 'p' implicitly has an 'any' type.
+components/CollaborationFeed.tsx(51,7): error TS6133: 'LIVE_EVENTS' is declared but its value is never read.
+components/LoginPage.tsx(4,1): error TS6133: 'cn' is declared but its value is never read.
+app/router.tsx(50,7): error TS6133: 'withNav' is declared but its value is never read.

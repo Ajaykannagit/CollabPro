@@ -47,20 +47,9 @@ const WorkspaceProxy = () => {
     return <ProjectWorkspace projectId={Number(projectId) || 1} onNavigate={onNav} />;
 };
 
-const withNav = (Component: any) => {
-    return function WrappedComponent(props: any) {
-        const navigate = useNavigate();
-        const onNav = (path: any) => navigate(path === 'dashboard' ? '/' : `/${path}`);
-        return <Component onNavigate={onNav} {...props} />;
-    }
-};
+// withNav function was unused and removed
 
-const ProjectDiscoveryWithNav = withNav(ProjectDiscovery);
-const IndustryChallengesBoardWithNav = withNav(IndustryChallengesBoard);
-const PartnerShowcaseWithNav = withNav(PartnerShowcase);
-const AgreementCompareReviewWithNav = withNav(AgreementCompareReview);
-const IPPortfolioWithNav = withNav(IPPortfolio);
-const AgreementGeneratorWithNav = withNav(AgreementGenerator);
+// ProjectDiscoveryWithNav and other wrapped components were unused and removed
 
 import { LoginPage } from '@/components/LoginPage';
 

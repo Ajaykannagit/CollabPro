@@ -156,7 +156,7 @@ const createUserSlice: StateCreator<AppState, [], [], UserSlice> = (set, get) =>
     setCurrentUser: async (userId: string) => {
         await get().loadUser(userId);
     },
-    setUserFromAuth: (authUser) => {
+    setUserFromAuth: (authUser: { id: string; email?: string; user_metadata?: { name?: string } }) => {
         set({
             user: {
                 user_id: authUser.id,
@@ -202,18 +202,18 @@ const createDataSlice: StateCreator<AppState, [], [], DataSlice> = () => ({
 
 const createUISlice: StateCreator<AppState, [], [], UISlice> = (set) => ({
     theme: (localStorage.getItem('collabpro_theme') as 'light' | 'quantum') || 'light',
-    setTheme: (theme) => {
+    setTheme: (theme: 'light' | 'quantum') => {
         set({ theme });
         localStorage.setItem('collabpro_theme', theme);
     },
     livePulse: [],
-    addPulse: (pulse) => {
+    addPulse: (pulse: { message: string; type: 'match' | 'system' | 'alert' }) => {
         const newPulse = {
             ...pulse,
             id: Math.random().toString(36).substring(7),
             timestamp: new Date().toLocaleTimeString(),
         };
-        set((state) => ({
+        set((state: AppState) => ({
             livePulse: [newPulse, ...state.livePulse].slice(0, 15)
         }));
     },
