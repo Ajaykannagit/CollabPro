@@ -141,19 +141,31 @@ export function MainLayout() {
     const isStudent = userRole === 'student';
     const isAcademic = isStudent || userRole === 'college';
 
-    const filterItems = (items: any[]) => items.filter(item => {
-        if (!item.role) {
-            // Legacy/Fallback filtering logic if roles aren't explicitly defined on the item
-            if (isAcademic) {
-                return !['/challenges', '/matchmaking', '/agreement-review', '/digital-signature', '/licensing', '/analytics', '/negotiate', '/agreement'].includes(item.id);
-            }
-            return item.id !== '/talent';
+    const filteredNavItems = navItems.filter(item => {
+        if (userRole === 'college') {
+            return !['/challenges', '/matchmaking', '/agreement-review', '/digital-signature', '/industry-profile', '/licensing', '/analytics', '/talent'].includes(item.id);
         }
-        return item.role.includes(userRole);
+        if (userRole === 'student') {
+            return ['/', '/talent', '/notifications', '/feed', '/profile'].includes(item.id);
+        }
+        if (userRole === 'corporate') {
+            return !['/talent'].includes(item.id); // Industry can see almost everything except pure talent showcase if isolated, though usually they want it.
+        }
+        return true;
     });
 
-    const filteredNavItems = filterItems(navItems);
-    const filteredSecondaryItems = filterItems(secondaryItems);
+    const filteredSecondaryItems = secondaryItems.filter(item => {
+        if (userRole === 'college') {
+            return !['/licensing', '/analytics', '/negotiate', '/agreement'].includes(item.id);
+        }
+        if (userRole === 'student') {
+            return false; // Students have minimal secondary workspace items in this layout
+        }
+        if (userRole === 'corporate') {
+            return !['/ipdisclosure'].includes(item.id);
+        }
+        return true;
+    });
 
     const mainMenuTitle = isAcademic ? 'Academy Menu' : 'Company Menu';
     const workspaceTitle = isAcademic ? 'Academy Workspace' : 'Company Workspace';
