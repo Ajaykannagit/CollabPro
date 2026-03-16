@@ -117,11 +117,17 @@ function App() {
   const [activeProjectId, setActiveProjectId] = useState<number>(1);
   const [commandOpen, setCommandOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(() => {
-    return !localStorage.getItem('collabpro_splashSeen');
+    // For the review/demo, we want the splash to appear more frequently or always on fresh session
+    return sessionStorage.getItem('collabpro_sessionSplashSeen') !== '1';
   });
   const { unreadCount } = useNotifications();
 
   const { loadUser, user: storeUser, updateUser } = useAppStore();
+
+  // Initialize high-fidelity demo data on mount
+  useEffect(() => {
+    import('../lib/seedData').then(m => m.initializeDatabase());
+  }, []);
 
   // Temporary: load demo user session without auth
   useEffect(() => {
@@ -142,26 +148,28 @@ function App() {
 
   const handleSplashLaunch = useCallback(async (role: 'college' | 'corporate' | 'student') => {
     await updateUser({ organization_type: role });
-    localStorage.setItem('collabpro_splashSeen', '1');
+    sessionStorage.setItem('collabpro_sessionSplashSeen', '1');
     setShowSplash(false);
   }, [updateUser]);
 
   const navItems = [
     { id: 'dashboard' as NavSection, label: 'Dashboard', icon: HiOutlineHome },
-    { id: 'projects' as NavSection, label: 'Research Projects', icon: HiOutlineBriefcase },
+    { id: 'projects' as NavSection, label: 'Research Projects', icon: HiOutlineBriefcase, role: ['college', 'student'] },
     {
       id: 'challenges' as NavSection,
       label: 'Industry Challenges',
       icon: HiOutlineChatBubbleBottomCenterText,
+      role: ['corporate']
     },
-    { id: 'partners' as NavSection, label: 'Ecosystem', icon: HiOutlineBuildingOffice2 },
-    { id: 'matchmaking' as NavSection, label: 'AI Matchmaking', icon: HiOutlineSparkles },
+    { id: 'partners' as NavSection, label: 'Ecosystem', icon: HiOutlineBuildingOffice2, role: ['college', 'corporate'] },
+    { id: 'matchmaking' as NavSection, label: 'AI Matchmaking', icon: HiOutlineSparkles, role: ['corporate'] },
     {
       id: 'agreement-review' as NavSection,
       label: 'Agreement Review',
       icon: HiOutlineDocumentText,
+      role: ['college', 'corporate']
     },
-    { id: 'digital-signature' as NavSection, label: 'Digital Signature', icon: RiQuillPenLine },
+    { id: 'digital-signature' as NavSection, label: 'Digital Signature', icon: RiQuillPenLine, role: ['college', 'corporate'] },
     {
       id: 'notifications' as NavSection,
       label: 'Notifications',
@@ -170,20 +178,20 @@ function App() {
     },
     { id: 'feed' as NavSection, label: 'Activity Feed', icon: BsActivity },
     { id: 'profile' as NavSection, label: 'Profile', icon: HiOutlineUser },
-    { id: 'engine-blueprint' as NavSection, label: 'Engine Blueprint', icon: HiOutlineCpuChip },
-    { id: 'industry-profile' as NavSection, label: 'Industry Profile', icon: HiOutlineCheckBadge },
+    { id: 'engine-blueprint' as NavSection, label: 'Engine Blueprint', icon: HiOutlineCpuChip, role: ['college', 'corporate'] },
+    { id: 'industry-profile' as NavSection, label: 'Industry Profile', icon: HiOutlineCheckBadge, role: ['corporate'] },
   ];
 
   const secondaryItems = [
-    { id: 'workspace' as NavSection, label: 'Project Workspace', icon: BsSearch },
-    { id: 'talent' as NavSection, label: 'Talent Showcase', icon: HiOutlineUser },
-    { id: 'ip' as NavSection, label: 'IP Portfolio', icon: BsShieldCheck },
-    { id: 'negotiate' as NavSection, label: 'Negotiation', icon: RiExchangeLine },
-    { id: 'agreement' as NavSection, label: 'Agreement', icon: RiDraftLine },
-    { id: 'agreement-tracking' as NavSection, label: 'Agreement Tracking', icon: BsClockHistory },
-    { id: 'ipdisclosure' as NavSection, label: 'Submit IP', icon: HiOutlinePencilSquare },
-    { id: 'licensing' as NavSection, label: 'Licensing Market', icon: HiOutlineBuildingOffice2 },
-    { id: 'analytics' as NavSection, label: 'Analytics', icon: BsGraphUpArrow },
+    { id: 'workspace' as NavSection, label: 'Project Workspace', icon: BsSearch, role: ['college', 'corporate'] },
+    { id: 'talent' as NavSection, label: 'Talent Showcase', icon: HiOutlineUser, role: ['corporate', 'college'] },
+    { id: 'ip' as NavSection, label: 'IP Portfolio', icon: BsShieldCheck, role: ['college', 'corporate'] },
+    { id: 'negotiate' as NavSection, label: 'Negotiation', icon: RiExchangeLine, role: ['corporate', 'college'] },
+    { id: 'agreement' as NavSection, label: 'Agreement', icon: RiDraftLine, role: ['corporate', 'college'] },
+    { id: 'agreement-tracking' as NavSection, label: 'Agreement Tracking', icon: BsClockHistory, role: ['corporate', 'college'] },
+    { id: 'ipdisclosure' as NavSection, label: 'Submit IP', icon: HiOutlinePencilSquare, role: ['college'] },
+    { id: 'licensing' as NavSection, label: 'Licensing Market', icon: HiOutlineBuildingOffice2, role: ['college', 'corporate'] },
+    { id: 'analytics' as NavSection, label: 'Analytics', icon: BsGraphUpArrow, role: ['corporate', 'college'] },
   ];
 
   // Helper to handle navigation to a specific project
@@ -192,36 +200,20 @@ function App() {
     setActiveSection('workspace');
   };
 
-  const userRole = storeUser?.organization_type;
-  const isStudent = userRole === 'student';
-  const isAcademic = isStudent || userRole === 'college';
+  const userRole = storeUser?.organization_type || 'college';
+  const isCorporate = userRole === 'corporate';
+  const isAcademy = userRole === 'college';
 
-  const filteredNavItems = navItems.filter((item) => {
-    if (isAcademic) {
-      if (
-        ['challenges', 'matchmaking', 'agreement-review', 'digital-signature', 'licensing', 'analytics'].includes(item.id)
-      ) {
-        return false;
-      }
-    }
-    return true;
+  const filterItems = (items: any[]) => items.filter(item => {
+    if (!item.role) return true;
+    return item.role.includes(userRole);
   });
 
-  const filteredSecondaryItems = secondaryItems.filter((item) => {
-    if (isAcademic) {
-      if (['negotiate', 'agreement', 'licensing', 'analytics'].includes(item.id)) {
-        return false;
-      }
-    } else {
-      if (item.id === 'talent') {
-        return false;
-      }
-    }
-    return true;
-  });
+  const filteredNavItems = filterItems(navItems);
+  const filteredSecondaryItems = filterItems(secondaryItems);
 
-  const mainMenuTitle = isAcademic ? 'Academy Menu' : 'Company Menu';
-  const workspaceTitle = isAcademic ? 'Academy Workspace' : 'Company Workspace';
+  const mainMenuTitle = isAcademy ? 'Academy Hub' : isCorporate ? 'Corporate Hub' : 'Talent Hub';
+  const workspaceTitle = isAcademy ? 'Research Space' : isCorporate ? 'Industry Space' : 'Career Space';
 
   const { theme } = useAppStore();
 

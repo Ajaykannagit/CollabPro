@@ -29,8 +29,8 @@ type DashboardOverviewProps = {
 
 export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOverviewProps) {
   const { toast } = useToast();
-  const { metrics, chartData } = useAppStore((state) => state.testData);
-  const [requests] = useLoadAction<CollaborationRequest[]>(loadCollaborationRequestsAction, [], { status: null });
+  const { chartData } = useAppStore((state) => state.testData);
+  const [] = useLoadAction<CollaborationRequest[]>(loadCollaborationRequestsAction, [], { status: null });
   const [projects] = useLoadAction<ResearchProject[]>(loadResearchProjectsAction, [], { searchQuery: null });
   const [challenges] = useLoadAction<IndustryChallenge[]>(loadIndustryChallengesAction, [], { searchQuery: null });
 
@@ -42,11 +42,9 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
     fundingAllocated: 500000
   });
 
-  const safeRequests = requests || [];
   const safeProjects = projects || [];
   const safeChallenges = challenges || [];
   const recentActivity = safeProjects.slice(0, 5);
-  const pendingRequests = safeRequests.filter((r: CollaborationRequest) => r.status === 'pending').length;
 
   const handleCreateProject = async () => {
     try {
@@ -74,20 +72,51 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
     }
   };
 
+  const userRole = useAppStore(state => state.user?.organization_type || 'college');
+  const isAcademy = userRole === 'college';
+  const isCorporate = userRole === 'corporate';
+
   const iconMap: Record<string, React.ElementType> = {
     'Active Projects': Briefcase,
     'Open Challenges': Target,
     'Pending Requests': Users,
     'Success Rate': TrendingUp,
+    'Talent Pool': Users,
+    'IP Disclosures': Briefcase,
+    'Job Matches': Sparkles,
+    'Skills Gained': Activity,
+    'Agreement Status': Clock
   };
 
-  const displayMetrics = metrics.map(m => ({
+  const getRoleSpecificMetrics = () => {
+    if (isAcademy) {
+      return [
+        { title: 'Active Projects', value: safeProjects.length, trend: '+12%', color: 'from-blue-500 to-cyan-500', bg: 'bg-blue-500/10 text-blue-500' },
+        { title: 'IP Disclosures', value: 5, trend: '+5%', color: 'from-purple-500 to-pink-500', bg: 'bg-purple-500/10 text-purple-500' },
+        { title: 'Pending Funding', value: '₹2.4M', trend: 'Critical', color: 'from-amber-500 to-orange-500', bg: 'bg-amber-500/10 text-amber-500' },
+        { title: 'Success Rate', value: '94%', trend: '+2%', color: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-500/10 text-emerald-500' }
+      ];
+    }
+    if (isCorporate) {
+      return [
+        { title: 'Open Challenges', value: safeChallenges.length, trend: 'Active', color: 'from-blue-500 to-cyan-500', bg: 'bg-blue-500/10 text-blue-500' },
+        { title: 'Active Matchmaking', value: 3, trend: 'Running', color: 'from-purple-500 to-pink-500', bg: 'bg-purple-500/10 text-purple-500' },
+        { title: 'Talent Pool', value: 124, trend: '+14', color: 'from-amber-500 to-orange-500', bg: 'bg-amber-500/10 text-amber-500' },
+        { title: 'Agreement Status', value: '4 Pending', trend: 'Action', color: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-500/10 text-emerald-500' }
+      ];
+    }
+    // Student
+    return [
+      { title: 'Job Matches', value: 8, trend: 'New', color: 'from-blue-500 to-cyan-500', bg: 'bg-blue-500/10 text-blue-500' },
+      { title: 'Skills Gained', value: 12, trend: '+3', color: 'from-purple-500 to-pink-500', bg: 'bg-purple-500/10 text-purple-500' },
+      { title: 'Invitations', value: 5, trend: 'Pending', color: 'from-amber-500 to-orange-500', bg: 'bg-amber-500/10 text-amber-500' },
+      { title: 'Profile Views', value: 45, trend: '+25%', color: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-500/10 text-emerald-500' }
+    ];
+  };
+
+  const displayMetrics = getRoleSpecificMetrics().map(m => ({
     ...m,
-    icon: iconMap[m.title] || Briefcase,
-    value: m.title === 'Active Projects' ? (safeProjects.length || m.value) :
-      m.title === 'Open Challenges' ? (safeChallenges.length || m.value) :
-        m.title === 'Pending Requests' ? (pendingRequests || m.value) :
-          m.value
+    icon: iconMap[m.title] || Briefcase
   }));
 
   const currentCount = safeProjects.length || 10;

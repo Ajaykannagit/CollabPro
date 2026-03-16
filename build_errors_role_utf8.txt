@@ -1,0 +1,16 @@
+﻿[96mcomponents/DashboardOverview.tsx[0m:[93m45[0m:[93m9[0m - [91merror[0m[90m TS6133: [0m'safeRequests' is declared but its value is never read.
+
+[7m45[0m   const safeRequests = requests || [];
+[7m  [0m [91m        ~~~~~~~~~~~~[0m
+
+[96mlib/seedData.ts[0m:[93m6[0m:[93m3[0m - [91merror[0m[90m TS6133: [0m'StudentProfile' is declared but its value is never read.
+
+[7m6[0m   StudentProfile,
+[7m [0m [91m  ~~~~~~~~~~~~~~[0m
+
+
+Found 2 errors in 2 files.
+
+Errors  Files
+     1  components/DashboardOverview.tsx[90m:45[0m
+     1  lib/seedData.ts[90m:6[0m
