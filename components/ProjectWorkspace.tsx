@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { StaggerContainer, FadeInUp, SpringPress, LayoutTransition } from '@/components/ui/animation-wrapper';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { SmartLoader } from '@/components/ui/AIFeedback';
 
 type Milestone = {
@@ -274,21 +274,23 @@ export function ProjectWorkspace({
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <FadeInUp>
             <SpringPress>
-              <Card className="border-slate-200 bg-white shadow-sm border">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <DollarSign className="h-5 w-5 text-primary" />
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+              <Card className="border-white/10 bg-white/50 backdrop-blur-sm shadow-xl shadow-slate-200/40 border">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <DollarSign className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-[10px] font-black text-primary bg-primary/5 px-2 py-1 rounded-full uppercase tracking-widest">
                       {budgetPercent.toFixed(1)}%
                     </span>
                   </div>
-                  <p className="text-2xl font-bold text-slate-900">
+                  <p className="text-2xl font-black text-slate-900 tracking-tight font-heading">
                     {formatCurrency(projectData.budget_utilized)}
                   </p>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mt-0.5">
-                    of {formatCurrency(projectData.funding_allocated)}
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">
+                    of {formatCurrency(projectData.funding_allocated)} Budget
                   </p>
-                  <Progress value={budgetPercent} className="mt-3 h-1.5 bg-slate-100" />
+                  <Progress value={budgetPercent} className="mt-4 h-1.5 bg-slate-100/50" />
                 </CardContent>
               </Card>
             </SpringPress>
@@ -296,19 +298,21 @@ export function ProjectWorkspace({
 
           <FadeInUp>
             <SpringPress>
-              <Card className="border-slate-200 bg-white shadow-sm border">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+              <Card className="border-white/10 bg-white/50 backdrop-blur-sm shadow-xl shadow-slate-200/40 border">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center">
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    </div>
+                    <span className="text-[10px] font-black text-green-600 bg-green-50 px-2 py-1 rounded-full uppercase tracking-widest">
                       {milestonePercent.toFixed(0)}%
                     </span>
                   </div>
-                  <p className="text-2xl font-bold text-slate-900">
+                  <p className="text-2xl font-black text-slate-900 tracking-tight font-heading">
                     {completedMilestones}/{milestones.length}
                   </p>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mt-0.5">Milestones Completed</p>
-                  <Progress value={milestonePercent} className="mt-3 h-1.5 bg-slate-100" />
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Milestones Finalized</p>
+                  <Progress value={milestonePercent} className="mt-4 h-1.5 bg-slate-100/50" />
                 </CardContent>
               </Card>
             </SpringPress>
@@ -316,13 +320,15 @@ export function ProjectWorkspace({
 
           <FadeInUp>
             <SpringPress>
-              <Card className="border-slate-200 bg-white shadow-sm border">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <Users className="h-5 w-5 text-primary" />
+              <Card className="border-white/10 bg-white/50 backdrop-blur-sm shadow-xl shadow-slate-200/40 border">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="h-8 w-8 rounded-lg bg-violet-50 flex items-center justify-center">
+                      <Users className="h-4 w-4 text-violet-600" />
+                    </div>
                   </div>
-                  <p className="text-2xl font-bold text-slate-900">{teamMembers.length}</p>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mt-0.5">Team Members</p>
+                  <p className="text-2xl font-black text-slate-900 tracking-tight font-heading">{teamMembers.length}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Active Collaborators</p>
                 </CardContent>
               </Card>
             </SpringPress>
@@ -330,18 +336,20 @@ export function ProjectWorkspace({
 
           <FadeInUp>
             <SpringPress>
-              <Card className="border-slate-200 bg-white shadow-sm border">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <Calendar className="h-5 w-5 text-orange-600" />
+              <Card className="border-white/10 bg-white/50 backdrop-blur-sm shadow-xl shadow-slate-200/40 border">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                      <Calendar className="h-4 w-4 text-orange-600" />
+                    </div>
                   </div>
-                  <p className="text-2xl font-bold text-slate-900">
+                  <p className="text-2xl font-black text-slate-900 tracking-tight font-heading">
                     {new Date(projectData.start_date).toLocaleDateString('en-US', {
                       month: 'short',
                       year: 'numeric',
                     })}
                   </p>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mt-0.5">Started</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Protocol Initiation</p>
                 </CardContent>
               </Card>
             </SpringPress>
@@ -713,19 +721,21 @@ export function ProjectWorkspace({
                   {projectData.risk_assessment ? (
                     <div className="space-y-10">
                       <div className="max-w-md mx-auto text-center">
-                        <div className="relative h-4 w-full bg-slate-100 rounded-full overflow-hidden mb-4 border border-slate-100">
-                          <div
+                        <div className="relative h-6 w-full bg-slate-100 rounded-full overflow-hidden mb-6 border-4 border-white shadow-inner">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${projectData.risk_assessment.score}%` }}
+                            transition={{ duration: 1.5, ease: "circOut" }}
                             className={cn(
-                              "h-full transition-all duration-1000 ease-out",
-                              projectData.risk_assessment.score > 75 ? 'bg-red-600' :
-                                projectData.risk_assessment.score > 50 ? 'bg-orange-500' :
-                                  'bg-green-500'
+                              "h-full rounded-full transition-colors duration-1000 shadow-[0_0_15px_rgba(220,38,38,0.2)]",
+                              projectData.risk_assessment.score > 75 ? 'bg-gradient-to-r from-orange-600 to-red-600' :
+                                projectData.risk_assessment.score > 50 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
+                                  'bg-gradient-to-r from-emerald-500 to-green-500'
                             )}
-                            style={{ width: `${projectData.risk_assessment.score}%` }}
                           />
                         </div>
-                        <p className="text-4xl font-black text-slate-900 tracking-tighter mb-1">{projectData.risk_assessment.score}%</p>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Aggregate Failure Probability</p>
+                        <p className="text-5xl font-black text-slate-900 tracking-tighter mb-2 font-heading">{projectData.risk_assessment.score}%</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Aggregate Failure Probability</p>
                       </div>
 
                       <Separator className="bg-slate-100" />

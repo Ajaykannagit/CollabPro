@@ -258,45 +258,47 @@ function App() {
         >
           <div className={cn("p-6 border-b transition-colors duration-500", theme === 'quantum' ? "border-white/10" : "border-slate-200")}>
             <div className="flex items-center gap-3 mb-1">
-              <div className="h-10 w-10 flex items-center justify-center overflow-hidden rounded-xl shadow-lg ring-1 ring-slate-200/50">
+              <div className="h-11 w-11 flex items-center justify-center overflow-hidden rounded-xl shadow-2xl shadow-primary/20 ring-1 ring-white/10 group">
                 <img
                   src="https://image2url.com/r2/default/images/1771329385661-8f28ce43-1650-4db7-b0d6-8fe239ee1acc.png"
                   alt="CollabSync Pro Logo"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform group-hover:scale-110 duration-500"
                 />
               </div>
-              <div>
-                <h1 className={cn("text-xl font-bold leading-tight transition-colors", theme === 'quantum' ? "text-white" : "text-slate-900")}>
-                  <DecryptedText text="CollabSync Pro" />
+              <div className="relative">
+                <h1 className={cn("text-xl font-black leading-tight tracking-tight transition-colors", theme === 'quantum' ? "text-white" : "text-slate-900")}>
+                  <DecryptedText text="CollabSync" />
+                  <span className="absolute -top-1.5 -right-5 text-[10px] font-black text-primary tracking-widest uppercase">
+                    PRO
+                  </span>
                 </h1>
-                <span className="text-[10px] font-bold text-primary tracking-widest uppercase py-0.5 px-2 bg-primary/10 rounded-full inline-block mt-1">
-                  Pro
-                </span>
               </div>
             </div>
-            <div className="px-0 py-3 flex flex-col gap-2">
+            <div className="px-0 py-4 flex flex-col gap-3">
               <DatabaseStatus />
-              <SystemStatus status="System Ready" />
-              <div className="mt-2">
-                <ThemeToggle />
+              <div className="flex items-center gap-2">
+                <SystemStatus status="System Ready" />
+                <div className="ml-auto">
+                  <ThemeToggle />
+                </div>
               </div>
               {/* Ctrl+K hint */}
               <button
                 onClick={() => setCommandOpen(true)}
                 className={cn(
-                  'mt-1 w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-200',
+                  'mt-1 w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[11px] font-bold border transition-all duration-300',
                   theme === 'quantum'
-                    ? 'border-white/10 text-slate-500 hover:text-cyan-400 hover:border-cyan-500/30 hover:bg-cyan-500/5'
-                    : 'border-slate-200 text-slate-400 hover:text-primary hover:border-primary/20 hover:bg-primary/5 bg-white/50'
+                    ? 'border-white/10 text-slate-500 hover:text-cyan-400 hover:border-cyan-500/30 hover:bg-cyan-500/5 bg-white/3'
+                    : 'border-slate-200 text-slate-400 hover:text-primary hover:border-primary/30 hover:bg-primary/5 bg-white'
                 )}
               >
                 <HiOutlineCommandLine className="h-3.5 w-3.5" />
-                <span>Search commands</span>
+                <span className="uppercase tracking-widest opacity-80">Commands</span>
                 <kbd className={cn(
-                  'ml-auto text-[9px] font-black border rounded px-1 tracking-wide',
-                  theme === 'quantum' ? 'border-white/10 text-slate-600' : 'border-slate-200 text-slate-400'
+                  'ml-auto text-[9px] font-black border rounded-md px-1.5 py-0.5 tracking-wide shadow-sm',
+                  theme === 'quantum' ? 'border-white/10 text-slate-600 bg-black/40' : 'border-slate-200 text-slate-400 bg-slate-50'
                 )}>
-                  Ctrl+K
+                  ⌘K
                 </kbd>
               </button>
             </div>

@@ -38,13 +38,11 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 263 70% 50%;
 
-    --radius: 0.75rem;
-
-    --chart-1: 263 70% 50%;
-    --chart-2: 180 100% 50%;
-    --chart-3: 217 91% 60%;
-    --chart-4: 300 100% 50%;
     --chart-5: 45 100% 50%;
+
+    /* Typography Selection */
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
   }
 
   /* Custom Scrollbar Styles */
@@ -76,14 +74,19 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
     background-image:
       radial-gradient(at 0% 0%, hsla(263, 70%, 50%, 0.03) 0px, transparent 50%),
       radial-gradient(at 100% 0%, hsla(180, 100%, 50%, 0.03) 0px, transparent 50%),
-      /* Enhanced background pattern: subtle grid */
-      linear-gradient(to right, hsla(var(--primary), 0.02) 1px, transparent 1px),
-      linear-gradient(to bottom, hsla(var(--primary), 0.02) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 100%, 20px 20px, 20px 20px;
+      /* Enhanced background pattern: very subtle grid */
+      linear-gradient(to right, hsla(var(--primary), 0.015) 1px, transparent 1px),
+      linear-gradient(to bottom, hsla(var(--primary), 0.015) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
     background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
   }
 }
 
