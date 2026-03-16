@@ -1,5 +1,3 @@
-// Form for initiating collaboration requests
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import createCollaborationRequestAction from '@/actions/createCollaborationRequest';
+import { useCollaborationRequests } from '@/hooks/useDatabase';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -55,15 +53,17 @@ export function CollaborationRequestForm({
     },
   });
 
+  const { create: createRequest } = useCollaborationRequests();
   const onSubmit = async (data: RequestFormData) => {
     setSubmitting(true);
     try {
-      await createCollaborationRequestAction({
-        researchProjectId: projectId,
-        corporatePartnerId: 1, // Simulated current user partner
-        projectBrief: data.projectBrief,
-        budgetProposed: parseFloat(data.budgetProposed),
-        timelineProposed: data.timelineProposed
+      await createRequest({
+        research_project_id: projectId,
+        corporate_partner_id: 1, // Simulated current user partner
+        project_brief: data.projectBrief,
+        budget_proposed: parseFloat(data.budgetProposed),
+        timeline_proposed: data.timelineProposed,
+        status: 'pending'
       });
 
       toast({

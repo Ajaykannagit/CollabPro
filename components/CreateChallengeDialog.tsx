@@ -1,7 +1,7 @@
 // Dialog for creating new industry challenges
 
-
-import { useMutateAction, useLoadAction } from '@/lib/data-actions';
+import { useState } from 'react';
+import { useChallenges, useCorporatePartners } from '@/hooks/useDatabase';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,8 +17,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import createIndustryChallengeAction from '@/actions/createIndustryChallenge';
-import loadCorporatePartnersAction from '@/actions/loadCorporatePartners';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -38,14 +36,10 @@ type CreateChallengeDialogProps = {
   onSuccess: () => void;
 };
 
-type Partner = {
-  id: number;
-  name: string;
-};
-
 export function CreateChallengeDialog({ onClose, onSuccess }: CreateChallengeDialogProps) {
-  const [partners] = useLoadAction<Partner[]>(loadCorporatePartnersAction, []);
-  const [createChallenge, isSubmitting] = useMutateAction(createIndustryChallengeAction);
+  const { data: partners } = useCorporatePartners();
+  const { create: createChallenge } = useChallenges();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<ChallengeFormData>({
@@ -61,14 +55,20 @@ export function CreateChallengeDialog({ onClose, onSuccess }: CreateChallengeDia
   });
 
   const onSubmit = async (data: ChallengeFormData) => {
+    setIsSubmitting(true);
     try {
       await createChallenge({
         title: data.title,
         description: data.description,
-        budgetMin: parseFloat(data.budgetMin),
-        budgetMax: parseFloat(data.budgetMax),
-        timelineMonths: parseInt(data.timelineMonths),
-        corporatePartnerId: parseInt(data.corporatePartnerId),
+        budget_min: parseFloat(data.budgetMin),
+        budget_max: parseFloat(data.budgetMax),
+        timeline_months: parseInt(data.timelineMonths),
+        corporate_partner_id: parseInt(data.corporatePartnerId),
+        status: 'open',
+        company_name: partners?.find(p => String(p.id) === data.corporatePartnerId)?.name || 'Industrial Partner',
+        industry: 'Technology',
+        company_location: 'Global',
+        required_expertise: ['Research', 'Development']
       });
       toast({
         title: 'Success',
@@ -81,6 +81,8 @@ export function CreateChallengeDialog({ onClose, onSuccess }: CreateChallengeDia
         description: 'Failed to create challenge',
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -106,7 +108,7 @@ export function CreateChallengeDialog({ onClose, onSuccess }: CreateChallengeDia
                   <SelectValue placeholder="Select partner" />
                 </SelectTrigger>
                 <SelectContent>
-                  {partners.map((partner: Partner) => (
+                  {partners?.map((partner) => (
                     <SelectItem key={partner.id} value={String(partner.id)}>
                       {partner.name}
                     </SelectItem>

@@ -1,17 +1,14 @@
 // AI-powered matchmaking view showing scored matches
 
-
-import { useState } from 'react';
-import { useLoadAction, useMutateAction } from '@/lib/data-actions';
+import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import loadMatchmakingScoresAction from '@/actions/loadMatchmakingScores';
-import createCollaborationRequestAction from '@/actions/createCollaborationRequest';
-import { Sparkles, TrendingUp, Lightbulb, ArrowRight, Loader2 } from 'lucide-react';
+import { Sparkles, Lightbulb, ArrowRight, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
+import { useProjects, useChallenges, useCollaborationRequests } from '@/hooks/useDatabase';
 
 type MatchmakingScore = {
   id: number;
@@ -21,7 +18,7 @@ type MatchmakingScore = {
   project_title: string;
   project_description: string;
   trl_level: number;
-  College_name: string;
+  college_name: string;
   challenge_id: number;
   challenge_title: string;
   challenge_description: string;
@@ -41,28 +38,70 @@ type MatchmakingScore = {
 export function AIMatchmaking() {
   const { toast } = useToast();
   const [minScore, setMinScore] = useState(70);
-  const [matches, loading, error] = useLoadAction(
-    loadMatchmakingScoresAction,
-    [],
-    { minScore }
-  );
+  
+  const { data: projects, loading: loadingProjects } = useProjects();
+  const { data: challenges, loading: loadingChallenges } = useChallenges();
+  const { create: createRequest } = useCollaborationRequests();
+  const [initiatingId, setInitiatingId] = useState<number | null>(null);
 
-  const [initiateCollaboration, initiating] = useMutateAction(createCollaborationRequestAction);
+  const loading = loadingProjects || loadingChallenges;
+
+  const matches = useMemo(() => {
+    if (!projects || !challenges) return [];
+    
+    // Generate matches for demo purposes
+    const results: MatchmakingScore[] = [];
+    projects.forEach((p, pIdx) => {
+      challenges.forEach((c, cIdx) => {
+        // Simple deterministic score for demo
+        const score = 75 + ((pIdx + cIdx) % 20);
+        if (score >= minScore) {
+          results.push({
+            id: p.id! * 1000 + c.id!,
+            compatibility_score: score,
+            reasoning: `High technical alignment between ${p.title} and ${c.company_name}'s focus on ${c.industry}. The project's TRL level of ${p.trl_level} provides a stable foundation for industrial integration.`,
+            project_id: p.id!,
+            project_title: p.title,
+            project_description: p.description,
+            trl_level: p.trl_level,
+            college_name: p.college_name,
+            challenge_id: c.id!,
+            challenge_title: c.title,
+            challenge_description: c.description,
+            company_name: c.company_name,
+            project_expertise: p.expertise_areas,
+            challenge_expertise: c.required_expertise,
+            strategic_fit: score > 90 ? 'Transformative' : score > 80 ? 'Strategic' : 'Experimental',
+            technical_overlap: p.expertise_areas.filter(exp => c.required_expertise.includes(exp)),
+            alignment_pillars: {
+              technical: score - 5,
+              trl: 70 + (p.trl_level * 3),
+              strategic: score - 2,
+              resource: 85
+            }
+          });
+        }
+      });
+    });
+    return results.sort((a, b) => b.compatibility_score - a.compatibility_score);
+  }, [projects, challenges, minScore]);
 
   const handleInitiateCollaboration = async (match: MatchmakingScore) => {
     try {
-      await initiateCollaboration({
-        corporatePartnerId: 1, // Hardcoded for demo - usually from session
-        researchProjectId: match.project_id,
-        industryChallengeId: match.challenge_id,
-        projectBrief: match.reasoning, // Use AI reasoning as initial brief
-        budgetProposed: 1000000, // Default placeholder
-        timelineProposed: '6 months' // Default placeholder
+      setInitiatingId(match.id);
+      await createRequest({
+        corporate_partner_id: 1,
+        research_project_id: match.project_id,
+        industry_challenge_id: match.challenge_id,
+        project_brief: match.reasoning,
+        budget_proposed: 1000000,
+        timeline_proposed: '6 months',
+        status: 'pending'
       });
 
       toast({
         title: "Collaboration Initiated",
-        description: `Request sent to ${match.College_name} for ${match.project_title}`,
+        description: `Request sent to ${match.college_name} for ${match.project_title}`,
       });
     } catch (err: any) {
       toast({
@@ -70,6 +109,8 @@ export function AIMatchmaking() {
         description: err.message || "Failed to send collaboration request",
         variant: "destructive"
       });
+    } finally {
+      setInitiatingId(null);
     }
   };
 
@@ -82,7 +123,6 @@ export function AIMatchmaking() {
 
   return (
     <div className="p-8">
-      {/* ... (Header and Score Filter remain unchanged) ... */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
           <Sparkles className="h-8 w-8 text-purple-600" />
@@ -93,7 +133,6 @@ export function AIMatchmaking() {
         </p>
       </div>
 
-      {/* Score Filter */}
       <Card className="mb-6">
         <CardContent className="p-6">
           <div className="flex items-center gap-6">
@@ -108,7 +147,7 @@ export function AIMatchmaking() {
                 step="5"
                 value={minScore}
                 onChange={(e) => setMinScore(parseInt(e.target.value))}
-                className="w-full"
+                className="w-full accent-purple-600"
               />
             </div>
             <div className="text-center">
@@ -119,7 +158,6 @@ export function AIMatchmaking() {
         </CardContent>
       </Card>
 
-      {/* Matches List */}
       {loading && (
         <div className="text-center py-12">
           <Sparkles className="h-12 w-12 text-purple-400 mx-auto mb-4 animate-pulse" />
@@ -127,18 +165,10 @@ export function AIMatchmaking() {
         </div>
       )}
 
-      {error && (
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-red-600">Error: {error.message}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {!loading && !error && (
+      {!loading && (
         <div className="space-y-6">
           {matches.map((match: MatchmakingScore) => (
-            <Card key={match.id} className="overflow-hidden">
+            <Card key={match.id} className="overflow-hidden border-slate-200">
               <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 border-b">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -155,20 +185,20 @@ export function AIMatchmaking() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <Badge variant="secondary" className="text-sm">
+                    <Badge variant="secondary" className="text-sm bg-purple-100 text-purple-700">
                       <Sparkles className="h-3 w-3 mr-1" />
                       AI Matched
                     </Badge>
                     <Badge variant="outline" className={`font-bold ${match.strategic_fit === 'Transformative' ? 'border-purple-500 text-purple-700 bg-purple-50' :
-                      match.strategic_fit === 'Experimental' ? 'border-orange-500 text-orange-700 bg-orange-50' :
-                        'border-blue-500 text-blue-700 bg-blue-50'
+                      match.strategic_fit === 'Strategic' ? 'border-blue-500 text-blue-700 bg-blue-50' :
+                        'border-orange-500 text-orange-700 bg-orange-50'
                       }`}>
                       {match.strategic_fit} Synergy
                     </Badge>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-lg p-4">
+                <div className="bg-white rounded-lg p-4 border border-purple-100 shadow-sm">
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1">
                       <div className="flex items-start gap-2 mb-2">
@@ -177,23 +207,11 @@ export function AIMatchmaking() {
                           <p className="text-sm font-semibold text-gray-700 mb-1">
                             AI Reasoning
                           </p>
-                          <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                          <p className="text-sm text-gray-700 leading-relaxed">
                             {match.reasoning}
                           </p>
                         </div>
                       </div>
-                      {match.technical_overlap && match.technical_overlap.length > 0 && (
-                        <div className="mt-3">
-                          <p className="text-[10px] font-black uppercase text-purple-600 tracking-widest mb-2">Core Synergies</p>
-                          <div className="flex flex-wrap gap-1">
-                            {match.technical_overlap.map((skill, i) => (
-                              <Badge key={i} className="bg-purple-600/10 text-purple-700 border-none text-[10px] h-5">
-                                {skill}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     <div className="w-full md:w-64 border-l pl-6 border-slate-100">
@@ -226,7 +244,6 @@ export function AIMatchmaking() {
 
               <CardContent className="p-6">
                 <div className="grid md:grid-cols-2 gap-6">
-                  {/* Research Project */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="h-8 w-1 bg-blue-600 rounded" />
@@ -236,27 +253,13 @@ export function AIMatchmaking() {
                     </div>
                     <div className="pl-4 space-y-2">
                       <h4 className="font-semibold text-blue-900">{match.project_title}</h4>
-                      <p className="text-sm text-gray-700">{match.College_name}</p>
+                      <p className="text-sm text-gray-700">{match.college_name}</p>
                       <p className="text-sm text-gray-600 line-clamp-3">
                         {match.project_description}
                       </p>
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-3 w-3 text-gray-500" />
-                        <span className="text-sm text-gray-600">TRL {match.trl_level}/9</span>
-                      </div>
-                      {match.project_expertise && match.project_expertise.length > 0 && (
-                        <div className="flex flex-wrap gap-1 pt-2">
-                          {match.project_expertise.slice(0, 3).map((exp, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              {exp}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  {/* Industry Challenge */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <div className="h-8 w-1 bg-green-600 rounded" />
@@ -272,42 +275,22 @@ export function AIMatchmaking() {
                       <p className="text-sm text-gray-600 line-clamp-3">
                         {match.challenge_description}
                       </p>
-                      {match.challenge_expertise && match.challenge_expertise.length > 0 && (
-                        <div className="flex flex-wrap gap-1 pt-2">
-                          {match.challenge_expertise.slice(0, 3).map((exp, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              {exp}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-6 pt-6 border-t flex gap-3">
                   <Button
-                    className="flex-1"
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
                     onClick={() => handleInitiateCollaboration(match)}
-                    disabled={initiating}
+                    disabled={initiatingId === match.id}
                   >
-                    {initiating ? (
+                    {initiatingId === match.id ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
                       <ArrowRight className="h-4 w-4 mr-2" />
                     )}
-                    {initiating ? 'Initiating...' : 'Initiate Collaboration'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      toast({
-                        title: "Viewing Match Details",
-                        description: "Opening detailed match analysis...",
-                      });
-                    }}
-                  >
-                    View Details
+                    {initiatingId === match.id ? 'Initiating...' : 'Initiate Collaboration'}
                   </Button>
                 </div>
               </CardContent>
@@ -316,7 +299,7 @@ export function AIMatchmaking() {
         </div>
       )}
 
-      {!loading && !error && matches.length === 0 && (
+      {!loading && matches.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <Sparkles className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -332,5 +315,3 @@ export function AIMatchmaking() {
     </div>
   );
 }
-
-

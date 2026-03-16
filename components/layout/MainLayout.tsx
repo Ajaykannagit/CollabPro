@@ -91,7 +91,8 @@ export function MainLayout() {
 
     const [commandOpen, setCommandOpen] = useState(false);
     const [showSplash, setShowSplash] = useState(() => {
-        return !localStorage.getItem('collabpro_splashSeen');
+        // Show on every session to ensure the user sees the 'wow' animation as requested
+        return sessionStorage.getItem('collabpro_sessionSplashSeen') !== '1';
     });
     const { unreadCount } = useNotifications();
 
@@ -130,8 +131,9 @@ export function MainLayout() {
     }, []);
 
     const handleSplashLaunch = useCallback(async (role: 'college' | 'corporate' | 'student') => {
+        // Immediate state update
         await updateUser({ organization_type: role });
-        localStorage.setItem('collabpro_splashSeen', '1');
+        sessionStorage.setItem('collabpro_sessionSplashSeen', '1');
         setShowSplash(false);
     }, [updateUser]);
 
@@ -139,29 +141,19 @@ export function MainLayout() {
     const isStudent = userRole === 'student';
     const isAcademic = isStudent || userRole === 'college';
 
-    const filteredNavItems = navItems.filter((item) => {
-        if (isAcademic) {
-            if (
-                ['/challenges', '/matchmaking', '/agreement-review', '/digital-signature', '/licensing', '/analytics'].includes(item.id)
-            ) {
-                return false;
+    const filterItems = (items: any[]) => items.filter(item => {
+        if (!item.role) {
+            // Legacy/Fallback filtering logic if roles aren't explicitly defined on the item
+            if (isAcademic) {
+                return !['/challenges', '/matchmaking', '/agreement-review', '/digital-signature', '/licensing', '/analytics', '/negotiate', '/agreement'].includes(item.id);
             }
+            return item.id !== '/talent';
         }
-        return true;
+        return item.role.includes(userRole);
     });
 
-    const filteredSecondaryItems = secondaryItems.filter((item) => {
-        if (isAcademic) {
-            if (['/negotiate', '/agreement', '/licensing', '/analytics'].includes(item.id)) {
-                return false;
-            }
-        } else {
-            if (item.id === '/talent') {
-                return false;
-            }
-        }
-        return true;
-    });
+    const filteredNavItems = filterItems(navItems);
+    const filteredSecondaryItems = filterItems(secondaryItems);
 
     const mainMenuTitle = isAcademic ? 'Academy Menu' : 'Company Menu';
     const workspaceTitle = isAcademic ? 'Academy Workspace' : 'Company Workspace';
@@ -180,7 +172,7 @@ export function MainLayout() {
                 open={commandOpen}
                 onClose={() => setCommandOpen(false)}
                 onNavigate={(s) => {
-                    let target = s === 'dashboard' ? '/' : `/${s}`;
+                    const target = s === 'dashboard' ? '/' : `/${s}`;
                     navigate(target);
                 }}
             />

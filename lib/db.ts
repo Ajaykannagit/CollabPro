@@ -10,6 +10,11 @@ import {
   Notification,
   StudentProfile,
   LicensingOpportunity,
+  InterviewRequest,
+  LicensingInquiry,
+  ProjectDocument,
+  CorporatePartner,
+  ProjectScope,
 } from './types';
 
 export class CollabProDB extends Dexie {
@@ -23,6 +28,11 @@ export class CollabProDB extends Dexie {
   notifications!: Table<Notification>;
   student_profiles!: Table<StudentProfile>;
   licensing_opportunities!: Table<LicensingOpportunity>;
+  interview_requests!: Table<InterviewRequest>;
+  licensing_inquiries!: Table<LicensingInquiry>;
+  project_documents!: Table<ProjectDocument>;
+  corporate_partners!: Table<CorporatePartner>;
+  project_scopes!: Table<ProjectScope>;
 
   constructor() {
     super('CollabProDB');
@@ -37,6 +47,11 @@ export class CollabProDB extends Dexie {
       notifications: '++id, user_id, type, read, created_at',
       student_profiles: '++id, name, college',
       licensing_opportunities: '++id, status, ip_disclosure_id',
+      interview_requests: '++id, student_profile_id, status',
+      licensing_inquiries: '++id, licensing_opportunity_id, status',
+      project_documents: '++id, project_id, file_name',
+      corporate_partners: '++id, name, industry',
+      project_scopes: '++id, collaboration_request_id, version_number',
     });
   }
 }

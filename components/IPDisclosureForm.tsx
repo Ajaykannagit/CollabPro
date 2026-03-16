@@ -1,7 +1,6 @@
 // IP disclosure submission form
 
 import { useState } from 'react';
-import { useMutateAction } from '@/lib/data-actions';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,10 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import createIPDisclosureAction from '@/actions/createIPDisclosure';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
-import { Lightbulb, CheckCircle } from 'lucide-react';
+import { Lightbulb, CheckCircle, Loader2 } from 'lucide-react';
+import { useIPDisclosures } from '@/hooks/useDatabase';
 
 const ipSchema = z.object({
   title: z.string().min(10, 'Title must be at least 10 characters'),
@@ -35,7 +34,8 @@ type IPDisclosureFormProps = {
 
 export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPDisclosureFormProps) {
   const [step, setStep] = useState(1);
-  const [createDisclosure, submitting] = useMutateAction(createIPDisclosureAction);
+  const { create: createDisclosure } = useIPDisclosures();
+  const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<IPFormData>({
@@ -52,10 +52,17 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
 
   const onSubmit = async (data: IPFormData) => {
     try {
+      setSubmitting(true);
       await createDisclosure({
-        activeProjectId,
-        ...data,
+        active_project_id: activeProjectId,
+        title: data.title,
+        description: data.description,
+        invention_type: data.inventionCategory,
+        inventors: ['Prof. Lead Scientist', 'Research Associate'], // Mocked for demo
+        disclosure_date: new Date().toISOString(),
+        status: 'under_review'
       });
+      
       toast({
         title: 'Success',
         description: 'IP disclosure submitted successfully',
@@ -64,12 +71,14 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
       if (onNavigate) {
         onNavigate('ip-portfolio');
       }
-    } catch {
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to submit disclosure',
+        description: error.message || 'Failed to submit disclosure',
         variant: 'destructive',
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -121,17 +130,18 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
           </div>
         </div>
 
-        <Card>
-          <CardContent className="p-6">
+        <Card className="border-slate-200 bg-white shadow-sm border">
+          <CardContent className="p-6 text-slate-900">
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {step === 1 && (
                 <>
                   <div className="grid gap-2">
-                    <Label htmlFor="title">Invention Title</Label>
+                    <Label htmlFor="title" className="text-slate-700 font-bold">Invention Title</Label>
                     <Input
                       id="title"
                       placeholder="e.g., Real-time Vibration Analysis Algorithm"
                       {...form.register('title')}
+                      className="bg-white border-slate-200 text-slate-900 font-medium"
                     />
                     {form.formState.errors.title && (
                       <p className="text-sm text-red-600">
@@ -141,15 +151,15 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="inventionCategory">Invention Category</Label>
-                    <Select
+                    <Label htmlFor="inventionCategory" className="text-slate-700 font-bold">Invention Category</Label>
+                    < Select
                       value={form.watch('inventionCategory')}
                       onValueChange={(value) => form.setValue('inventionCategory', value)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white border-slate-200 text-slate-900 font-medium">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white text-slate-900">
                         <SelectItem value="software">Software/Algorithm</SelectItem>
                         <SelectItem value="hardware">Hardware/Device</SelectItem>
                         <SelectItem value="process">Process/Method</SelectItem>
@@ -165,12 +175,13 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="description">Detailed Description</Label>
+                    <Label htmlFor="description" className="text-slate-700 font-bold">Detailed Description</Label>
                     <Textarea
                       id="description"
                       placeholder="Provide a comprehensive description of your invention..."
                       rows={8}
                       {...form.register('description')}
+                      className="bg-white border-slate-200 text-slate-900 font-medium"
                     />
                     {form.formState.errors.description && (
                       <p className="text-sm text-red-600">
@@ -184,12 +195,13 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
               {step === 2 && (
                 <>
                   <div className="grid gap-2">
-                    <Label htmlFor="potentialApplications">Potential Applications</Label>
+                    <Label htmlFor="potentialApplications" className="text-slate-700 font-bold">Potential Applications</Label>
                     <Textarea
                       id="potentialApplications"
                       placeholder="Describe potential use cases and applications..."
                       rows={6}
                       {...form.register('potentialApplications')}
+                      className="bg-white border-slate-200 text-slate-900 font-medium"
                     />
                     {form.formState.errors.potentialApplications && (
                       <p className="text-sm text-red-600">
@@ -199,7 +211,7 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="priorArtReferences">
+                    <Label htmlFor="priorArtReferences" className="text-slate-700 font-bold">
                       Prior Art References (Optional)
                     </Label>
                     <Textarea
@@ -207,8 +219,9 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
                       placeholder="List any existing patents, publications, or technologies related to your invention..."
                       rows={6}
                       {...form.register('priorArtReferences')}
+                      className="bg-white border-slate-200 text-slate-900 font-medium"
                     />
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-500 font-medium">
                       This helps assess novelty and patentability
                     </p>
                   </div>
@@ -218,12 +231,13 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
               {step === 3 && (
                 <>
                   <div className="grid gap-2">
-                    <Label htmlFor="commercialPotential">Commercial Potential</Label>
+                    <Label htmlFor="commercialPotential" className="text-slate-700 font-bold">Commercial Potential</Label>
                     <Textarea
                       id="commercialPotential"
                       placeholder="Describe market opportunity, competitive advantage, and revenue potential..."
                       rows={8}
                       {...form.register('commercialPotential')}
+                      className="bg-white border-slate-200 text-slate-900 font-medium"
                     />
                     {form.formState.errors.commercialPotential && (
                       <p className="text-sm text-red-600">
@@ -232,24 +246,28 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
                     )}
                   </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-blue-900 mb-2">Next Steps</h4>
-                    <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Legal team will review within 5 business days</li>
-                      <li>• Prior art search will be conducted</li>
-                      <li>• Patent attorney will assess patentability</li>
-                      <li>• You'll be notified of filing decision</li>
+                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+                    <h4 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5" />
+                      Next Steps
+                    </h4>
+                    <ul className="text-sm text-blue-800 space-y-2 font-medium">
+                      <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 bg-blue-400 rounded-full" /> Legal team will review within 5 business days</li>
+                      <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 bg-blue-400 rounded-full" /> Prior art search will be conducted</li>
+                      <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 bg-blue-400 rounded-full" /> Patent attorney will assess patentability</li>
+                      <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 bg-blue-400 rounded-full" /> You'll be notified of filing decision</li>
                     </ul>
                   </div>
                 </>
               )}
 
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="flex gap-3 pt-4 border-t border-slate-100">
                 {step > 1 && (
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setStep(step - 1)}
+                    className="border-slate-200 text-slate-600"
                   >
                     Previous
                   </Button>
@@ -258,12 +276,13 @@ export function IPDisclosureForm({ activeProjectId, onSuccess, onNavigate }: IPD
                   <Button
                     type="button"
                     onClick={() => setStep(step + 1)}
-                    className="ml-auto"
+                    className="ml-auto bg-primary hover:bg-primary/90 text-white font-bold"
                   >
                     Next Step
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={submitting} className="ml-auto">
+                  <Button type="submit" disabled={submitting} className="ml-auto bg-primary hover:bg-primary/90 text-white font-bold">
+                    {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                     {submitting ? 'Submitting...' : 'Submit IP Disclosure'}
                   </Button>
                 )}

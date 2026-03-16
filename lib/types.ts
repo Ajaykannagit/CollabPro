@@ -14,6 +14,51 @@ export interface ResearchProject {
   college_location: string;
   expertise_areas: string[];
   created_at?: string;
+  project_name?: string; // Aliases for consistency with legacy code
+  funding_allocated?: number;
+  budget_utilized?: number;
+  start_date?: string;
+  end_date?: string;
+  milestones?: {
+    id: number;
+    title: string;
+    description: string;
+    due_date: string;
+    status: string;
+    deliverables: string;
+  }[];
+  team_members?: {
+    id: number;
+    name: string;
+    role: string;
+    email: string;
+    organization: string;
+  }[];
+  risk_assessment?: {
+    score: number;
+    level: string;
+    factors: { label: string; impact: number; description: string }[];
+    recommendation: string;
+  };
+  trl_prediction?: {
+    estimatedMonthsToNext: number;
+    stallRisk: number;
+    bottlenecks: string[];
+    confidenceScore: number;
+  };
+}
+
+export interface ProjectDocument {
+  id?: number;
+  project_id: number;
+  file_name: string;
+  file_size: number;
+  file_type: string;
+  storage_path: string;
+  uploaded_by: string;
+  uploaded_at: string;
+  version: number;
+  description: string;
 }
 
 export interface IndustryChallenge {
@@ -28,6 +73,7 @@ export interface IndustryChallenge {
   industry: string;
   company_location: string;
   required_expertise: string[];
+  corporate_partner_id: number;
   created_at?: string;
 }
 
@@ -70,10 +116,11 @@ export interface IPDisclosure {
 
 export interface NegotiationMessage {
   id: string;
-  sender: string;
-  message: string;
-  timestamp: string;
-  type: 'message' | 'proposal' | 'counter-proposal';
+  sender_name: string;
+  sender_organization: string;
+  content: string;
+  created_at: string;
+  message_type: 'text' | 'proposal' | 'counter-proposal' | string;
 }
 
 export interface Negotiation {
@@ -81,6 +128,19 @@ export interface Negotiation {
   collaboration_request_id: number;
   messages: NegotiationMessage[];
   status: string;
+  created_at?: string;
+}
+
+export interface ProjectScope {
+  id?: number;
+  collaboration_request_id: number;
+  version_number: number;
+  scope_description: string;
+  deliverables: string;
+  timeline: string;
+  budget: number;
+  created_by: string;
+  status: 'pending' | 'approved' | 'rejected';
   created_at?: string;
 }
 
@@ -104,6 +164,12 @@ export interface Agreement {
   versions: AgreementVersion[];
   current_version: string;
   status: string;
+  college_signed_at: string | null;
+  corporate_signed_at: string | null;
+  college_approval_status: boolean;
+  corporate_approval_status: boolean;
+  college_signatory: string | null;
+  corporate_signatory: string | null;
   created_at?: string;
 }
 
@@ -114,6 +180,16 @@ export interface Notification {
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
   read: boolean;
+  created_at?: string;
+}
+
+export interface CorporatePartner {
+  id?: number;
+  name: string;
+  industry: string;
+  location: string;
+  website: string;
+  company_size: string;
   created_at?: string;
 }
 
@@ -137,6 +213,27 @@ export interface LicensingOpportunity {
   description: string;
   price_range: string;
   license_type: string;
+  status: string;
+  created_at?: string;
+}
+
+export interface InterviewRequest {
+  id?: number;
+  student_profile_id: number;
+  requester_name: string;
+  requester_email: string;
+  requester_organization: string;
+  status: string;
+  created_at?: string;
+}
+
+export interface LicensingInquiry {
+  id?: number;
+  licensing_opportunity_id: number;
+  inquirer_name: string;
+  inquirer_email: string;
+  inquirer_organization: string;
+  message: string;
   status: string;
   created_at?: string;
 }

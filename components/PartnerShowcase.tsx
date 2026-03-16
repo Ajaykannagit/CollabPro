@@ -15,26 +15,15 @@ import {
     ExternalLink,
     MessageSquare
 } from 'lucide-react';
-import { useLoadAction } from '@/lib/data-actions';
-import loadCollegesAction from '@/actions/loadColleges';
-import loadCorporatePartnersAction from '@/actions/loadCorporatePartners';
-import { College } from '@/lib/types';
+import { useColleges, useCorporatePartners } from '@/hooks/useDatabase';
+import { CorporatePartner } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 import { AnimatePresence } from 'framer-motion';
 import { FadeInUp, StaggerContainer } from '@/components/ui/animation-wrapper';
 
-export interface CorporatePartner {
-    id: number;
-    name: string;
-    industry: string;
-    location: string;
-    website: string;
-    company_size: string;
-}
-
 export function PartnerShowcase({ onNavigate }: { onNavigate?: (section: any) => void }) {
-    const [colleges, collegesLoading] = useLoadAction(loadCollegesAction, [] as College[]);
-    const [corporates, corporatesLoading] = useLoadAction(loadCorporatePartnersAction, [] as CorporatePartner[]);
+    const { data: colleges, loading: collegesLoading } = useColleges();
+    const { data: corporates, loading: corporatesLoading } = useCorporatePartners();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<'colleges' | 'corporates'>('colleges');
     const { toast } = useToast();

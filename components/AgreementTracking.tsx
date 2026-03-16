@@ -1,31 +1,16 @@
-import { useLoadAction } from '@/lib/data-actions';
-import loadUserAgreementsAction from '@/actions/loadUserAgreements';
+import { useAgreements, useCollaborationRequests, useProjects } from '@/hooks/useDatabase';
 import { useAppStore } from '@/lib/store';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { FileText, Building2, Briefcase, Clock, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 
-type TrackedAgreement = {
-    id: number;
-    agreement_type: string;
-    status: string;
-    ip_ownership_split: string;
-    created_at: string;
-    updated_at: string;
-    project_title: string;
-    company_name: string;
-    college_name: string;
-    college_approval_status: boolean;
-    corporate_approval_status: boolean;
-};
+import { FileText, Building2, Briefcase, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 function getStatusBadgeClasses(status: string) {
     const normalized = status?.toLowerCase() ?? '';
-    if (normalized === 'signed' || normalized === 'completed') {
+    if (normalized === 'signed' || normalized === 'completed' || normalized === 'active') {
         return 'bg-emerald-100 text-emerald-800';
     }
-    if (normalized === 'under_review' || normalized === 'under review') {
+    if (normalized === 'under_review' || normalized === 'under review' || normalized === 'pending') {
         return 'bg-amber-100 text-amber-800';
     }
     if (normalized === 'rejected' || normalized === 'declined') {
@@ -48,19 +33,29 @@ function getRoleLabel(role: string | undefined) {
 
 export function AgreementTracking() {
     const user = useAppStore((state) => state.user);
-    const role = user?.organization_type ?? 'corporate';
+    
+    const { data: rawAgreements, loading: loadingAgreements, error: errorAgreements } = useAgreements();
+    const { data: requests } = useCollaborationRequests();
+    const { data: projects } = useProjects();
 
-    const [agreements, loading, error, reload] = useLoadAction<TrackedAgreement[]>(
-        loadUserAgreementsAction,
-        [],
-        {
-            role,
-            organization: user?.organization ?? null,
-            email: user?.email ?? null,
-        }
-    );
+    const loading = loadingAgreements;
+    const error = errorAgreements;
 
-    const safeAgreements = agreements || [];
+    // Join data for the demo view
+    const safeAgreements = (rawAgreements || []).map(agreement => {
+        const request = (requests || []).find(r => r.id === agreement.collaboration_request_id);
+        const project = request ? (projects || []).find(p => p.id === request.research_project_id) : null;
+        
+        return {
+            ...agreement,
+            project_title: project?.title || 'Collaboration Initiative',
+            college_name: project?.college_name || 'Partner College',
+            company_name: 'Industrial Partner', // Mocked for demo
+            college_approval_status: agreement.status === 'active' || agreement.status === 'signed',
+            corporate_approval_status: agreement.status === 'active' || agreement.status === 'signed',
+            updated_at: agreement.created_at || new Date().toISOString()
+        };
+    });
 
     return (
         <div className="p-8 space-y-6">
@@ -78,10 +73,6 @@ export function AgreementTracking() {
                     <Badge variant="outline" className="text-xs">
                         Viewing as <span className="font-semibold ml-1">{getRoleLabel(user?.organization_type)}</span>
                     </Badge>
-                    <Button variant="outline" size="sm" onClick={reload} disabled={loading}>
-                        <RefreshCw className="h-4 w-4 mr-1" />
-                        Refresh
-                    </Button>
                 </div>
             </div>
 
@@ -96,7 +87,7 @@ export function AgreementTracking() {
                     <CardContent className="p-6 flex items-center gap-3">
                         <AlertCircle className="h-5 w-5 text-red-500" />
                         <p className="text-red-600">
-                            Error loading agreements: {error.message}
+                            Error loading agreements: {(error as any).message}
                         </p>
                     </CardContent>
                 </Card>
@@ -115,15 +106,15 @@ export function AgreementTracking() {
 
             {!loading && !error && safeAgreements.length > 0 && (
                 <div className="grid gap-4 md:grid-cols-2">
-                    {safeAgreements.map((agreement) => (
+                    {safeAgreements.map((agreement: any) => (
                         <Card key={agreement.id} className="border border-slate-200 shadow-sm">
                             <CardHeader className="pb-3 flex flex-row items-start justify-between gap-3">
                                 <div>
                                     <CardTitle className="text-slate-900 text-lg">
-                                        {agreement.agreement_type || 'Collaboration Agreement'}
+                                        Joint Development Agreement
                                     </CardTitle>
                                     <p className="text-sm text-slate-500 mt-1">
-                                        {agreement.project_title || 'Untitled project'}
+                                        {agreement.project_title}
                                     </p>
                                 </div>
                                 <Badge className={getStatusBadgeClasses(agreement.status)}>
@@ -149,8 +140,8 @@ export function AgreementTracking() {
                                     <Clock className="h-3 w-3 text-slate-400" />
                                     <span>
                                         Created{' '}
-                                        {new Date(agreement.created_at).toLocaleDateString()} • Updated{' '}
-                                        {new Date(agreement.updated_at).toLocaleDateString()}
+                                        {new Date(agreement.created_at || '').toLocaleDateString()} • Updated{' '}
+                                        {new Date(agreement.updated_at || '').toLocaleDateString()}
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap gap-2 pt-1">
@@ -177,12 +168,6 @@ export function AgreementTracking() {
                                         Corporate approval {agreement.corporate_approval_status ? 'granted' : 'pending'}
                                     </Badge>
                                 </div>
-                                {agreement.ip_ownership_split && (
-                                    <p className="text-xs text-slate-500">
-                                        <span className="font-semibold text-slate-600">IP Split:</span>{' '}
-                                        {agreement.ip_ownership_split}
-                                    </p>
-                                )}
                             </CardContent>
                         </Card>
                     ))}
@@ -191,4 +176,3 @@ export function AgreementTracking() {
         </div>
     );
 }
-

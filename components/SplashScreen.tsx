@@ -39,28 +39,13 @@ const ROLES: { id: Role; label: string; subtitle: string; icon: React.ElementTyp
 
 export function SplashScreen({ onLaunch }: SplashScreenProps) {
     const [launching, setLaunching] = useState(false);
-    const [bootStep, setBootStep] = useState(0);
-    const BOOT_MESSAGES = [
-        "Establishing Secure Neural Mesh...",
-        "Syncing Sovereign Node Identities...",
-        "Decentralizing Academic Data Trunks...",
-        "Optimizing Industry Match-Engines...",
-        "Finalizing Collaboration Protocol..."
-    ];
 
     const handleLaunch = (role: Role) => {
         setLaunching(true);
-        
-        let currentStep = 0;
-        const interval = setInterval(() => {
-            currentStep++;
-            if (currentStep < BOOT_MESSAGES.length) {
-                setBootStep(currentStep);
-            } else {
-                clearInterval(interval);
-                onLaunch(role);
-            }
-        }, 800); // Slightly faster boot for better feeling
+        // Swift, purposeful "boot" to minimize UX friction
+        setTimeout(() => {
+            onLaunch(role);
+        }, 1200);
     };
 
     return (
@@ -70,7 +55,7 @@ export function SplashScreen({ onLaunch }: SplashScreenProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.05, filter: 'blur(20px)' }}
             transition={{ duration: 0.8 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020308] text-white overflow-hidden"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020308] text-white overflow-hidden pointer-events-auto"
         >
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]" />
             <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-violet-800/20 rounded-full blur-[140px] animate-pulse" />
@@ -152,11 +137,14 @@ export function SplashScreen({ onLaunch }: SplashScreenProps) {
                                             </div>
 
                                             <motion.button
-                                                onClick={() => handleLaunch(role.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleLaunch(role.id);
+                                                }}
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                                 className={cn(
-                                                    "mt-4 w-full py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                                                    "mt-4 w-full py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all duration-300 pointer-events-auto cursor-pointer",
                                                     `bg-gradient-to-r ${role.gradient} text-white shadow-lg`
                                                 )}
                                             >
@@ -193,8 +181,9 @@ export function SplashScreen({ onLaunch }: SplashScreenProps) {
                                         stroke="url(#bootGradient)"
                                         strokeWidth="4"
                                         strokeDasharray="377"
-                                        animate={{ strokeDashoffset: 377 - (377 * (bootStep + 1)) / BOOT_MESSAGES.length }}
-                                        transition={{ duration: 1 }}
+                                        initial={{ strokeDashoffset: 377 }}
+                                        animate={{ strokeDashoffset: 0 }}
+                                        transition={{ duration: 1, ease: "easeInOut" }}
                                     />
                                     <defs>
                                         <linearGradient id="bootGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -209,35 +198,33 @@ export function SplashScreen({ onLaunch }: SplashScreenProps) {
                                         transition={{ repeat: Infinity, duration: 2 }}
                                         className="h-16 w-16 rounded-full bg-gradient-to-tr from-violet-600/20 to-cyan-500/20 flex items-center justify-center border border-white/10"
                                     >
-                                        <span className="text-xs font-black text-cyan-400">
-                                            {Math.round(((bootStep + 1) / BOOT_MESSAGES.length) * 100)}%
-                                        </span>
+                                        <motion.span 
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ delay: 0.5 }}
+                                            className="text-xs font-black text-cyan-400"
+                                        >
+                                            READY
+                                        </motion.span>
                                     </motion.div>
                                 </div>
                             </div>
                             
                             <div className="space-y-3">
-                                <AnimatePresence mode="wait">
-                                    <motion.p
-                                        key={bootStep}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        className="text-cyan-400 font-mono text-sm tracking-wider uppercase font-black"
-                                    >
-                                        {BOOT_MESSAGES[bootStep]}
-                                    </motion.p>
-                                </AnimatePresence>
-                                <div className="flex gap-1 justify-center">
-                                    {BOOT_MESSAGES.map((_, i) => (
-                                        <div 
-                                            key={i} 
-                                            className={cn(
-                                                "h-1 w-8 rounded-full transition-all duration-500",
-                                                i <= bootStep ? "bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" : "bg-white/10"
-                                            )} 
-                                        />
-                                    ))}
+                                <motion.p
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="text-cyan-400 font-mono text-sm tracking-wider uppercase font-black"
+                                >
+                                    Establishing Secure Neural Mesh...
+                                </motion.p>
+                                <div className="h-1 w-48 bg-white/10 rounded-full overflow-hidden">
+                                    <motion.div 
+                                        initial={{ width: 0 }}
+                                        animate={{ width: '100%' }}
+                                        transition={{ duration: 1.2, ease: "easeOut" }}
+                                        className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" 
+                                    />
                                 </div>
                             </div>
                         </motion.div>

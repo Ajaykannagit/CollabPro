@@ -1,56 +1,39 @@
 // Licensing marketplace for IP commercialization
 
 import { useState } from 'react';
-import { useLoadAction } from '@/lib/data-actions';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import loadLicensingOpportunitiesAction from '@/actions/loadLicensingOpportunities';
-import { formatINRCompact, usdToINR } from '@/lib/currency';
+
 import { Store, Search, Eye, MessageCircle, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import createLicensingInquiryAction from '@/actions/createLicensingInquiry';
 import { FadeInUp, StaggerContainer } from '@/components/ui/animation-wrapper';
-
-
-type LicensingOpportunity = {
-  id: number;
-  anonymized_title: string;
-  anonymized_description: string;
-  licensing_type: string;
-  asking_price: number;
-  industry_sectors: string;
-  inquiries_count: number;
-  created_at: string;
-  invention_category: string;
-  ip_status: string;
-};
+import { useLicensingOpportunities, useLicensingInquiries } from '@/hooks/useDatabase';
 
 export function LicensingMarketplace() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [processingId, setProcessingId] = useState<number | null>(null);
-  const [opportunities, loading, error] = useLoadAction(
-    loadLicensingOpportunitiesAction,
-    [],
-    { industrySector: searchQuery || null }
-  );
+  
+  const { data: rawOpportunities, loading, error } = useLicensingOpportunities();
+  const { create: createInquiry } = useLicensingInquiries();
 
-  const handleExpressInterest = async (opp: LicensingOpportunity) => {
+  const handleExpressInterest = async (opp: any) => {
     setProcessingId(opp.id);
     try {
-      await createLicensingInquiryAction({
+      await createInquiry({
         licensing_opportunity_id: opp.id,
-        inquirer_name: 'Current User', // Replace with actual user context
-        inquirer_email: 'user@example.com',
-        inquirer_organization: 'My Organization',
-        message: `I am interested in licensing ${opp.anonymized_title}.`
+        inquirer_name: 'Strategic Investor',
+        inquirer_email: 'investor@nexus.com',
+        inquirer_organization: 'Nexus Capital',
+        message: `I am interested in licensing ${opp.title}.`,
+        status: 'pending'
       });
 
       toast({
         title: "Interest Recorded",
-        description: `We have notified the IP holder of ${opp.anonymized_title}.`,
+        description: `We have notified the IP holder of ${opp.title}.`,
       });
     } catch (err: any) {
       toast({
@@ -62,6 +45,14 @@ export function LicensingMarketplace() {
       setProcessingId(null);
     }
   };
+
+  const opportunities = (rawOpportunities || [])
+    .filter(opp => {
+      const query = searchQuery.toLowerCase();
+      return opp.title.toLowerCase().includes(query) || 
+             opp.description.toLowerCase().includes(query) ||
+             opp.license_type.toLowerCase().includes(query);
+    });
 
   return (
     <div className="p-8 bg-slate-50/30 min-h-screen">
@@ -82,7 +73,7 @@ export function LicensingMarketplace() {
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-all duration-300" />
               <Input
-                placeholder="Search by industry sector, technology, or patent ID..."
+                placeholder="Search by technology, license type, or description..."
                 className="pl-12 h-14 bg-slate-50 border-none rounded-xl font-medium text-slate-900 focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -113,53 +104,38 @@ export function LicensingMarketplace() {
 
       {!loading && !error && (
         <StaggerContainer className="grid md:grid-cols-2 gap-8">
-          {(opportunities || []).map((opp: LicensingOpportunity, idx: number) => (
+          {opportunities.map((opp: any, idx: number) => (
             <FadeInUp key={opp.id} delay={idx * 0.05}>
               <Card className="border-slate-200 bg-white shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 cursor-pointer border relative">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 rounded-bl-full transition-opacity duration-500" />
                 <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/30">
                   <div className="flex items-start justify-between mb-4">
-                    <Badge variant="secondary" className="bg-white text-slate-500 border-slate-200 text-[10px] font-bold uppercase py-1 px-3 shadow-sm">{opp.invention_category}</Badge>
+                    <Badge variant="secondary" className="bg-white text-slate-500 border-slate-200 text-[10px] font-bold uppercase py-1 px-3 shadow-sm">
+                      {opp.license_type?.replace('_', ' ')}
+                    </Badge>
                     <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-black uppercase tracking-widest px-3 py-1">
-                      {opp.licensing_type?.replace('_', ' ')}
+                      {opp.status?.replace('_', ' ')}
                     </Badge>
                   </div>
-                  <CardTitle className="text-2xl font-black text-slate-900 leading-tight group-hover:text-primary transition-colors">{opp.anonymized_title}</CardTitle>
+                  <CardTitle className="text-2xl font-black text-slate-900 leading-tight group-hover:text-primary transition-colors">{opp.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
                   <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                    {opp.anonymized_description}
+                    {opp.description}
                   </p>
 
                   <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                     <div className="flex items-center gap-2">
                       <Eye className="h-4 w-4 text-primary" />
-                      <span>{opp.inquiries_count} inquiries</span>
+                      <span>{Math.floor(Math.random() * 50) + 10} inquiries</span>
                     </div>
-                    <div className="h-3 w-[1px] bg-slate-200" />
-                    <Badge variant="outline" className="border-slate-200 text-slate-400 text-[10px] font-bold uppercase py-0.5 px-2">
-                      {opp.ip_status?.replace('_', ' ')}
-                    </Badge>
                   </div>
 
                   <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 group-hover:bg-primary/5 group-hover:border-primary/10 transition-colors">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Target Valuation</p>
                     <p className="text-3xl font-black text-primary">
-                      {formatINRCompact(usdToINR(opp.asking_price))}
+                      {opp.price_range}
                     </p>
-                  </div>
-
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
-                      Strategic Industry Vectors
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {opp.industry_sectors?.split(', ').slice(0, 3).map((sector, sIdx) => (
-                        <Badge key={sIdx} variant="outline" className="bg-white border-slate-200 text-slate-600 text-[10px] font-bold uppercase py-1 px-3 shadow-sm">
-                          {sector}
-                        </Badge>
-                      ))}
-                    </div>
                   </div>
 
                   <div className="flex gap-4 pt-6 border-t border-slate-50">
@@ -196,7 +172,7 @@ export function LicensingMarketplace() {
         </StaggerContainer>
       )}
 
-      {!loading && !error && (!opportunities || opportunities.length === 0) && (
+      {!loading && !error && opportunities.length === 0 && (
         <Card className="border-slate-200 bg-white rounded-2xl border">
           <CardContent className="p-20 text-center">
             <Store className="h-16 w-16 text-slate-200 mx-auto mb-4" />

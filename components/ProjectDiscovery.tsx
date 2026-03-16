@@ -8,37 +8,20 @@ import { Search, Briefcase, DollarSign, TrendingUp } from 'lucide-react';
 import { ProjectDetailModal } from '@/components/ProjectDetailModal';
 import { formatINRCompact, usdToINR } from '@/lib/currency';
 import { Skeleton } from '@/components/ui/skeleton';
-
-type ResearchProject = {
-  id: number;
-  title: string;
-  description: string;
-  funding_needed: number;
-  trl_level: number;
-  status: string;
-  team_lead: string;
-  team_size: number;
-  publications_count: number;
-  College_name: string;
-  College_location: string;
-  expertise_areas: string[];
-  trl_prediction?: {
-    estimatedMonthsToNext: number;
-    stallRisk: number;
-    bottlenecks: string[];
-    confidenceScore: number;
-  };
-};
-
-import { useLoadAction } from '@/lib/data-actions';
-import loadResearchProjectsAction from '@/actions/loadResearchProjects';
+import { useProjects } from '@/hooks/useDatabase';
+import { ResearchProject } from '@/lib/types';
 
 export function ProjectDiscovery({ onNavigate }: { onNavigate?: (section: any) => void }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProject, setSelectedProject] = useState<ResearchProject | null>(null);
 
-  const [data, loading, error] = useLoadAction(loadResearchProjectsAction, [], { searchQuery });
-  const projects = data || [];
+  const { data: allProjects, loading, error } = useProjects();
+  
+  const projects = (allProjects || []).filter(p => 
+    p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.college_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const formatCurrency = (amount: number) => {
     return formatINRCompact(usdToINR(amount));
@@ -104,7 +87,7 @@ export function ProjectDiscovery({ onNavigate }: { onNavigate?: (section: any) =
       {error && (
         <Card>
           <CardContent className="p-6">
-            <p className="text-red-600">Error loading projects: {error.message}</p>
+            <p className="text-red-600">Error loading projects: {(error as any)?.message || 'Unknown error'}</p>
           </CardContent>
         </Card>
       )}
@@ -117,7 +100,7 @@ export function ProjectDiscovery({ onNavigate }: { onNavigate?: (section: any) =
                 <CardTitle className="text-lg line-clamp-2 text-slate-900 group-hover:text-primary transition-colors">{project.title}</CardTitle>
                 <div className="flex items-center gap-2 text-sm text-slate-500 mt-2 font-medium">
                   <Briefcase className="h-4 w-4" />
-                  <span>{project.College_name}</span>
+                  <span>{project.college_name}</span>
                 </div>
               </CardHeader>
               <CardContent>

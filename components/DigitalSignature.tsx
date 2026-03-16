@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,11 +17,8 @@ import {
     Eraser,
     MousePointer2
 } from 'lucide-react';
-import { useLoadAction } from '@/lib/data-actions';
-import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
+import { useAgreement } from '@/hooks/useDatabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import signAgreement from '@/actions/signAgreement';
-import approveAgreement from '@/actions/approveAgreement';
 import { useToast } from "@/hooks/use-toast";
 
 type AuditEvent = {
@@ -31,24 +28,11 @@ type AuditEvent = {
     timestamp: string;
 };
 
-type AgreementDetails = {
-    id: number;
-    status: string;
-    college_signed_at: string | null;
-    corporate_signed_at: string | null;
-    college_approval_status: boolean;
-    corporate_approval_status: boolean;
-    // ... add other fields if needed, or use any for now to silence strict errors if lazy
-    [key: string]: any;
-};
-
-export function DigitalSignature({ collaborationRequestId = 1 }: { collaborationRequestId?: number }) {
-    const agreementParams = useMemo(() => ({ collaborationRequestId }), [collaborationRequestId]);
-    const [agreements, loading, , refresh] = useLoadAction<any[]>(loadAgreementDetailsAction, [], agreementParams);
+export function DigitalSignature({ collaborationRequestId = 2 }: { collaborationRequestId?: number }) {
+    const { data: agreement, loading: agreementLoading, approve: grantApproval, sign: applySignature } = useAgreement(collaborationRequestId);
     const { toast } = useToast();
 
-    // Handle array return from action
-    const agreement = agreements?.[0] as AgreementDetails | undefined;
+    const loading = agreementLoading;
 
 
     const formatDate = (dateString: string | null) => {
@@ -69,10 +53,10 @@ export function DigitalSignature({ collaborationRequestId = 1 }: { collaboration
         College_signed: !!agreement?.college_signed_at,
         corporate_signed: !!agreement?.corporate_signed_at,
         audit_trail: [
-            { id: '1', event: 'Agreement Draft Created', actor: 'System', timestamp: formatDate(agreement?.created_at) || 'Jan 10, 2024' },
+            { id: '1', event: 'Agreement Draft Created', actor: 'System', timestamp: formatDate(agreement?.created_at || null) || 'Jan 10, 2024' },
             { id: '2', event: 'Legal Review Initiated', actor: 'Legal Dept', timestamp: agreement?.created_at ? formatDate(new Date(new Date(agreement.created_at).getTime() + 86400000).toISOString()) : 'Jan 11, 2024' },
-            agreement?.college_approval_status ? { id: '3', event: 'College Approval Granted', actor: 'Legal Committee', timestamp: formatDate(agreement.created_at) } : null,
-            agreement?.corporate_approval_status ? { id: '4', event: 'Corporate Approval Granted', actor: 'Compliance Board', timestamp: formatDate(agreement.created_at) } : null,
+            agreement?.college_approval_status ? { id: '3', event: 'College Approval Granted', actor: 'Legal Committee', timestamp: formatDate(agreement.created_at || null) } : null,
+            agreement?.corporate_approval_status ? { id: '4', event: 'Corporate Approval Granted', actor: 'Compliance Board', timestamp: formatDate(agreement.created_at || null) } : null,
             agreement?.college_signed_at ? { id: '5', event: 'College Signature Applied', actor: agreement.college_signatory || 'Dean', timestamp: formatDate(agreement.college_signed_at) } : null,
             agreement?.corporate_signed_at ? { id: '6', event: 'Corporate Signature Applied', actor: agreement.corporate_signatory || 'CEO', timestamp: formatDate(agreement.corporate_signed_at) } : null,
         ].filter(Boolean) as AuditEvent[]
@@ -133,12 +117,11 @@ export function DigitalSignature({ collaborationRequestId = 1 }: { collaboration
 
     const handleApproval = async (role: 'college' | 'corporate') => {
         try {
-            await approveAgreement({ agreementId: agreement!.id, role });
+            await grantApproval(role);
             toast({
                 title: "Approval Granted",
                 description: `${role === 'college' ? 'College' : 'Corporate'} approval recorded successfully.`,
             });
-            refresh();
         } catch (error: any) {
             toast({
                 title: "Approval Failed",
@@ -467,14 +450,13 @@ export function DigitalSignature({ collaborationRequestId = 1 }: { collaboration
                                         onClick={async () => {
                                             try {
                                                 const role = activeRole;
-                                                await signAgreement(agreement.id, signature, role);
+                                                await applySignature(signature, role);
 
                                                 toast({
                                                     title: "Agreement Signed",
                                                     description: `Successfully signed as ${role === 'college' ? 'College' : 'Corporate'} representative.`,
                                                 });
                                                 setIsSigning(false);
-                                                refresh();
                                                 setSignature('');
                                             } catch (e: any) {
                                                 toast({

@@ -7,36 +7,22 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Building2, DollarSign, Clock } from 'lucide-react';
 import { CreateChallengeDialog } from '@/components/CreateChallengeDialog';
 import { formatINRCompact, usdToINR } from '@/lib/currency';
-import { useLoadAction } from '@/lib/data-actions';
-import loadIndustryChallengesAction from '@/actions/loadIndustryChallenges';
+import { useChallenges } from '@/hooks/useDatabase';
 import { useToast } from "@/hooks/use-toast";
+import { IndustryChallenge } from '@/lib/types';
 
-type IndustryChallenge = {
-  id: number;
-  title: string;
-  description: string;
-  budget_min: number;
-  budget_max: number;
-  timeline_months: number;
-  status: string;
-  company_name: string;
-  industry: string;
-  company_location: string;
-  required_expertise: string[];
-  created_at: string;
-};
-
-type IndustryChallengesBoardProps = {
-  onNavigate?: (section: any) => void;
-};
-
-export function IndustryChallengesBoard({ onNavigate }: IndustryChallengesBoardProps) {
+export function IndustryChallengesBoard() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  const [data, loading, error, refresh] = useLoadAction(loadIndustryChallengesAction, [], { searchQuery });
-  const challenges = data || [];
+  const { data: allChallenges, loading, error } = useChallenges();
+  
+  const challenges = (allChallenges || []).filter(c => 
+    c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.company_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const formatCurrency = (amount: number) => {
     return formatINRCompact(usdToINR(amount));
@@ -81,7 +67,7 @@ export function IndustryChallengesBoard({ onNavigate }: IndustryChallengesBoardP
       {error && (
         <Card>
           <CardContent className="p-6">
-            <p className="text-red-600">Error: {error.message}</p>
+            <p className="text-red-600">Error: {(error as any).message}</p>
           </CardContent>
         </Card>
       )}
@@ -136,7 +122,7 @@ export function IndustryChallengesBoard({ onNavigate }: IndustryChallengesBoardP
                   <div>
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Posted</p>
                     <p className="font-bold text-slate-900">
-                      {new Date(challenge.created_at).toLocaleDateString()}
+                      {challenge.created_at ? new Date(challenge.created_at).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                 </div>
@@ -157,19 +143,12 @@ export function IndustryChallengesBoard({ onNavigate }: IndustryChallengesBoardP
                 <Button
                   variant="outline"
                   size="sm"
+                  className="text-primary border-primary/20 hover:bg-primary/5 font-bold"
                   onClick={() => {
-                    if (onNavigate) {
-                      onNavigate('matchmaking');
-                      toast({
-                        title: "Finding Matches",
-                        description: `Redirecting to AI Matchmaking for ${challenge.title}...`
-                      });
-                    } else {
-                      toast({
-                        title: "Matching Projects",
-                        description: `Finding projects compatible with ${challenge.title}...`,
-                      });
-                    }
+                    toast({
+                      title: "Matching Projects",
+                      description: `Finding projects compatible with ${challenge.title}...`,
+                    });
                   }}
                 >
                   View Matching Projects
@@ -199,7 +178,6 @@ export function IndustryChallengesBoard({ onNavigate }: IndustryChallengesBoardP
           onClose={() => setShowCreateDialog(false)}
           onSuccess={() => {
             setShowCreateDialog(false);
-            refresh();
           }}
         />
       )}

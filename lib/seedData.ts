@@ -4,7 +4,43 @@ import {
   IndustryChallenge,
   Notification,
   College,
+  CorporatePartner
 } from './types';
+
+export const DUMMY_CORPORATES: Omit<CorporatePartner, 'id'>[] = [
+  {
+    name: "Tesla Energy",
+    industry: "Renewable Energy",
+    location: "Austin, TX",
+    website: "https://tesla.com/energy",
+    company_size: "10,000+ Employees",
+    created_at: new Date().toISOString(),
+  },
+  {
+    name: "NVIDIA Industrial",
+    industry: "Semiconductors",
+    location: "Santa Clara, CA",
+    website: "https://nvidia.com/industrial",
+    company_size: "5,000-10,000 Employees",
+    created_at: new Date().toISOString(),
+  },
+  {
+    name: "SpaceX R&D",
+    industry: "Aerospace",
+    location: "Hawthorne, CA",
+    website: "https://spacex.com",
+    company_size: "1,000-5,000 Employees",
+    created_at: new Date().toISOString(),
+  },
+  {
+    name: "Novartis BioLab",
+    industry: "Biotechnology",
+    location: "Cambridge, MA",
+    website: "https://novartis.com",
+    company_size: "10,000+ Employees",
+    created_at: new Date().toISOString(),
+  }
+];
 
 export const DUMMY_PROJECTS: Omit<ResearchProject, 'id'>[] = [
   {
@@ -132,14 +168,6 @@ export const DUMMY_NOTIFICATIONS: Omit<Notification, 'id'>[] = [
     read: false,
     created_at: new Date(Date.now() - 3600000).toISOString(),
   },
-  {
-    user_id: "user_1",
-    title: "System Update",
-    message: "CollabSync Pro Neural Match-Engine updated to v1.2.0. Synapse speed increased by 40ms.",
-    type: "info",
-    read: true,
-    created_at: new Date(Date.now() - 7200000).toISOString(),
-  }
 ];
 
 export const DUMMY_COLLEGES: Omit<College, 'id'>[] = [
@@ -177,6 +205,7 @@ export async function initializeDatabase() {
   await db.industry_challenges.bulkAdd(DUMMY_CHALLENGES as any);
   await db.notifications.bulkAdd(DUMMY_NOTIFICATIONS as any);
   await db.colleges.bulkAdd(DUMMY_COLLEGES as any);
+  await db.corporate_partners.bulkAdd(DUMMY_CORPORATES as any);
 
   // Add some students
   await db.student_profiles.bulkAdd([
@@ -209,11 +238,21 @@ export async function initializeDatabase() {
     {
       corporate_partner_id: 1,
       research_project_id: 1,
-      project_brief: "Integration of quantum dots into mRNA sequences.",
+      project_brief: "Integration of quantum dots into mRNA sequences for climate-resilient vaccine delivery.",
       budget_proposed: 1500000,
       timeline_proposed: "12 months",
       status: "pending",
       created_at: new Date().toISOString(),
+    },
+    {
+      corporate_partner_id: 2,
+      research_project_id: 2,
+      industry_challenge_id: 2,
+      project_brief: "Deploying sovereign AI nodes for resilient edge monitoring in energy grids.",
+      budget_proposed: 2800000,
+      timeline_proposed: "18 months",
+      status: "approved",
+      created_at: new Date(Date.now() - 432000000).toISOString(),
     }
   ] as any);
 
@@ -225,9 +264,102 @@ export async function initializeDatabase() {
       description: "A self-healing protocol for smart grids using sovereign AI nodes.",
       invention_type: "Software/Algorithm",
       inventors: ["Prof. Marcus Vane", "Alex Rivera"],
-      disclosure_date: new Date().toISOString(),
+      disclosure_date: new Date(Date.now() - 2592000000).toISOString(),
       status: "filed",
+      created_at: new Date(Date.now() - 2592000000).toISOString(),
+    },
+    {
+      active_project_id: 1,
+      title: "Photonic mRNA Encapsulation",
+      description: "Method for protecting mRNA using light-sensitive quantum dots.",
+      invention_type: "Biotech/Process",
+      inventors: ["Dr. Sarah Chen"],
+      disclosure_date: new Date().toISOString(),
+      status: "draft",
       created_at: new Date().toISOString(),
+    }
+  ] as any);
+
+  // Add Negotiations
+  await db.negotiations.bulkAdd([
+    {
+      collaboration_request_id: 1,
+      status: "active",
+      messages: [
+        {
+          id: "msg_1",
+          sender: "Dr. Sarah Chen",
+          message: "We need an additional 200k for quantum cleanroom access.",
+          timestamp: new Date(Date.now() - 3600000).toISOString(),
+          type: "proposal"
+        }
+      ],
+      created_at: new Date().toISOString()
+    }
+  ] as any);
+
+  // Add Agreements
+  await db.agreements.bulkAdd([
+    {
+      collaboration_request_id: 2,
+      status: "signed",
+      current_version: "v1.0.2",
+      versions: [
+        {
+          version_number: "v1.0.2",
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          created_by: "System Optimizer",
+          content: "Full Collaboration Agreement for Sovereign AI Grid Management...",
+          sections: [
+            { id: "s1", title: "IP Ownership", text: "Joint ownership of neural mesh protocols..." }
+          ]
+        }
+      ],
+      college_signed_at: new Date(Date.now() - 43200000).toISOString(),
+      corporate_signed_at: new Date(Date.now() - 86400000).toISOString(),
+      college_approval_status: true,
+      corporate_approval_status: true,
+      college_signatory: "Dr. Jonathan Reed",
+      corporate_signatory: "Elena Vance",
+      created_at: new Date(Date.now() - 86400000).toISOString()
+    }
+  ] as any);
+
+  // Add Licensing Opportunities
+  await db.licensing_opportunities.bulkAdd([
+    {
+      ip_disclosure_id: 1,
+      title: "Self-Healing Grid Protocol (SHGP)",
+      description: "Ready for licensing to tier-1 utility providers.",
+      price_range: "$500k - $2M",
+      license_type: "Exclusive / Worldwide",
+      status: "available",
+      created_at: new Date().toISOString()
+    }
+  ] as any);
+
+  // Add Interview Requests
+  await db.interview_requests.bulkAdd([
+    {
+      collaboration_request_id: 2,
+      candidate_name: "Elena Vance",
+      position: "Lead AI Researcher",
+      scheduled_at: new Date(Date.now() + 86400000).toISOString(),
+      status: "scheduled",
+      created_at: new Date().toISOString()
+    }
+  ] as any);
+
+  // Add Licensing Inquiries
+  await db.licensing_inquiries.bulkAdd([
+    {
+      licensing_opportunity_id: 1,
+      inquirer_name: "Jane Smith",
+      inquirer_email: "jane@apple.com",
+      inquirer_organization: "Apple R&D",
+      message: "Interested in the SHGP protocol for consumer devices.",
+      status: "pending",
+      created_at: new Date().toISOString()
     }
   ] as any);
 

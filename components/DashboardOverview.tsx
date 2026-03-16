@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useLoadAction, useMutateAction } from '@/lib/data-actions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,20 +6,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import loadCollaborationRequestsAction from '@/actions/loadCollaborationRequests';
-import loadResearchProjectsAction from '@/actions/loadResearchProjects';
-import loadIndustryChallengesAction from '@/actions/loadIndustryChallenges';
-import createResearchProjectAction from '@/actions/createResearchProject';
 import { TrendingUp, Briefcase, Target, Users, ArrowRight, Sparkles, Activity, Clock } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Counter, ShinyButton } from '@/components/ui/animated-primitives';
 import { useAppStore } from '@/lib/store';
-import { CollaborationRequest, ResearchProject, IndustryChallenge } from '@/lib/types';
+import { ResearchProject } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 import { StaggerContainer, FadeInUp, SpringPress, GlowWrapper, MagneticWrapper } from '@/components/ui/animation-wrapper';
 import { SystemStatus, SmartLoader } from '@/components/ui/AIFeedback';
 import { motion } from 'framer-motion';
 import { ProjectRoadmap } from '@/components/ProjectRoadmap';
+import { useProjects, useChallenges, useCollaborationRequests } from '@/hooks/useDatabase';
 
 type DashboardOverviewProps = {
   onNavigate?: (section: any) => void;
@@ -30,11 +26,12 @@ type DashboardOverviewProps = {
 export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOverviewProps) {
   const { toast } = useToast();
   const { chartData } = useAppStore((state) => state.testData);
-  const [] = useLoadAction<CollaborationRequest[]>(loadCollaborationRequestsAction, [], { status: null });
-  const [projects] = useLoadAction<ResearchProject[]>(loadResearchProjectsAction, [], { searchQuery: null });
-  const [challenges] = useLoadAction<IndustryChallenge[]>(loadIndustryChallengesAction, [], { searchQuery: null });
+  
+  useCollaborationRequests();
+  const { data: projects, create: createProjectAction } = useProjects();
+  const { data: challenges } = useChallenges();
 
-  const [createProject, creatingProject] = useMutateAction(createResearchProjectAction);
+  const [creatingProject, setCreatingProject] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newProject, setNewProject] = useState({
     title: '',
@@ -48,27 +45,39 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
 
   const handleCreateProject = async () => {
     try {
+      setCreatingProject(true);
       if (!newProject.title || !newProject.description) {
         toast({ title: "Validation Error", description: "Please fill in all required fields", variant: "destructive" });
         return;
       }
-      const result = await createProject({
+      
+      await createProjectAction({
         title: newProject.title,
         description: newProject.description,
-        collegeId: 1,
-        fundingAllocated: newProject.fundingAllocated
+        funding_needed: newProject.fundingAllocated,
+        trl_level: 1,
+        status: 'pending',
+        team_lead: 'Dr. Principal Investigator',
+        team_size: 1,
+        publications_count: 0,
+        college_name: 'Main Institution',
+        college_location: 'Default Campus',
+        expertise_areas: ['New Research']
       });
+      
       toast({ title: "Project Created", description: "Research initiative initiated successfully." });
       setIsDialogOpen(false);
       setNewProject({ title: '', description: '', fundingAllocated: 500000 });
-      const createdId = Array.isArray(result) && result.length > 0 ? result[0].id : (result as any)?.id;
-      if (createdId && onProjectSelect) {
-        onProjectSelect(createdId);
-      } else if (onNavigate) {
+      
+      // Since we don't have the last inserted ID directly from the hook's simplified return in some cases
+      // we just navigate to projects or the user can find it.
+      if (onNavigate) {
         onNavigate('projects');
       }
     } catch (error: any) {
       toast({ title: "Creation Failed", description: error.message || "Failed to create project", variant: "destructive" });
+    } finally {
+      setCreatingProject(false);
     }
   };
 
@@ -203,7 +212,7 @@ export function DashboardOverview({ onNavigate, onProjectSelect }: DashboardOver
                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} />
                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                     <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
                     <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', color: '#0f172a' }} itemStyle={{ color: '#0f172a' }} cursor={{ stroke: 'rgba(0,0,0,0.05)' }} />

@@ -10,9 +10,15 @@ import type {
     IPDisclosure,
     Negotiation,
     Agreement,
-    Notification,
+    Notification as AppNotification,
     StudentProfile,
     LicensingOpportunity,
+    InterviewRequest,
+    LicensingInquiry,
+    ProjectDocument,
+    CorporatePartner,
+    ProjectScope,
+    NegotiationMessage,
 } from '../lib/types';
 
 // Research Projects Hook
@@ -46,6 +52,17 @@ export function useProjects() {
         update,
         remove,
         getById,
+    };
+}
+
+// Single Project Hook
+export function useProject(id: number) {
+    const data = useLiveQuery(() => db.research_projects.get(id), [id]);
+
+    return {
+        data,
+        loading: data === undefined,
+        error: null,
     };
 }
 
@@ -219,6 +236,56 @@ export function useNegotiations() {
     };
 }
 
+// Single Negotiation Hook
+export function useNegotiation(collaborationRequestId: number) {
+    const data = useLiveQuery(
+        () => db.negotiations.where('collaboration_request_id').equals(collaborationRequestId).first(),
+        [collaborationRequestId]
+    );
+
+    const addMessage = async (message: Omit<NegotiationMessage, 'id' | 'created_at'>) => {
+        if (!data || !data.id) return;
+        const messages = [...(data.messages || []), { ...message, id: Date.now().toString(), created_at: new Date().toISOString() }];
+        return await db.negotiations.update(data.id, { messages });
+    };
+
+    return {
+        data,
+        loading: data === undefined,
+        error: null,
+        addMessage,
+    };
+}
+
+// Project Scopes Hook
+export function useProjectScopes(collaborationRequestId?: number) {
+    const data = useLiveQuery(
+        () => collaborationRequestId
+            ? db.project_scopes.where('collaboration_request_id').equals(collaborationRequestId).sortBy('version_number')
+            : db.project_scopes.toArray(),
+        [collaborationRequestId]
+    ) || [];
+
+    const create = async (scope: Omit<ProjectScope, 'id' | 'created_at'>) => {
+        return await db.project_scopes.add({
+            ...scope,
+            created_at: new Date().toISOString(),
+        });
+    };
+
+    const updateStatus = async (id: number, status: ProjectScope['status']) => {
+        return await db.project_scopes.update(id, { status });
+    };
+
+    return {
+        data,
+        loading: data === undefined,
+        error: null,
+        create,
+        updateStatus,
+    };
+}
+
 // Agreements Hook
 export function useAgreements() {
     const data = useLiveQuery(() => db.agreements.toArray()) || [];
@@ -253,20 +320,63 @@ export function useAgreements() {
     };
 }
 
+// Single Agreement Hook
+export function useAgreement(collaborationRequestId: number) {
+    const data = useLiveQuery(
+        () => db.agreements.where('collaboration_request_id').equals(collaborationRequestId).first(),
+        [collaborationRequestId]
+    );
+
+    const approve = async (role: 'college' | 'corporate') => {
+        if (!data || !data.id) return;
+        const updates = role === 'college'
+            ? { college_approval_status: true }
+            : { corporate_approval_status: true };
+        return await db.agreements.update(data.id, updates);
+    };
+
+    const sign = async (signature: string, role: 'college' | 'corporate') => {
+        if (!data || !data.id) return;
+        const updates = role === 'college'
+            ? { college_signed_at: new Date().toISOString(), college_signatory: signature }
+            : { corporate_signed_at: new Date().toISOString(), corporate_signatory: signature };
+
+        // If both signed, mark as signed
+        const agreement = await db.agreements.get(data.id);
+        if (agreement) {
+            const bothSigned = (role === 'college' ? !!signature : !!agreement.college_signatory) &&
+                (role === 'corporate' ? !!signature : !!agreement.corporate_signatory);
+            if (bothSigned) {
+                (updates as any).status = 'signed';
+            }
+        }
+
+        return await db.agreements.update(data.id, updates);
+    };
+
+    return {
+        data,
+        loading: data === undefined,
+        error: null,
+        approve,
+        sign,
+    };
+}
+
 // Notifications Hook
 export function useNotifications() {
     const data = useLiveQuery(() =>
         db.notifications.orderBy('created_at').reverse().toArray()
     ) || [];
 
-    const create = async (notification: Omit<Notification, 'id' | 'created_at'>) => {
+    const create = async (notification: Omit<AppNotification, 'id' | 'created_at'>) => {
         return await db.notifications.add({
             ...notification,
             created_at: new Date().toISOString(),
         });
     };
 
-    const update = async (id: number, updates: Partial<Notification>) => {
+    const update = async (id: number, updates: Partial<AppNotification>) => {
         return await db.notifications.update(id, updates);
     };
 
@@ -280,10 +390,10 @@ export function useNotifications() {
 
     const markAllAsRead = async () => {
         const unread = await db.notifications.where('read').equals(0).toArray();
-        await Promise.all(unread.map((n: Notification) => n.id && db.notifications.update(n.id, { read: true })));
+        await Promise.all(unread.map((n: AppNotification) => n.id && db.notifications.update(n.id, { read: true })));
     };
 
-    const unreadCount = data.filter((n: Notification) => !n.read).length;
+    const unreadCount = data.filter((n: AppNotification) => !n.read).length;
 
     return {
         data,
@@ -363,5 +473,125 @@ export function useLicensingOpportunities() {
         update,
         remove,
         getById,
+    };
+}
+
+// Interview Requests Hook
+export function useInterviewRequests() {
+    const data = useLiveQuery(() => db.interview_requests.toArray()) || [];
+
+    const create = async (request: Omit<InterviewRequest, 'id' | 'created_at'>) => {
+        return await db.interview_requests.add({
+            ...request,
+            created_at: new Date().toISOString(),
+        });
+    };
+
+    const update = async (id: number, updates: Partial<InterviewRequest>) => {
+        return await db.interview_requests.update(id, updates);
+    };
+
+    const remove = async (id: number) => {
+        return await db.interview_requests.delete(id);
+    };
+
+    return {
+        data,
+        loading: data === undefined,
+        error: null,
+        create,
+        update,
+        remove,
+    };
+}
+
+// Licensing Inquiries Hook
+export function useLicensingInquiries() {
+    const data = useLiveQuery(() => db.licensing_inquiries.toArray()) || [];
+
+    const create = async (inquiry: Omit<LicensingInquiry, 'id' | 'created_at'>) => {
+        return await db.licensing_inquiries.add({
+            ...inquiry,
+            created_at: new Date().toISOString(),
+        });
+    };
+
+    const update = async (id: number, updates: Partial<LicensingInquiry>) => {
+        return await db.licensing_inquiries.update(id, updates);
+    };
+
+    const remove = async (id: number) => {
+        return await db.licensing_inquiries.delete(id);
+    };
+
+    return {
+        data,
+        loading: data === undefined,
+        error: null,
+        create,
+        update,
+        remove,
+    };
+}
+
+// Project Documents Hook
+export function useProjectDocuments(projectId?: number) {
+    const data = useLiveQuery(
+        () => projectId 
+            ? db.project_documents.where('project_id').equals(projectId).toArray()
+            : db.project_documents.toArray(),
+        [projectId]
+    ) || [];
+
+    const create = async (doc: Omit<ProjectDocument, 'id' | 'uploaded_at'>) => {
+        return await db.project_documents.add({
+            ...doc,
+            uploaded_at: new Date().toISOString(),
+        });
+    };
+
+    const remove = async (id: number) => {
+        return await db.project_documents.delete(id);
+    };
+
+    return {
+        data,
+        loading: data === undefined,
+        error: null,
+        create,
+        remove,
+    };
+}
+
+// IP Disclosures for Project Hook
+export function useIPDisclosuresForProject(projectId: number) {
+    const data = useLiveQuery(
+        () => db.ip_disclosures.where('active_project_id').equals(projectId).toArray(),
+        [projectId]
+    ) || [];
+
+    return {
+        data,
+        loading: data === undefined,
+        error: null,
+    };
+}
+
+// Corporate Partners Hook
+export function useCorporatePartners() {
+    const data = useLiveQuery(() => db.corporate_partners.toArray()) || [];
+
+    const create = async (partner: Omit<CorporatePartner, 'id'>) => {
+        return await db.corporate_partners.add({
+            ...partner,
+            created_at: new Date().toISOString(),
+        });
+    };
+
+    return {
+        data,
+        loading: data === undefined,
+        error: null,
+        create,
     };
 }

@@ -10,14 +10,16 @@ import {
     Plus,
     ArrowRight,
     PenTool,
-    Send
+    Send,
+    AlertCircle,
+    ShieldAlert,
+    BadgeCheck,
+    Info
 } from 'lucide-react';
-import { useLoadAction } from '@/lib/data-actions';
-import loadAgreementDetailsAction from '@/actions/loadAgreementDetails';
+import { useAgreement } from '@/hooks/useDatabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { analyzeSectionRisk, SectionRisk, calculateOverallRisk } from '@/lib/intelligence/agreement-analyzer';
-import { AlertCircle, ShieldAlert, BadgeCheck, Info } from 'lucide-react';
 
 type AgreementVersion = {
     id: number;
@@ -53,10 +55,7 @@ export function AgreementCompareReview({
     collaborationRequestId?: number;
     onNavigate?: (section: any) => void;
 }) {
-    const [agreement, loadingAgreement] = useLoadAction<any[]>(loadAgreementDetailsAction, [], { collaborationRequestId });
-
-    // Get agreement ID from the loaded agreement
-    const agreementData = Array.isArray(agreement) ? agreement[0] : agreement;
+    const { data: agreementData, loading: loadingAgreement } = useAgreement(collaborationRequestId);
     const agreementId = agreementData?.id;
 
     // State for versions, sections, and comments
@@ -258,31 +257,31 @@ export function AgreementCompareReview({
     };
 
     if (loadingAgreement || loadingVersions) {
-        return <div className="p-8 text-slate-400">Loading agreement details...</div>;
+        return <div className="p-8 text-slate-400 animate-pulse">Synchronizing version matrix...</div>;
     }
 
-    if (!agreement || !versions || versions.length === 0) {
-        return <div className="p-8 text-slate-400">No agreement data found.</div>;
+    if (!agreementData || !versions || versions.length === 0) {
+        return <div className="p-8 text-slate-400">No archival agreement data found for request {collaborationRequestId}.</div>;
     }
 
     return (
-        <div className="flex flex-col h-screen bg-[#0a0a0c] text-slate-100">
+        <div className="flex flex-col h-screen bg-[#0a0a0c] text-slate-100 font-inter">
             {/* Header */}
             <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#111114]">
                 <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                    <h1 className="text-2xl font-black flex items-center gap-2 uppercase tracking-tight">
                         <FileText className="h-6 w-6 text-blue-500" />
-                        Agreement Review
+                        Version Control Matrix
                     </h1>
-                    <p className="text-slate-400 text-sm">Compare versions and annotate changes</p>
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Compare encrypted agreement blocks</p>
                 </div>
                 <div className="flex items-center gap-4 bg-[#1a1a1e] p-2 rounded-lg border border-white/5">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Base:</span>
+                        <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Base:</span>
                         <select
                             value={v1Version}
                             onChange={(e) => setV1Version(e.target.value)}
-                            className="bg-transparent border-none text-sm focus:ring-0 text-blue-400 font-medium cursor-pointer"
+                            className="bg-transparent border-none text-xs focus:ring-0 text-blue-400 font-black cursor-pointer uppercase"
                         >
                             {versions.map((v) => (
                                 <option key={v.id} value={v.version_number} className="bg-[#1a1a1e]">{v.version_number}</option>
@@ -291,11 +290,11 @@ export function AgreementCompareReview({
                     </div>
                     <ArrowLeftRight className="h-4 w-4 text-slate-600" />
                     <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Compare:</span>
+                        <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Compare:</span>
                         <select
                             value={v2Version}
                             onChange={(e) => setV2Version(e.target.value)}
-                            className="bg-transparent border-none text-sm focus:ring-0 text-purple-400 font-medium cursor-pointer"
+                            className="bg-transparent border-none text-xs focus:ring-0 text-purple-400 font-black cursor-pointer uppercase"
                         >
                             {versions.map((v) => (
                                 <option key={v.id} value={v.version_number} className="bg-[#1a1a1e]">{v.version_number}</option>
@@ -305,7 +304,7 @@ export function AgreementCompareReview({
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col items-end mr-4">
-                        <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">AI Risk Index</span>
+                        <span className="text-[9px] text-slate-500 uppercase font-black tracking-widest">Exposure Score</span>
                         <div className="flex items-center gap-2">
                             <span className={`text-xl font-black ${overallRisk > 60 ? 'text-red-500' : overallRisk > 30 ? 'text-amber-500' : 'text-green-500'}`}>
                                 {overallRisk}%
@@ -322,10 +321,10 @@ export function AgreementCompareReview({
                         variant="outline"
                         size="sm"
                         onClick={() => setShowAIOverlay(!showAIOverlay)}
-                        className={`border-white/10 text-xs font-bold gap-2 ${showAIOverlay ? 'bg-blue-500/10 border-blue-500/50 text-blue-400' : 'bg-transparent text-slate-400'}`}
+                        className={`border-white/10 text-[10px] font-black uppercase tracking-widest gap-2 h-9 px-4 ${showAIOverlay ? 'bg-blue-500/10 border-blue-500/50 text-blue-400 shadow-lg shadow-blue-500/10' : 'bg-transparent text-slate-500'}`}
                     >
                         <ShieldAlert className="h-3.5 w-3.5" />
-                        AI Insights: {showAIOverlay ? 'ON' : 'OFF'}
+                        AI Analysis: {showAIOverlay ? 'Enabled' : 'Disabled'}
                     </Button>
                 </div>
             </div>
@@ -334,36 +333,36 @@ export function AgreementCompareReview({
             <div className="flex flex-1 overflow-hidden">
                 {/* Version History Sidebar */}
                 <div className="w-64 border-r border-white/10 bg-[#0d0d10] p-4 hidden xl:block">
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <History className="h-3 w-3" />
-                        Version History
+                        Archival Log
                     </h3>
                     <div className="space-y-2">
                         {versions.map((v) => (
                             <div
                                 key={v.id}
-                                className={`p-3 rounded-lg border cursor-pointer transition-all ${v1Version === v.version_number || v2Version === v.version_number
+                                className={`p-3 rounded-xl border-2 cursor-pointer transition-all ${v1Version === v.version_number || v2Version === v.version_number
                                     ? 'bg-blue-500/10 border-blue-500/30'
                                     : 'bg-white/5 border-white/5 hover:bg-white/10'
                                     }`}
                                 onClick={() => setV2Version(v.version_number)}
                             >
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-sm font-bold text-slate-200">{v.version_number}</span>
-                                    <Badge variant="outline" className="text-[10px] py-0 h-4 border-white/10 text-slate-400">
+                                    <span className="text-xs font-black text-slate-200">{v.version_number}</span>
+                                    <Badge variant="outline" className="text-[8px] font-black py-0 h-4 border-white/10 text-slate-500 uppercase">
                                         {formatTimestamp(v.created_at)}
                                     </Badge>
                                 </div>
-                                <p className="text-[11px] text-slate-500 truncate">{v.created_by}</p>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight truncate">{v.created_by}</p>
                             </div>
                         ))}
                     </div>
                 </div>
 
                 {/* Content Comparison View */}
-                <div className="flex-1 overflow-auto bg-[#0a0a0c] p-8 space-y-8">
+                <div className="flex-1 overflow-auto bg-[#0a0a0c] p-8 space-y-8 custom-scrollbar">
                     {loadingSections ? (
-                        <div className="text-slate-400 text-center py-8">Loading sections...</div>
+                        <div className="text-slate-500 text-xs font-bold uppercase tracking-widest text-center py-12 animate-pulse">Decompiling specific clauses...</div>
                     ) : (
                         v1Sections.map((v1Section) => {
                             const v2Section = v2Sections.find(s => s.section_id === v1Section.section_id) || v1Section;
@@ -372,41 +371,43 @@ export function AgreementCompareReview({
                             return (
                                 <Card
                                     key={v1Section.id}
-                                    className={`bg-[#111114] border-white/5 hover:border-white/20 transition-all cursor-pointer ${selectedSection === v1Section.section_id ? 'ring-2 ring-blue-500/50 scale-[1.01]' : ''
+                                    className={`bg-[#111114] border-white/5 hover:border-white/20 transition-all cursor-pointer overflow-hidden ${selectedSection === v1Section.section_id ? 'ring-2 ring-blue-500/50 scale-[1.005]' : ''
                                         }`}
                                     onClick={() => setSelectedSection(v1Section.section_id)}
                                 >
-                                    <CardHeader className="py-4 px-6 border-b border-white/5 flex flex-row items-center justify-between">
+                                    <CardHeader className="py-4 px-6 border-b border-white/5 flex flex-row items-center justify-between bg-white/[0.02]">
                                         <div>
-                                            <CardTitle className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+                                            <CardTitle className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                                                 {v1Section.title}
                                             </CardTitle>
                                         </div>
-                                        {hasChanges && (
-                                            <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[10px]">
-                                                Changes Detected
-                                            </Badge>
-                                        )}
-                                        {showAIOverlay && sectionRisks[v1Section.section_id]?.length > 0 && (
-                                            <Badge className="bg-red-500/10 text-red-500 border-red-500/20 text-[10px] ml-2 animate-pulse">
-                                                {sectionRisks[v1Section.section_id].length} AI Risks
-                                            </Badge>
-                                        )}
+                                        <div className="flex items-center gap-2">
+                                            {hasChanges && (
+                                                <Badge className="bg-purple-500/10 text-purple-400 border-purple-500/20 text-[9px] font-black uppercase tracking-widest">
+                                                    Delta Detected
+                                                </Badge>
+                                            )}
+                                            {showAIOverlay && sectionRisks[v1Section.section_id]?.length > 0 && (
+                                                <Badge className="bg-red-500/10 text-red-500 border-red-500/20 text-[9px] font-black uppercase tracking-widest animate-pulse">
+                                                    {sectionRisks[v1Section.section_id].length} Risk Markers
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </CardHeader>
                                     <CardContent className="p-0">
-                                        <div className="flex divide-x divide-white/5">
+                                        <div className="flex divide-x divide-white/5 h-full">
                                             {/* Version 1 Text */}
-                                            <div className="flex-1 p-6 bg-blue-500/5">
-                                                <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">
+                                            <div className="flex-1 p-6 bg-blue-500/[0.03]">
+                                                <p className="text-slate-500 text-sm leading-relaxed whitespace-pre-wrap font-medium">
                                                     {v1Section.content}
                                                 </p>
                                             </div>
                                             {/* Version 2 Text */}
-                                            <div className={`flex-1 p-6 ${hasChanges ? 'bg-purple-500/10' : 'bg-transparent'}`}>
-                                                <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
+                                            <div className={`flex-1 p-6 ${hasChanges ? 'bg-purple-500/[0.06]' : 'bg-transparent'}`}>
+                                                <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap font-medium">
                                                     {v2Section.content}
                                                     {hasChanges && (
-                                                        <span className="inline-flex ml-2 h-2 w-2 rounded-full bg-purple-500 animate-pulse" />
+                                                        <span className="inline-flex ml-2 h-2 w-2 rounded-full bg-purple-500 animate-pulse shadow-lg shadow-purple-500/50" />
                                                     )}
                                                 </p>
                                             </div>
@@ -421,9 +422,9 @@ export function AgreementCompareReview({
                 {/* Annotations & Comments Sidebar */}
                 <div className="w-80 border-l border-white/10 bg-[#0d0d10] flex flex-col">
                     <div className="p-4 border-b border-white/10 bg-[#111114]">
-                        <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <h3 className="text-[11px] font-black text-slate-200 uppercase tracking-widest flex items-center gap-2">
                             <MessageSquare className="h-4 w-4 text-blue-500" />
-                            Annotations & AI Analysis
+                            Security Context
                         </h3>
                     </div>
                     <div className="flex-1 p-4 overflow-auto custom-scrollbar">
@@ -438,30 +439,30 @@ export function AgreementCompareReview({
                                     {/* AI Risk Summary for Section */}
                                     {showAIOverlay && sectionRisks[selectedSection]?.length > 0 && (
                                         <div className="space-y-3">
-                                            <h4 className="text-[10px] font-black text-red-500 uppercase tracking-widest flex items-center gap-2">
+                                            <h4 className="text-[9px] font-black text-red-500 uppercase tracking-widest flex items-center gap-2">
                                                 <AlertCircle className="h-3 w-3" />
-                                                Detected Exposure Points
+                                                Detected Exposure points
                                             </h4>
                                             {sectionRisks[selectedSection].map((risk, idx) => (
-                                                <div key={idx} className="p-3 bg-red-950/20 border border-red-500/20 rounded-xl relative overflow-hidden group">
+                                                <div key={idx} className="p-3 bg-red-950/20 border-l-2 border-red-500/50 rounded-r-xl relative overflow-hidden group">
                                                     <div className="absolute top-0 right-0 p-1.5 opacity-20 group-hover:opacity-100 transition-opacity">
                                                         <Info className="h-3 w-3 text-red-400 cursor-help" />
                                                     </div>
                                                     <div className="flex justify-between items-start mb-1">
-                                                        <span className="text-[xs] font-bold text-red-400">{risk.label}</span>
-                                                        <Badge className={`text-[8px] h-3.5 ${risk.severity === 'Critical' ? 'bg-red-500' :
+                                                        <span className="text-[10px] font-black text-red-400 uppercase tracking-tight">{risk.label}</span>
+                                                        <Badge className={`text-[8px] h-3.5 font-black uppercase tracking-widest ${risk.severity === 'Critical' ? 'bg-red-500' :
                                                             risk.severity === 'High' ? 'bg-orange-500' : 'bg-amber-500'
                                                             }`}>
                                                             {risk.severity}
                                                         </Badge>
                                                     </div>
-                                                    <p className="text-[10px] text-slate-300 leading-normal mb-2">
+                                                    <p className="text-[10px] text-slate-300 leading-normal mb-2 font-medium italic opacity-80">
                                                         {risk.description}
                                                     </p>
                                                     <div className="pt-2 border-t border-red-500/10">
-                                                        <p className="text-[9px] text-green-400 font-bold uppercase tracking-tight flex items-center gap-1">
+                                                        <p className="text-[9px] text-green-400 font-extrabold uppercase tracking-tight flex items-center gap-1">
                                                             <BadgeCheck className="h-2.5 w-2.5" />
-                                                            Mitigation: {risk.mitigation}
+                                                            Countermeasure: {risk.mitigation}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -469,24 +470,27 @@ export function AgreementCompareReview({
                                         </div>
                                     )}
 
-                                    <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                                        <p className="text-[11px] font-bold text-blue-400 uppercase tracking-widest mb-1">Active Section</p>
-                                        <p className="text-sm text-slate-200 font-medium">
+                                    <div className="p-3 bg-blue-500/[0.05] border border-blue-500/20 rounded-xl">
+                                        <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-1">Target Clause</p>
+                                        <p className="text-xs text-slate-200 font-bold uppercase tracking-tight">
                                             {v1Sections.find(s => s.section_id === selectedSection)?.title}
                                         </p>
                                     </div>
 
                                     <div className="space-y-3">
+                                        <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                            Collaborator Feedback
+                                        </h4>
                                         {loadingComments ? (
-                                            <div className="text-xs text-slate-500 text-center py-4">Loading comments...</div>
+                                            <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest text-center py-4 animate-pulse">Updating feed...</div>
                                         ) : (
                                             getCommentsForSection(selectedSection).map((comment) => (
-                                                <div key={comment.id} className="p-3 bg-white/5 border border-white/10 rounded-lg">
+                                                <div key={comment.id} className="p-3 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.04] transition-colors">
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-xs font-bold text-slate-300">{comment.author}</span>
-                                                        <span className="text-[10px] text-slate-500">{formatTimestamp(comment.created_at)}</span>
+                                                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-tight">{comment.author}</span>
+                                                        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">{formatTimestamp(comment.created_at)}</span>
                                                     </div>
-                                                    <p className="text-xs text-slate-400 leading-normal">{comment.comment_text}</p>
+                                                    <p className="text-xs text-slate-400 leading-relaxed font-medium">{comment.comment_text}</p>
                                                 </div>
                                             ))
                                         )}
@@ -497,19 +501,18 @@ export function AgreementCompareReview({
                                             <textarea
                                                 value={newCommentText}
                                                 onChange={(e) => setNewCommentText(e.target.value)}
-                                                placeholder="Enter your comment..."
-                                                className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"
-                                                rows={4}
+                                                placeholder="Inject secure annotation..."
+                                                className="w-full p-4 bg-white/5 border-2 border-white/10 rounded-xl text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 resize-none font-medium h-32"
                                                 autoFocus
                                             />
                                             <div className="flex gap-2">
                                                 <Button
                                                     onClick={handleAddComment}
                                                     disabled={!newCommentText.trim() || submittingComment}
-                                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8"
+                                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest h-10 shadow-lg shadow-blue-500/20"
                                                 >
-                                                    <Send className="h-3 w-3 mr-1" />
-                                                    {submittingComment ? 'Posting...' : 'Post'}
+                                                    <Send className="h-3 w-3 mr-2" />
+                                                    {submittingComment ? 'Transmitting...' : 'Commit'}
                                                 </Button>
                                                 <Button
                                                     onClick={() => {
@@ -517,9 +520,9 @@ export function AgreementCompareReview({
                                                         setNewCommentText('');
                                                     }}
                                                     variant="ghost"
-                                                    className="text-xs h-8 text-slate-400 hover:text-slate-200"
+                                                    className="text-[10px] font-black uppercase tracking-widest h-10 text-slate-500 hover:text-slate-200"
                                                 >
-                                                    Cancel
+                                                    Abort
                                                 </Button>
                                             </div>
                                         </div>
@@ -527,17 +530,17 @@ export function AgreementCompareReview({
                                         <Button
                                             onClick={() => setIsAddingComment(true)}
                                             variant="ghost"
-                                            className="w-full justify-start text-xs border border-dashed border-white/10 text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                                            className="w-full justify-start text-[10px] font-black uppercase tracking-[0.15em] border-2 border-dashed border-white/5 text-slate-600 hover:text-slate-300 hover:bg-white/[0.02] h-12 rounded-xl"
                                         >
                                             <Plus className="h-3 w-3 mr-2" />
-                                            Add new comment...
+                                            Add Annotation Node
                                         </Button>
                                     )}
                                 </motion.div>
                             ) : (
                                 <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                                    <MessageSquare className="h-12 w-12 text-slate-800 mb-4" />
-                                    <p className="text-sm text-slate-500">Select a section to view or add annotations</p>
+                                    <MessageSquare className="h-12 w-12 text-white/5 mb-4" />
+                                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Select a logical block to audit</p>
                                 </div>
                             )}
                         </AnimatePresence>
@@ -545,12 +548,12 @@ export function AgreementCompareReview({
 
                     <div className="p-4 border-t border-white/10 bg-[#111114]">
                         <Button
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 h-12 group"
                             onClick={() => onNavigate?.('digital-signature')}
                         >
-                            <PenTool className="h-4 w-4" />
-                            Proceed to Signature
-                            <ArrowRight className="h-4 w-4" />
+                            <PenTool className="h-4 w-4 group-hover:rotate-12 transition-transform" />
+                            Finalize Agreement
+                            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                         </Button>
                     </div>
                 </div>

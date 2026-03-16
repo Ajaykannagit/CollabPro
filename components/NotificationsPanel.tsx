@@ -1,34 +1,29 @@
-// Notifications panel showing pending collaboration requests
-
-import { useLoadAction } from '@/lib/data-actions';
+import { useCollaborationRequests, useCorporatePartners, useProjects } from '@/hooks/useDatabase';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import loadCollaborationRequestsAction from '@/actions/loadCollaborationRequests';
 import { Bell, Clock, Building2, Briefcase } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
-type CollaborationRequest = {
-  id: number;
-  project_brief: string;
-  budget_proposed: number;
-  timeline_proposed: string;
-  status: string;
-  created_at: string;
-  company_name: string;
-  industry: string;
-  project_title: string;
-  College_name: string;
-  challenge_title: string;
-};
-
 export function NotificationsPanel() {
+  const { data: requests, loading: requestsLoading } = useCollaborationRequests();
+  const { data: corporates } = useCorporatePartners();
+  const { data: projects } = useProjects();
   const { toast } = useToast();
-  const [requests, loading, error] = useLoadAction(
-    loadCollaborationRequestsAction,
-    [],
-    { status: 'pending' }
-  );
+
+  const loading = requestsLoading;
+
+  const enrichedRequests = (requests || []).map(request => {
+    const corporate = (corporates || []).find(c => c.id === request.corporate_partner_id);
+    const project = (projects || []).find(p => p.id === request.research_project_id);
+    return {
+      ...request,
+      company_name: corporate?.name || 'Unknown Company',
+      industry: corporate?.industry || '',
+      project_title: project?.title || 'Unknown Project',
+      College_name: project?.college_name || '',
+    };
+  });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -67,17 +62,9 @@ export function NotificationsPanel() {
         </div>
       )}
 
-      {error && (
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-red-600">Error: {error.message}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {!loading && !error && (
+      {!loading && (
         <div className="space-y-4">
-          {requests.map((request: CollaborationRequest) => (
+          {enrichedRequests.filter(r => r.status === 'pending').map((request) => (
             <Card key={request.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
@@ -102,7 +89,7 @@ export function NotificationsPanel() {
                       <span>•</span>
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        <span>{new Date(request.created_at).toLocaleDateString()}</span>
+                        <span>{request.created_at ? new Date(request.created_at).toLocaleDateString() : 'Recent'}</span>
                       </div>
                     </div>
                   </div>
@@ -158,7 +145,6 @@ export function NotificationsPanel() {
                         description: `You have accepted the collaboration request for ${request.project_title || 'this project'}.`,
                         variant: "default",
                       });
-                      // API call to accept request would go here
                     }}
                   >
                     Accept Request
@@ -195,7 +181,7 @@ export function NotificationsPanel() {
         </div>
       )}
 
-      {!loading && !error && requests.length === 0 && (
+      {!loading && enrichedRequests.filter(r => r.status === 'pending').length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />

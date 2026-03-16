@@ -1,51 +1,21 @@
 // Shared negotiation workspace with messaging and scope editing
 
 import { useState, useEffect } from 'react';
-import { useLoadAction, useMutateAction } from '@/lib/data-actions';
+import { useNegotiation, useProjectScopes } from '@/hooks/useDatabase';
+import { NegotiationMessage } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import loadNegotiationThreadAction from '@/actions/loadNegotiationThread';
-import createNegotiationMessageAction from '@/actions/createNegotiationMessage';
 import { MessageSquare, FileText, Send, Building2, GraduationCap } from 'lucide-react';
 import { formatINR } from '@/lib/currency';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import { useAppStore } from '@/lib/store';
-import createProjectScopeAction from '@/actions/createProjectScope';
-import approveProjectScopeAction from '@/actions/approveProjectScope';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FadeInUp, SpringPress, StaggerContainer } from '@/components/ui/animation-wrapper';
-
-type NegotiationMessage = {
-  id: string;
-  sender_name: string;
-  sender_organization: string;
-  message_type: 'text' | 'proposal' | 'counter-proposal' | string;
-  content: string;
-  created_at: string;
-};
-
-type ProjectScopeVersion = {
-  id: string;
-  version_number: number;
-  scope_description: string;
-  deliverables: string;
-  timeline: string;
-  budget: number;
-  created_by: string;
-};
-
-type NegotiationThreadData = {
-  thread_id: number;
-  collaboration_request_id: number;
-  project_brief: string;
-  messages: NegotiationMessage[];
-  current_scope: ProjectScopeVersion | null;
-};
 
 type NegotiationWorkspaceProps = {
   collaborationRequestId: number;
@@ -53,12 +23,8 @@ type NegotiationWorkspaceProps = {
 
 export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWorkspaceProps) {
   const [newMessage, setNewMessage] = useState('');
-  const [threadData, loading, _error, refresh] = useLoadAction<NegotiationThreadData | null>(
-    loadNegotiationThreadAction,
-    null,
-    { collaborationRequestId }
-  );
-  const [sendMessage, sending] = useMutateAction(createNegotiationMessageAction);
+  const { data: threadData, loading: threadLoading, addMessage } = useNegotiation(collaborationRequestId);
+  const { data: scopeVersions, loading: scopesLoading, create: createScope, updateStatus: updateScopeStatus } = useProjectScopes(collaborationRequestId);
   const { toast } = useToast();
   const { user, userLoading } = useAppStore();
 
@@ -72,7 +38,9 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
   const [budget, setBudget] = useState('');
   const [submittingScope, setSubmittingScope] = useState(false);
   const [approvingScope, setApprovingScope] = useState(false);
-  const currentScope = threadData?.current_scope ?? null;
+
+  // Derive current scope from versions
+  const currentScope = scopeVersions?.find(s => s.status === 'approved') || (scopeVersions && scopeVersions.length > 0 ? scopeVersions[scopeVersions.length - 1] : null);
 
   // Optimistic Messaging State
   const [localMessages, setLocalMessages] = useState<NegotiationMessage[]>([]);
@@ -84,21 +52,21 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
   }, [threadData?.messages]);
 
   const handleCreateScope = async () => {
-    if (!threadData || !user) return;
+    if (!user) return;
     setSubmittingScope(true);
     try {
-      await createProjectScopeAction({
-        collaborationRequestId: collaborationRequestId,
-        versionNumber: (currentScope?.version_number || 0) + 1,
-        scopeDescription,
+      await createScope({
+        collaboration_request_id: collaborationRequestId,
+        version_number: (currentScope?.version_number || 0) + 1,
+        scope_description: scopeDescription,
         deliverables,
         timeline,
         budget: parseFloat(budget) || 0,
-        createdBy: user.name
+        created_by: user.name,
+        status: 'pending'
       });
       toast({ title: "Scope Proposed", description: "New version of scope has been submitted." });
       setIsScopeDialogOpen(false);
-      refresh();
     } catch (e: any) {
       toast({ title: "Failed to propose scope", description: e.message, variant: "destructive" });
     } finally {
@@ -107,12 +75,11 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
   };
 
   const handleApproveScope = async () => {
-    if (!currentScope || !user) return;
+    if (!currentScope || !user || !currentScope.id) return;
     setApprovingScope(true);
     try {
-      await approveProjectScopeAction({ scopeId: parseInt(currentScope.id), approvedBy: user.name });
+      await updateScopeStatus(currentScope.id, 'approved');
       toast({ title: "Scope Approved", description: "Project scope has been finalized." });
-      refresh();
     } catch (e: any) {
       toast({ title: "Approval Failed", description: e.message, variant: "destructive" });
     } finally {
@@ -121,36 +88,27 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !threadData || !user) return;
+    if (!newMessage.trim() || !user) return;
 
-    const optimisticMessage: NegotiationMessage = {
-      id: `temp-${Date.now()}`,
+    const message: Omit<NegotiationMessage, 'id' | 'created_at'> = {
       sender_name: user.name,
       sender_organization: user.organization,
       message_type: 'text',
       content: newMessage,
-      created_at: new Date().toISOString(),
     };
 
-    setLocalMessages(prev => [...prev, optimisticMessage]);
     setNewMessage('');
 
     try {
-      await sendMessage({
-        threadId: threadData.thread_id,
-        senderName: user.name,
-        senderOrganization: user.organization,
-        messageType: 'text',
-        content: optimisticMessage.content,
-      });
-      refresh();
+      await addMessage(message);
     } catch {
-      setLocalMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
       toast({ description: 'Failed to send message', variant: 'destructive' });
     }
   };
 
-  if (loading || userLoading || !threadData || !user) {
+  const loading = threadLoading || scopesLoading || userLoading;
+
+  if (loading || !user) {
     return (
       <div className="p-8">
         <p className="text-gray-500">Loading negotiation workspace...</p>
@@ -230,7 +188,7 @@ export function NegotiationWorkspace({ collaborationRequestId }: NegotiationWork
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={sending || !newMessage.trim()}
+                  disabled={!newMessage.trim()}
                   className="h-auto px-6 bg-primary hover:bg-primary/90 text-white rounded-2xl shadow-lg shadow-primary/20 active:scale-95 transition-all"
                 >
                   <Send className="h-5 w-5" />
