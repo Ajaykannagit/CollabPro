@@ -38,7 +38,6 @@ const ROLES: { id: Role; label: string; subtitle: string; icon: React.ElementTyp
 ];
 
 export function SplashScreen({ onLaunch }: SplashScreenProps) {
-    const [selectedRole, setSelectedRole] = useState<Role | null>(null);
     const [launching, setLaunching] = useState(false);
     const [bootStep, setBootStep] = useState(0);
     const BOOT_MESSAGES = [
@@ -49,8 +48,7 @@ export function SplashScreen({ onLaunch }: SplashScreenProps) {
         "Finalizing Collaboration Protocol..."
     ];
 
-    const handleLaunch = () => {
-        if (!selectedRole) return;
+    const handleLaunch = (role: Role) => {
         setLaunching(true);
         
         let currentStep = 0;
@@ -60,9 +58,9 @@ export function SplashScreen({ onLaunch }: SplashScreenProps) {
                 setBootStep(currentStep);
             } else {
                 clearInterval(interval);
-                onLaunch(selectedRole);
+                onLaunch(role);
             }
-        }, 1200);
+        }, 800); // Slightly faster boot for better feeling
     };
 
     return (
@@ -125,64 +123,50 @@ export function SplashScreen({ onLaunch }: SplashScreenProps) {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="w-full"
                         >
-                            <div className="grid grid-cols-3 gap-4 w-full mb-8">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-8">
                                 {ROLES.map(role => {
                                     const Icon = role.icon;
-                                    const isSelected = selectedRole === role.id;
                                     return (
-                                        <motion.button
+                                        <motion.div
                                             key={role.id}
-                                            onClick={() => setSelectedRole(role.id)}
-                                            whileHover={{ scale: 1.04, y: -3 }}
-                                            whileTap={{ scale: 0.97 }}
+                                            whileHover={{ y: -5 }}
                                             className={cn(
-                                                'relative flex flex-col items-center gap-3 p-5 rounded-2xl border transition-all duration-300 overflow-hidden group',
-                                                isSelected
-                                                    ? 'border-white/20 bg-white/10 ring-2 ring-white/20'
-                                                    : 'border-white/8 bg-white/5 hover:bg-white/8 hover:border-white/15'
+                                                'relative flex flex-col items-center gap-4 p-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-500 group overflow-hidden'
                                             )}
                                         >
+                                            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            
                                             <div className={cn(
-                                                'h-12 w-12 rounded-xl flex items-center justify-center shadow-lg transition-all',
+                                                'h-16 w-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-500 group-hover:scale-110',
                                                 `bg-gradient-to-br ${role.gradient}`,
-                                                isSelected ? `shadow-lg ${role.glow}` : 'shadow-black/20'
+                                                `shadow-${role.glow}`
                                             )}>
-                                                <Icon className={cn('h-6 w-6 text-white', isSelected ? 'text-white' : 'text-slate-500')} />
+                                                <Icon className="h-8 w-8 text-white" />
                                             </div>
+
                                             <div className="text-center relative z-10">
-                                                <p className="font-black text-white text-sm">{role.label}</p>
-                                                <p className="text-[10px] text-slate-400 font-medium mt-0.5 leading-snug">{role.subtitle}</p>
+                                                <p className="font-black text-white text-lg tracking-tight">{role.label}</p>
+                                                <p className="text-[11px] text-slate-400 font-medium mt-1 leading-snug px-2">
+                                                    {role.subtitle}
+                                                </p>
                                             </div>
-                                            {isSelected && (
-                                                <motion.div
-                                                    initial={{ scale: 0 }}
-                                                    animate={{ scale: 1 }}
-                                                    className="absolute top-2 right-2 h-5 w-5 rounded-full bg-white flex items-center justify-center"
-                                                >
-                                                    <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500" />
-                                                </motion.div>
-                                            )}
-                                        </motion.button>
+
+                                            <motion.button
+                                                onClick={() => handleLaunch(role.id)}
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                className={cn(
+                                                    "mt-4 w-full py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                                                    `bg-gradient-to-r ${role.gradient} text-white shadow-lg`
+                                                )}
+                                            >
+                                                Explore Path
+                                                <HiOutlineArrowRight className="h-4 w-4" />
+                                            </motion.button>
+                                        </motion.div>
                                     );
                                 })}
                             </div>
-
-                            <motion.button
-                                onClick={handleLaunch}
-                                disabled={!selectedRole || launching}
-                                className={cn(
-                                    'w-full py-4 rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all duration-300 flex items-center justify-center gap-3',
-                                    selectedRole && !launching
-                                        ? 'bg-gradient-to-r from-violet-600 to-cyan-600 text-white shadow-xl shadow-violet-500/30 hover:shadow-violet-500/50'
-                                        : 'bg-white/10 text-white/40 cursor-not-allowed'
-                                )}
-                            >
-                                Launch Platform
-                                <HiOutlineArrowRight className="h-5 w-5" />
-                            </motion.button>
-                            {!selectedRole && (
-                                <p className="text-slate-600 text-xs font-medium mt-3">Select a role above to continue</p>
-                            )}
                         </motion.div>
                     ) : (
                         <motion.div

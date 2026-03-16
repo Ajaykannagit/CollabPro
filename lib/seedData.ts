@@ -3,6 +3,7 @@ import {
   ResearchProject,
   IndustryChallenge,
   Notification,
+  College,
 } from './types';
 
 export const DUMMY_PROJECTS: Omit<ResearchProject, 'id'>[] = [
@@ -141,8 +142,32 @@ export const DUMMY_NOTIFICATIONS: Omit<Notification, 'id'>[] = [
   }
 ];
 
+export const DUMMY_COLLEGES: Omit<College, 'id'>[] = [
+  {
+    name: "Stanford Institute of Technology",
+    location: "Palo Alto, CA",
+    website: "https://sit.stanford.edu",
+    research_strengths: "Quantum Systems, Biophotonics, Neural Mesh",
+    available_resources: "Quantum Cleanroom, 100-Petaflop Supercomputer",
+    success_rate: 98.4,
+    past_partnerships_count: 142,
+    active_projects_count: 24,
+    created_at: new Date().toISOString(),
+  },
+  {
+    name: "MIT CSAIL",
+    location: "Cambridge, MA",
+    website: "https://csail.mit.edu",
+    research_strengths: "Artificial Intelligence, Cryptography, Robotics",
+    available_resources: "Stargate AI Cluster, Robotics Sandbox",
+    success_rate: 96.2,
+    past_partnerships_count: 210,
+    active_projects_count: 45,
+    created_at: new Date().toISOString(),
+  }
+];
+
 export async function initializeDatabase() {
-  // Check if database already has data to avoid re-seeding endlessly (unless we want to force it)
   const projectCount = await db.research_projects.count();
   if (projectCount > 0) return;
 
@@ -151,18 +176,57 @@ export async function initializeDatabase() {
   await db.research_projects.bulkAdd(DUMMY_PROJECTS as any);
   await db.industry_challenges.bulkAdd(DUMMY_CHALLENGES as any);
   await db.notifications.bulkAdd(DUMMY_NOTIFICATIONS as any);
+  await db.colleges.bulkAdd(DUMMY_COLLEGES as any);
 
   // Add some students
   await db.student_profiles.bulkAdd([
     {
       name: "Alex Rivera",
-      college: "Stanford",
+      college: "Stanford Institute of Technology",
       degree: "PhD in Neural Physics",
       skills: ["Python", "Quantum Systems", "C++"],
       availability: "Part-time",
       gpa: 3.9,
       projects: ["Neural Link v2", "Mesh Protocols"],
       bio: "Focusing on decentralized intelligence and biological interfaces.",
+      created_at: new Date().toISOString(),
+    },
+    {
+      name: "Sarah Jenkins",
+      college: "MIT CSAIL",
+      degree: "MSc in Cybersecurity",
+      skills: ["Rust", "Zero-Knowledge Proofs", "Cryptography"],
+      availability: "Full-time",
+      gpa: 4.0,
+      projects: ["Secure Edge", "Stellar Shield"],
+      bio: "Advancing privacy-preserving protocols for industrial IoT.",
+      created_at: new Date().toISOString(),
+    }
+  ] as any);
+
+  // Add initial collaborations
+  await db.collaboration_requests.bulkAdd([
+    {
+      corporate_partner_id: 1,
+      research_project_id: 1,
+      project_brief: "Integration of quantum dots into mRNA sequences.",
+      budget_proposed: 1500000,
+      timeline_proposed: "12 months",
+      status: "pending",
+      created_at: new Date().toISOString(),
+    }
+  ] as any);
+
+  // Add IP disclosures
+  await db.ip_disclosures.bulkAdd([
+    {
+      active_project_id: 2,
+      title: "Decentralized Grid Management Algorithm",
+      description: "A self-healing protocol for smart grids using sovereign AI nodes.",
+      invention_type: "Software/Algorithm",
+      inventors: ["Prof. Marcus Vane", "Alex Rivera"],
+      disclosure_date: new Date().toISOString(),
+      status: "filed",
       created_at: new Date().toISOString(),
     }
   ] as any);

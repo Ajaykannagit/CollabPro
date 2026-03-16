@@ -116,10 +116,7 @@ function App() {
   const [activeSection, setActiveSection] = useState<NavSection>('dashboard');
   const [activeProjectId, setActiveProjectId] = useState<number>(1);
   const [commandOpen, setCommandOpen] = useState(false);
-  const [showSplash, setShowSplash] = useState(() => {
-    // For the review/demo, we want the splash to appear more frequently or always on fresh session
-    return sessionStorage.getItem('collabpro_sessionSplashSeen') !== '1';
-  });
+  const [showSplash, setShowSplash] = useState(true);
   const { unreadCount } = useNotifications();
 
   const { loadUser, user: storeUser, updateUser } = useAppStore();
@@ -148,7 +145,6 @@ function App() {
 
   const handleSplashLaunch = useCallback(async (role: 'college' | 'corporate' | 'student') => {
     await updateUser({ organization_type: role });
-    sessionStorage.setItem('collabpro_sessionSplashSeen', '1');
     setShowSplash(false);
   }, [updateUser]);
 
@@ -413,8 +409,19 @@ function App() {
               </span>
             </div>
 
-            {/* Right: Clock + Notification + Search */}
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowSplash(true)}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all duration-200 border',
+                  theme === 'quantum'
+                    ? 'border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10'
+                    : 'border-primary/20 text-primary hover:bg-primary/5'
+                )}
+              >
+                <RiExchangeLine className="h-3.5 w-3.5" />
+                <span>Switch Perspective</span>
+              </button>
               <LiveClock />
 
               {/* Ctrl+K quick search */}
