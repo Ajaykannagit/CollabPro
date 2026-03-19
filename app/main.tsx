@@ -5,6 +5,10 @@ import { router } from './router.tsx'
 import '../index.css'
 
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { initializeDatabase } from '@/lib/seedData';
+
+// Initialize the database with high-fidelity demo data
+initializeDatabase();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>

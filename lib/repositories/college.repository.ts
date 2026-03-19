@@ -1,73 +1,39 @@
-import { supabase } from '../supabase';
+import { db } from '../db';
 import type { College } from '../types';
 
 export class CollegeRepository {
     async getAll(): Promise<College[]> {
-        console.log('🔍 Fetching colleges from Supabase...');
-
-        const { data, error } = await supabase
-            .from('colleges')
-            .select('*')
-            .order('name');
-
-        if (error) {
-            console.error('❌ Error fetching colleges:', error);
-            throw error;
-        }
-
-        console.log(`✅ Fetched ${data?.length || 0} colleges from Supabase`);
-        return data || [];
+        console.log('🔍 Fetching colleges from local database...');
+        const colleges = await db.colleges.toArray();
+        console.log(`✅ Fetched ${colleges.length} colleges from local database`);
+        return colleges;
     }
 
     async getById(id: number): Promise<College | undefined> {
-        const { data, error } = await supabase
-            .from('colleges')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (error) throw error;
-        return data || undefined;
+        return await db.colleges.get(id);
     }
 
     async add(college: Omit<College, 'id' | 'created_at'>): Promise<number> {
-        const { data, error } = await supabase
-            .from('colleges')
-            .insert([college])
-            .select('id')
-            .single();
-
-        if (error) throw error;
-        return data.id;
+        const id = await db.colleges.add({
+            ...college,
+            created_at: new Date().toISOString()
+        } as any);
+        return id as number;
     }
 
     async update(id: number, updates: Partial<College>): Promise<number> {
-        const { error } = await supabase
-            .from('colleges')
-            .update(updates)
-            .eq('id', id);
-
-        if (error) throw error;
-        return 1; // Return 1 to indicate success
+        await db.colleges.update(id, updates);
+        return 1;
     }
 
     async delete(id: number): Promise<void> {
-        const { error } = await supabase
-            .from('colleges')
-            .delete()
-            .eq('id', id);
-
-        if (error) throw error;
+        await db.colleges.delete(id);
     }
 
     async findByName(name: string): Promise<College[]> {
-        const { data, error } = await supabase
-            .from('colleges')
-            .select('*')
-            .ilike('name', `%${name}%`);
-
-        if (error) throw error;
-        return data || [];
+        return await db.colleges
+            .filter(c => c.name.toLowerCase().includes(name.toLowerCase()))
+            .toArray();
     }
 }
 

@@ -113,6 +113,7 @@ export const DUMMY_CHALLENGES: Omit<IndustryChallenge, 'id'>[] = [
     industry: "Renewable Energy",
     company_location: "Austin, TX",
     required_expertise: ["Carbon Capture", "Thermodynamics", "Chemical Engineering"],
+    corporate_partner_id: 1,
     created_at: new Date().toISOString(),
   },
   {
@@ -126,6 +127,7 @@ export const DUMMY_CHALLENGES: Omit<IndustryChallenge, 'id'>[] = [
     industry: "Semiconductors",
     company_location: "Santa Clara, CA",
     required_expertise: ["Cryptography", "Edge AI", "IoT"],
+    corporate_partner_id: 2,
     created_at: new Date().toISOString(),
   },
   {
@@ -139,6 +141,7 @@ export const DUMMY_CHALLENGES: Omit<IndustryChallenge, 'id'>[] = [
     industry: "Consumer Electronics",
     company_location: "Cupertino, CA",
     required_expertise: ["Material Science", "Electronics", "Biology"],
+    corporate_partner_id: 1,
     created_at: new Date().toISOString(),
   }
 ];
@@ -195,20 +198,32 @@ export const DUMMY_COLLEGES: Omit<College, 'id'>[] = [
   }
 ];
 
-export async function initializeDatabase() {
-  const projectCount = await db.research_projects.count();
-  if (projectCount > 0) return;
+export const DUMMY_IP_DISCLOSURES: any[] = [
+    {
+      id: 1,
+      active_project_id: 2,
+      title: "Decentralized Grid Management Algorithm",
+      description: "A self-healing protocol for smart grids using sovereign AI nodes.",
+      invention_type: "Software/Algorithm",
+      inventors: ["Prof. Marcus Vane", "Alex Rivera"],
+      disclosure_date: new Date(Date.now() - 2592000000).toISOString(),
+      status: "filed",
+      created_at: new Date(Date.now() - 2592000000).toISOString(),
+    },
+    {
+      id: 2,
+      active_project_id: 1,
+      title: "Photonic mRNA Encapsulation",
+      description: "Method for protecting mRNA using light-sensitive quantum dots.",
+      invention_type: "Biotech/Process",
+      inventors: ["Dr. Sarah Chen"],
+      disclosure_date: new Date().toISOString(),
+      status: "draft",
+      created_at: new Date().toISOString(),
+    }
+];
 
-  console.log("Initializing high-fidelity demo data...");
-
-  await db.research_projects.bulkAdd(DUMMY_PROJECTS as any);
-  await db.industry_challenges.bulkAdd(DUMMY_CHALLENGES as any);
-  await db.notifications.bulkAdd(DUMMY_NOTIFICATIONS as any);
-  await db.colleges.bulkAdd(DUMMY_COLLEGES as any);
-  await db.corporate_partners.bulkAdd(DUMMY_CORPORATES as any);
-
-  // Add some students
-  await db.student_profiles.bulkAdd([
+export const DUMMY_STUDENTS: any[] = [
     {
       name: "Alex Rivera",
       college: "Stanford Institute of Technology",
@@ -231,11 +246,26 @@ export async function initializeDatabase() {
       bio: "Advancing privacy-preserving protocols for industrial IoT.",
       created_at: new Date().toISOString(),
     }
-  ] as any);
+];
 
-  // Add initial collaborations
-  await db.collaboration_requests.bulkAdd([
+export const DUMMY_LICENSING: any[] = [
     {
+      id: 1,
+      ip_disclosure_id: 1,
+      anonymized_title: "Self-Healing Grid Protocol (SHGP)",
+      anonymized_description: "Ready for licensing to tier-1 utility providers.",
+      asking_price: 1500000,
+      industry_sectors: "Energy, Smart City",
+      inquiries_count: 5,
+      status: "available",
+      created_at: new Date().toISOString(),
+      invention_category: "Software/Algorithm",
+    }
+];
+
+export const DUMMY_COLLABORATIONS: any[] = [
+    {
+      id: 1,
       corporate_partner_id: 1,
       research_project_id: 1,
       project_brief: "Integration of quantum dots into mRNA sequences for climate-resilient vaccine delivery.",
@@ -243,8 +273,13 @@ export async function initializeDatabase() {
       timeline_proposed: "12 months",
       status: "pending",
       created_at: new Date().toISOString(),
+      company_name: "Tesla Energy",
+      industry: "Renewable Energy",
+      project_title: "Quantum-Enhanced Vaccine Delivery Systems",
+      College_name: "Stanford Institute of Technology",
     },
     {
+      id: 2,
       corporate_partner_id: 2,
       research_project_id: 2,
       industry_challenge_id: 2,
@@ -253,32 +288,34 @@ export async function initializeDatabase() {
       timeline_proposed: "18 months",
       status: "approved",
       created_at: new Date(Date.now() - 432000000).toISOString(),
+      company_name: "NVIDIA Industrial",
+      industry: "Semiconductors",
+      project_title: "Sovereign AI for Smart City Infrastructure",
+      College_name: "MIT CSAIL",
+      challenge_title: "Privacy-Preserving Edge Computing",
     }
-  ] as any);
+];
+
+export async function initializeDatabase() {
+  const projectCount = await db.research_projects.count();
+  if (projectCount > 0) return;
+
+  console.log("Initializing high-fidelity demo data...");
+
+  await db.research_projects.bulkAdd(DUMMY_PROJECTS as any);
+  await db.industry_challenges.bulkAdd(DUMMY_CHALLENGES as any);
+  await db.notifications.bulkAdd(DUMMY_NOTIFICATIONS as any);
+  await db.colleges.bulkAdd(DUMMY_COLLEGES as any);
+  await db.corporate_partners.bulkAdd(DUMMY_CORPORATES as any);
+
+  // Add some students
+  await db.student_profiles.bulkAdd(DUMMY_STUDENTS as any);
+
+  // Add initial collaborations
+  await db.collaboration_requests.bulkAdd(DUMMY_COLLABORATIONS as any);
 
   // Add IP disclosures
-  await db.ip_disclosures.bulkAdd([
-    {
-      active_project_id: 2,
-      title: "Decentralized Grid Management Algorithm",
-      description: "A self-healing protocol for smart grids using sovereign AI nodes.",
-      invention_type: "Software/Algorithm",
-      inventors: ["Prof. Marcus Vane", "Alex Rivera"],
-      disclosure_date: new Date(Date.now() - 2592000000).toISOString(),
-      status: "filed",
-      created_at: new Date(Date.now() - 2592000000).toISOString(),
-    },
-    {
-      active_project_id: 1,
-      title: "Photonic mRNA Encapsulation",
-      description: "Method for protecting mRNA using light-sensitive quantum dots.",
-      invention_type: "Biotech/Process",
-      inventors: ["Dr. Sarah Chen"],
-      disclosure_date: new Date().toISOString(),
-      status: "draft",
-      created_at: new Date().toISOString(),
-    }
-  ] as any);
+  await db.ip_disclosures.bulkAdd(DUMMY_IP_DISCLOSURES);
 
   // Add Negotiations
   await db.negotiations.bulkAdd([

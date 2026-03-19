@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { db } from '@/lib/db';
 import { motion } from 'framer-motion';
 import { Activity, Database, Globe, Zap, ShieldCheck } from 'lucide-react';
 
@@ -10,28 +10,22 @@ export function DatabaseStatus() {
   const [synapseStrength, setSynapseStrength] = useState<number>(98.4);
 
   useEffect(() => {
-    async function checkConnection() {
+    async function checkLocalDatabase() {
       const start = performance.now();
       try {
-        const { data, error } = await supabase.from('colleges').select('*', { count: 'exact' });
+        const count = await db.colleges.count();
         const end = performance.now();
-        setLatency(Math.round(end - start));
-
-        if (error) {
-          setIsConnected(true);
-          setCollegeCount(24);
-        } else {
-          setIsConnected(true);
-          setCollegeCount(data?.length || 0);
-        }
-      } catch {
+        setLatency(Math.round(end - start) + 12); // Add artificial minimal latency for effect
+        setCollegeCount(count);
         setIsConnected(true);
-        setCollegeCount(24);
-        setLatency(42);
+      } catch (err) {
+        console.error("Local DB check failed:", err);
+        setIsConnected(false);
+        setCollegeCount(0);
       }
     }
 
-    checkConnection();
+    checkLocalDatabase();
     
     // Simulate slight fluctuations in metrics for "live" feel
     const interval = setInterval(() => {
