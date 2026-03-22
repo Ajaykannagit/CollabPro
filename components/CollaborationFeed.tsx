@@ -74,26 +74,52 @@ export function CollaborationFeed() {
 
     useEffect(() => {
         let channel: any;
-        import('@/lib/supabase').then(({ supabase }) => {
-            channel = supabase.channel('public:notifications')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload: any) => {
-                    const doc = payload.new;
-                    // Provide a default fallback shape, mapped to FeedEvent from DB notification
-                    const newEvent: FeedEvent = {
-                        id: `live-${doc.id}`,
-                        type: (doc.type as FeedEventType) || 'match',
-                        title: doc.title || 'New Ecosystem Event',
-                        description: doc.description || `A new ${doc.type} event was recorded in the network.`,
-                        actor: doc.actor || 'System',
-                        organization: doc.organization || 'CollabSync AI',
-                        timestamp: doc.created_at ? new Date(doc.created_at) : new Date(),
-                        isNew: true,
-                    };
-                    setEvents(prev => [newEvent, ...prev].slice(0, 25));
-                    setLiveCount(c => c + 1);
-                })
-                .subscribe();
-        });
+        const isDemoMode = !import.meta.env.VITE_SUPABASE_URL;
+
+        if (!isDemoMode) {
+            import('@/lib/supabase').then(({ supabase }) => {
+                channel = supabase.channel('public:notifications')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload: any) => {
+                        const doc = payload.new;
+                        const newEvent: FeedEvent = {
+                            id: `live-${doc.id}-${Math.random()}`,
+                            type: (doc.type as FeedEventType) || 'match',
+                            title: doc.title || 'New Ecosystem Event',
+                            description: doc.description || `A new ${doc.type} event was recorded in the network.`,
+                            actor: doc.actor || 'System',
+                            organization: doc.organization || 'CollabSync AI',
+                            timestamp: new Date(),
+                            isNew: true,
+                        };
+                        setEvents(prev => [newEvent, ...prev].slice(0, 30));
+                        setLiveCount(c => c + 1);
+                    })
+                    .subscribe();
+            });
+        }
+
+        // --- Demo Mode Simulation ---
+        let simulationInterval: any;
+        if (isDemoMode) {
+            simulationInterval = setInterval(() => {
+                const randomSeed = SEED_EVENTS[Math.floor(Math.random() * SEED_EVENTS.length)];
+                const newEvent: FeedEvent = {
+                    ...randomSeed,
+                    id: `sim-${Date.now()}`,
+                    timestamp: new Date(),
+                    isNew: true
+                };
+                
+                setEvents(prev => [newEvent, ...prev].slice(0, 30));
+                setLiveCount(c => c + 1);
+
+                // Auto-clear notification status after 8 seconds
+                setTimeout(() => {
+                    setEvents(prev => prev.map(e => e.id === newEvent.id ? { ...e, isNew: false } : e));
+                }, 8000);
+
+            }, 25000 + Math.random() * 15000); // 25-40 seconds
+        }
 
         return () => {
             if (channel) {
@@ -101,6 +127,7 @@ export function CollaborationFeed() {
                     supabase.removeChannel(channel);
                 });
             }
+            if (simulationInterval) clearInterval(simulationInterval);
         };
     }, []);
 
