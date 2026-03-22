@@ -146,10 +146,20 @@ const createUserSlice: StateCreator<AppState, [], [], UserSlice> = (set, get) =>
         }
     },
     updateUser: async (updates: Partial<User>) => {
-        const currentUser = get().user;
-        if (!currentUser) return;
+        let currentUser = get().user;
+        if (!currentUser) {
+            // Auto-initialize demo user if session is missing (Local Demo Mode)
+            currentUser = {
+                user_id: 'user_1',
+                name: 'Demo Architect',
+                email: 'demo@collabsync.pro',
+                organization: 'CollabSync Lab',
+                organization_type: updates.organization_type || 'corporate',
+                role: 'Lead Researcher'
+            };
+        }
         const updatedUser = { ...currentUser, ...updates };
-        set({ user: updatedUser });
+        set({ user: updatedUser, userLoading: false });
         localStorage.setItem(`collabpro_user_${currentUser.user_id}`, JSON.stringify(updatedUser));
         await new Promise(resolve => setTimeout(resolve, 500));
     },

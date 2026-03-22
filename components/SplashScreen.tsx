@@ -119,12 +119,12 @@ export function SplashScreen({ onLaunch }: SplashScreenProps) {
                                                 'relative flex flex-col items-center gap-4 p-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl transition-all duration-500 group overflow-hidden'
                                             )}
                                         >
-                                            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                                             
                                             <div className={cn(
                                                 'h-16 w-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-500 group-hover:scale-110',
                                                 `bg-gradient-to-br ${role.gradient}`,
-                                                `shadow-${role.glow}`
+                                                role.glow
                                             )}>
                                                 <Icon className="h-8 w-8 text-white" />
                                             </div>
