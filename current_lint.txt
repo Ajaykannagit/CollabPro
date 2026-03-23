@@ -1,8 +1,0 @@
-﻿
-C:\Users\user\Downloads\CollabPro-main\CollabPro-main\app\router.tsx
-  31:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file  react-refresh/only-export-components
-  35:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file  react-refresh/only-export-components
-  43:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file  react-refresh/only-export-components
-
-Γ£û 3 problems (0 errors, 3 warnings)
-

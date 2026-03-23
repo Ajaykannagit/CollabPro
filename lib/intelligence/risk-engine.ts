@@ -1,9 +1,4 @@
-/**
- * Collaboration Risk Engine
- * 
- * Analyzes ongoing collaborations to predict the probability of failure 
- * or timeline slippage based on engagement and resource metrics.
- */
+import { IntelligenceConfig, CollaborationMetricsSchema } from './config';
 
 export interface RiskAssessment {
     score: number; // 0 to 100
@@ -24,7 +19,10 @@ export interface CollaborationMetrics {
     sentimentScore: number; // -1.0 to 1.0
 }
 
-export function assessCollaborationRisk(metrics: CollaborationMetrics): RiskAssessment {
+export function assessCollaborationRisk(rawMetrics: any): RiskAssessment {
+    const metrics = CollaborationMetricsSchema.parse(rawMetrics);
+    const config = IntelligenceConfig.riskEngine;
+    
     const {
         daysSinceLastMilestone,
         budgetUtilization,
@@ -33,55 +31,55 @@ export function assessCollaborationRisk(metrics: CollaborationMetrics): RiskAsse
         sentimentScore
     } = metrics;
 
-    let riskScore = 20; // Base score
+    let riskScore = config.baseScore;
     const factors: RiskAssessment['factors'] = [];
 
     // 1. Budget vs Progress Alignment
     const progressionGap = budgetUtilization - milestoneProgress;
-    if (progressionGap > 0.2) {
-        riskScore += 25;
+    if (progressionGap > config.budgetProgressionGap.threshold) {
+        riskScore += config.budgetProgressionGap.penalty;
         factors.push({
             label: 'Budget Overrun',
-            impact: 8,
+            impact: config.budgetProgressionGap.impact,
             description: `Budget consumption (${(budgetUtilization * 100).toFixed(0)}%) is significantly outpacing milestone progress (${(milestoneProgress * 100).toFixed(0)}%).`
         });
     }
 
     // 2. Engagement Decay
-    if (communicationFrequency < 2) {
-        riskScore += 20;
+    if (communicationFrequency < config.engagementDecay.minFrequency) {
+        riskScore += config.engagementDecay.penalty;
         factors.push({
             label: 'Engagement Decay',
-            impact: 6,
-            description: 'Communication frequency has dropped below the critical threshold of 2 updates per week.'
+            impact: config.engagementDecay.impact,
+            description: `Communication frequency has dropped below the critical threshold of ${config.engagementDecay.minFrequency} updates per week.`
         });
     }
 
     // 3. Timeline Stagnation
-    if (daysSinceLastMilestone > 45) {
-        riskScore += 15;
+    if (daysSinceLastMilestone > config.timelineStagnation.maxDays) {
+        riskScore += config.timelineStagnation.penalty;
         factors.push({
             label: 'Timeline Stagnation',
-            impact: 5,
+            impact: config.timelineStagnation.impact,
             description: `No milestone updates or completions recorded in the last ${daysSinceLastMilestone} days.`
         });
     }
 
     // 4. Sentiment Analysis
-    if (sentimentScore < 0) {
-        riskScore += 10;
+    if (sentimentScore < config.sentimentFriction.minScore) {
+        riskScore += config.sentimentFriction.penalty;
         factors.push({
             label: 'Interpersonal Friction',
-            impact: 4,
+            impact: config.sentimentFriction.impact,
             description: 'AI sentiment analysis of negotiation and workspace chat indicates rising friction.'
         });
     }
 
     // Determine Level
     let level: RiskAssessment['level'] = 'Low';
-    if (riskScore > 75) level = 'Critical';
-    else if (riskScore > 50) level = 'High';
-    else if (riskScore > 35) level = 'Medium';
+    if (riskScore > config.thresholds.critical) level = 'Critical';
+    else if (riskScore > config.thresholds.high) level = 'High';
+    else if (riskScore > config.thresholds.medium) level = 'Medium';
 
     // Recommendation logic
     let recommendation = 'Collaboration is healthy. Continue with current roadmap.';
@@ -94,7 +92,7 @@ export function assessCollaborationRisk(metrics: CollaborationMetrics): RiskAsse
     }
 
     return {
-        score: Math.min(100, riskScore),
+        score: Math.min(100, Math.max(0, riskScore)),
         level,
         factors,
         recommendation

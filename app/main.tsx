@@ -6,6 +6,10 @@ import '../index.css'
 
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { initializeDatabase } from '@/lib/seedData';
+import { validateEnv } from '@/lib/env';
+
+// Validate environment variables on startup
+validateEnv();
 
 // Initialize the database with high-fidelity demo data
 initializeDatabase();

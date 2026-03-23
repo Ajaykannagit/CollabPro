@@ -1,8 +1,4 @@
-/**
- * Expertise Alignment Matcher
- * 
- * Implements sophisticated matching logic between research projects and industry challenges.
- */
+import { IntelligenceConfig, ProjectSchema, ChallengeSchema } from './config';
 
 export interface MatchSynergy {
     score: number;
@@ -11,51 +7,62 @@ export interface MatchSynergy {
     strategicFit: 'Transformative' | 'Standard' | 'Experimental';
 }
 
-export function calculateSynergy(project: any, challenge: any): MatchSynergy {
-    const projectExpertise = new Set(project.expertise_areas || []);
-    const challengeExpertise = new Set(challenge.required_expertise || []);
+function calculateSemanticOverlap(projectExpertise: string[], challengeExpertise: string[]): string[] {
+    // Simulated semantic NLP overlap for nuanced synergy
+    const pStr = projectExpertise.map(x => x.toLowerCase());
+    const cStr = challengeExpertise.map(x => x.toLowerCase());
+    
+    // Exact matches
+    const exactMatches = pStr.filter(x => cStr.includes(x));
+    
+    // Semantic/partial matches (simulate stemming/synonyms)
+    const partialMatches = pStr.filter(p => cStr.some(c => c.includes(p) || p.includes(c)) && !exactMatches.includes(p));
+    
+    // Combine but capitalize correctly based on original
+    return [...exactMatches, ...partialMatches].map(m => projectExpertise.find(p => p.toLowerCase() === m) || m);
+}
+
+export function calculateSynergy(rawProject: any, rawChallenge: any): MatchSynergy {
+    // Validate inputs using Zod
+    const project = ProjectSchema.parse(rawProject);
+    const challenge = ChallengeSchema.parse(rawChallenge);
+
+    const config = IntelligenceConfig.matcher;
 
     // 1. Calculate Technical Overlap
-    const overlap = [...projectExpertise].filter(x => challengeExpertise.has(x));
+    const overlap = calculateSemanticOverlap(project.expertise_areas, challenge.required_expertise);
 
     // 2. Base Score Calculation
-    let baseScore = 40; // Baseline for any project in the ecosystem
+    let baseScore = config.baseScore;
 
-    // Weighted overlap score
-    const overlapPercentage = challengeExpertise.size > 0
-        ? (overlap.length / challengeExpertise.size)
+    const overlapPercentage = challenge.required_expertise.length > 0
+        ? (overlap.length / challenge.required_expertise.length)
         : 0;
 
-    baseScore += Math.round(overlapPercentage * 40);
+    baseScore += Math.round(overlapPercentage * config.overlapWeight);
 
     // 3. Strategic Modifiers
-
-    // TRL Alignment: Industry usually wants TRL 4-6
-    if (project.trl_level >= 4 && project.trl_level <= 7) {
-        baseScore += 10;
+    if (project.trl_level >= config.trlBonus.minLevel && project.trl_level <= config.trlBonus.maxLevel) {
+        baseScore += config.trlBonus.score;
     }
 
-    // Geographic Proximity Bonus (Simulated)
     if (project.location === challenge.location) {
-        baseScore += 5;
+        baseScore += config.geoBonus;
     }
 
-    // Historical Success Rate (Simulated)
-    if (project.institution_rating > 4.5) {
-        baseScore += 5;
+    if (project.institution_rating > config.ratingBonus.minRating) {
+        baseScore += config.ratingBonus.score;
     }
 
-    // Team Capacity: Larger teams signal higher project bandwidth
-    if (project.team_size > 8) {
-        baseScore += 5;
+    if (project.team_size > config.teamSizeBonus.minSize) {
+        baseScore += config.teamSizeBonus.score;
     }
 
     // 4. Strategic Fit Classification
     let strategicFit: 'Transformative' | 'Standard' | 'Experimental' = 'Standard';
-    if (baseScore > 85) strategicFit = 'Transformative';
-    else if (baseScore < 60) strategicFit = 'Experimental';
+    if (baseScore > config.thresholds.transformative) strategicFit = 'Transformative';
+    else if (baseScore < config.thresholds.experimental) strategicFit = 'Experimental';
 
-    // 5. Intelligent Reasoning Generation
     let reasoning = '';
     if (overlap.length > 0) {
         reasoning = `High alignment in key technical domains: ${overlap.join(', ')}. `;
@@ -71,7 +78,7 @@ export function calculateSynergy(project: any, challenge: any): MatchSynergy {
     return {
         score: Math.min(100, baseScore),
         reasoning,
-        technicalOverlap: overlap as string[],
+        technicalOverlap: overlap,
         strategicFit
     };
 }

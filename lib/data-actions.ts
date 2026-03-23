@@ -58,7 +58,7 @@ function useGovernanceCheck() {
 
         if (!isVerified && actionName.toLowerCase().includes('ip')) {
             console.warn('SECURITY ALERT: Accessing sensitive IP data as Unverified Identity.');
-            // In a production environment, we might block this or require stepped-up MFA
+            throw new AppError('Unauthorized access to sensitive Intellectual Property data. Step-up verification required.', ErrorCodes.UNAUTHORIZED || 'UNAUTHORIZED');
         }
 
         console.groupEnd();
