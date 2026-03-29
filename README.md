@@ -17,7 +17,7 @@ To empower innovation by seamlessly connecting academic research expertise with 
 ### ✍️ 2. Collaboration Workspace
 - **Shared Workspace**: Dedicated environment for negotiating project scope, deliverables, and timelines.
 - **Live Collaboration Feed**: Real-time activity feed utilizing Supabase Realtime to stay updated on project progress and team interactions.
-- **Agreement Generator & Digital Signatures**: Automated UI for contract generation and integrated workflow for legal approval and signing.
+- **Agreement Generator & Digital Signatures**: Automated UI for contract generation and integrated workflow for legal approval and signing
 
 ### 📊 3. Project Execution & Tracking
 - **Milestone Management**: Interactive Gantt charts and progress trackers to monitor project health.
