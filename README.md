@@ -1,6 +1,6 @@
 ﻿# 🤝 CollabSync Pro
 
-**CollabSync Pro** is a cutting-edge Industry-Academia Collaboration Portal designed to bridge the gap between universities and corporate partners. It facilitates co-development of R&D projects, manages intellectual property (IP), and streamlines talent recruitment through an AI-powered ecosystem
+**CollabSync Pro** is a cutting-edge Industry-Academia Collaboration Portal designed to bridge the gap between universities and corporate partners. It facilitates co-development of R&D projects, manages intellectual property (IP), and streamlines talent recruitment through an AI-powered ecosystem.
 
 ---
 
