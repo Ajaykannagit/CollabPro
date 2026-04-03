@@ -5,7 +5,7 @@
 ---
 
 ## 🚀 Vision
-To empower innovation by seamlessly connecting academic research expertise with industry challenges, fostering a collaborative environment that accelerates the journey from proposal to commercialization..
+To empower innovation by seamlessly connecting academic research expertise with industry challenges, fostering a collaborative environment that accelerates the journey from proposal to commercialization.
 
 ## ✨ Key Features
 
