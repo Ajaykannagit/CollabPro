@@ -11,7 +11,7 @@ To empower innovation by seamlessly connecting academic research expertise with 
 
 ### 🧩 1. Project Discovery & AI Matchmaking
 - **Industry Challenges Board**: Corporate partners can post real-world challenges with budget ranges and timelines.
-- **Research Discovery**: Filterable grid of university research projects categorized by TRL levels and expertise areas.
+- **Research Discovery**: Filterable grid of university research projects categorized by TRL levels and expertise areas
 - **AI Matchmaking**: Intelligent scoring system that aligns academic research with industry needs based on expertise and past success metrics.
 
 ### ✍️ 2. Collaboration Workspace
